@@ -36,7 +36,7 @@ pub fn icao_decode(message: &[u32], df: u32, squitter: &str) {
         debug!("Squitter: {}, M: {:?}", squitter, message);
         let (country, cshrt) = icao_to_country(icao_address);
         println!(
-            "Squitter: {:28}, ICAO: {:06X}, DF:{:2}, {}: {}",
+            "Squitter:{:28}, ICAO:{:06X}, DF:{:2}, {}:{}",
             squitter, icao_address, df, cshrt, country
         );
     }
