@@ -51,7 +51,6 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::adsb::{df, icao, message};
 
     #[test]

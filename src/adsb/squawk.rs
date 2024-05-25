@@ -22,25 +22,18 @@ use crate::adsb::ma_code;
 /// }
 /// ```
 pub fn squawk(message: &[u32]) -> Option<u32> {
-    match ma_code(message) {
-        Some(code) => Some(
-            ((((code >> 8) & 1) << 2) | (((code >> 10) & 1) << 1) | ((code >> 12) & 1)) as u32
-                * 1000
-                + ((((code >> 3) & 1) << 2) | (((code >> 5) & 1) << 1) | ((code >> 7) & 1)) as u32
-                    * 100
-                + ((((code >> 9) & 1) << 2) | (((code >> 11) & 1) << 1) | ((code >> 13) & 1))
-                    as u32
-                    * 10
-                + ((((code >> 2) & 1) << 2) | (((code >> 4) & 1) << 1) | ((code >> 6) & 1)) as u32,
-        ),
-        None => None,
-    }
+    ma_code(message).map(|code| {
+        ((((code >> 8) & 1) << 2) | (((code >> 10) & 1) << 1) | ((code >> 12) & 1)) as u32 * 1000
+            + ((((code >> 3) & 1) << 2) | (((code >> 5) & 1) << 1) | ((code >> 7) & 1)) as u32 * 100
+            + ((((code >> 9) & 1) << 2) | (((code >> 11) & 1) << 1) | ((code >> 13) & 1)) as u32
+                * 10
+            + ((((code >> 2) & 1) << 2) | (((code >> 4) & 1) << 1) | ((code >> 6) & 1)) as u32
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::adsb::message;
+    use crate::adsb::{message, squawk};
 
     #[test]
     fn test_squawk() {

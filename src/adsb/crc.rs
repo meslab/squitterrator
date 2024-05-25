@@ -3,7 +3,6 @@ use std::vec;
 use log::debug;
 
 pub fn get_crc(message: &[u32], df: u32) -> u32 {
-    
     match df {
         0..=15 => crc56(message),
         _ => crc112(message),
@@ -127,7 +126,7 @@ pub fn reminder(message: &[u32]) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::adsb::message;
+    use crate::adsb::*;
 
     #[test]
     fn test_crc112() {
