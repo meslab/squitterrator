@@ -1,4 +1,5 @@
-# squitterator
+# SQUITTERATOR: ADS-B Mode S decoder
+This app is based on my old Perl ADS-B Mode S decoder study written back in 2013. 
 
 # References
 https://mode-s.org/decode/index.html
