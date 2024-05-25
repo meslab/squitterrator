@@ -36,4 +36,4 @@ install: release
 uninstall:
 	rm -f ~/.local/bin/squitterator
 
-.PHONY: format lint test run build release clean install
+.PHONY: format lint test run build release clean install uninstall
