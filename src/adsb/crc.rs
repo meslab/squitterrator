@@ -91,7 +91,7 @@ fn crc56(message: &[u32]) -> u32 {
 /// # Examples
 ///
 /// ```
-/// use squitterator::adsb::{message,reminder};
+/// use squitterator::adsb::{message, reminder};
 /// let squitter = "A828162A200464B3D7182070E336";
 /// if let Some(message) = message(squitter) {
 ///     let result = reminder(&message);
