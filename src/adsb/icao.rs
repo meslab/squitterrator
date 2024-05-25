@@ -14,9 +14,9 @@ use crate::adsb::get_crc;
 /// # Examples
 ///
 /// ```
-/// use squitterator::adsb::{self, icao};
-/// if let Some(message) = adsb::message("A0001838300000000000007ADA59") {
-///     let df = adsb::df(&message);
+/// use squitterator::adsb::{message, df, icao};
+/// if let Some(message) = message("A0001838300000000000007ADA59") {
+///     let df = df(&message);
 ///     if let Some(icao_address) = icao(&message, df) {
 ///         assert_eq!(icao_address, 7453696);
 ///     }
@@ -51,8 +51,7 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::adsb::{self, message};
+    use crate::adsb::{df, icao, message};
 
     #[test]
     fn test_icao() {
@@ -69,7 +68,7 @@ mod tests {
 
         for (squitter, value) in squitters.iter() {
             if let Some(message) = message(squitter) {
-                let df = adsb::df(&message);
+                let df = df(&message);
                 if let Some(result) = icao(&message, df) {
                     assert_eq!(result, *value, "Squitter: {}", squitter);
                 }
