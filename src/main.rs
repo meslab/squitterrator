@@ -1,10 +1,7 @@
 use clap::Parser;
 use env_logger::{Builder, Env};
-use log::{debug, warn};
-use squitterator::adsb::{ais, clean_squitter, df, message, mode_e_decoded_message};
-use squitterator::country::icao_to_country;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufReader, Write};
 use std::net::TcpStream;
 use std::sync::Mutex;
 
@@ -15,7 +12,7 @@ use std::sync::Mutex;
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
-struct Args {
+pub struct Args {
     #[clap(short, long)]
     ais: bool,
 
@@ -92,7 +89,16 @@ fn main() -> io::Result<()> {
     }
 }
 
-fn read_lines<R: BufRead>(reader: R, args: &Args) -> io::Result<()> {
+use log::{debug, warn};
+use squitterator::adsb::clean_squitter;
+use squitterator::adsb::df;
+use squitterator::adsb::message;
+use squitterator::process::generate_ais;
+use squitterator::process::icao_decode;
+use squitterator::process::squitter_decode;
+use std::io::BufRead;
+
+pub fn read_lines<R: BufRead>(reader: R, args: &Args) -> io::Result<()> {
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -116,44 +122,4 @@ fn read_lines<R: BufRead>(reader: R, args: &Args) -> io::Result<()> {
         }
     }
     Ok(())
-}
-
-fn generate_ais(message: &[u32], squitter: &str) {
-    if let Some(result) = ais(message) {
-        println!("(\"{}\", \"{}\"),", squitter, result);
-    }
-}
-
-fn squitter_decode(message: &[u32], df: u32) {
-    if let Some(r) = mode_e_decoded_message(message, df) {
-        println!(
-            "DF:{:>2}, Alt:{:>5}, AIS:{:8}, Vs:{}, Vr:{:>5}, F:{}, Lat:{:>6}, Lon:{:>6}, W:{}, S:{}, Gs:{}, As:{}, H:{}, Tu:{}, Tr:{}",
-            df,
-            r.alt,
-            r.ais,
-            r.vsign,
-            r.vrate,
-            r.cpr_form,
-            r.cpr_lat,
-            r.cpr_long,
-            r.sp_west,
-            r.sp_south,
-            r.grspeed,
-            r.airspeed,
-            r.heading,
-            r.turn,
-            r.track
-        )
-    }
-}
-
-fn icao_decode(message: &[u32], df: u32, squitter: &str) {
-    if let Some(icao_address) = squitterator::adsb::icao(message, df) {
-        debug!("Squitter: {}, M: {:?}", squitter, message);
-        let (country, cshrt) = icao_to_country(icao_address);
-        println!(
-            "Squitter: {:28}, ICAO: {:06X}, DF:{:2}, {}: {}",
-            squitter, icao_address, df, cshrt, country
-        );
-    }
 }
