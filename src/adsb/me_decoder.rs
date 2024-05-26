@@ -1,9 +1,9 @@
-use crate::adsb::{ais, ma_code, me_code};
+use crate::adsb::{ais, alt};
 use log::debug;
 
 pub struct DecodedMessage {
-    pub alt: u32,
-    pub ais: String,
+    pub alt: Option<u32>,
+    pub ais: Option<String>,
     pub vsign: u32,
     pub vrate: i32,
     pub cpr_form: u32,
@@ -22,8 +22,8 @@ pub struct DecodedMessage {
 impl DecodedMessage {
     pub fn new() -> Self {
         DecodedMessage {
-            alt: 0,
-            ais: "".to_string(),
+            alt: None,
+            ais: None,
             vsign: 0,
             vrate: 0,
             cpr_form: 2,
@@ -66,12 +66,12 @@ pub fn mode_e_decoded_message(message: &[u32], df: u32) -> Option<DecodedMessage
 
     match message_type {
         1..=4 => {
-            decoded_message.ais = ais(message)?;
+            decoded_message.ais = ais(message);
             Some(decoded_message)
         }
         0 | 9..=18 | 20..=21 => {
             if message_type == 20 || message_type == 21 {
-                decoded_message.ais = ais(message)?;
+                decoded_message.ais = ais(message);
             }
             decoded_message.alt = alt(message, df);
             decoded_message.cpr_form = (message[13] & 4) >> 2;
@@ -167,77 +167,6 @@ pub fn mode_e_decoded_message(message: &[u32], df: u32) -> Option<DecodedMessage
     }
 }
 
-fn alt(message: &[u32], df: u32) -> u32 {
-    let code = match df {
-        17 => me_code(message),
-        _ => ma_code(message),
-    };
-
-    match code {
-        Some(code) => match code & 0b10 {
-            0 => match code & 1 {
-                0 => {
-                    let (high, low) = graytobin(message);
-                    high * 500 + low * 100 + 1200
-                }
-                _ => (((code >> 7) << 4) | ((code >> 2) & 0b1111)) as u32 * 25 + 1000,
-            },
-            _ => ((((code >> 7) << 4) & 0b11111110000 | (code >> 2) & 0b1111) as f32 * 0.31) as u32,
-        },
-        None => 0,
-    }
-}
-
-fn graytobin(message: &[u32]) -> (u32, u32) {
-    if let Some(code) = ma_code(message) {
-        let n = ((code >> 4) & 1) << 10
-            | ((code >> 2) & 1) << 9
-            | ((code >> 12) & 1) << 8
-            | ((code >> 10) & 1) << 7
-            | ((code >> 8) & 1) << 6
-            | ((code >> 7) & 1) << 5
-            | ((code >> 5) & 1) << 4
-            | ((code >> 3) & 1) << 3
-            | ((code >> 13) & 1) << 2
-            | ((code >> 11) & 1) << 1
-            | ((code >> 13) & 1);
-        let mut mask = 0x80;
-        let mut cp = false;
-        let mut result = 0;
-        for _ in 1..=16 {
-            if (n & mask) != 0 {
-                cp = !cp;
-            }
-            if cp {
-                result |= mask;
-            }
-            mask >>= 1;
-        }
-
-        let sub = n & 7;
-        let high = result >> 3;
-        let low = match high % 2 {
-            0 => match sub {
-                4 => 4,
-                6 => 3,
-                3 => 1,
-                2 => 2,
-                _ => 0,
-            },
-            _ => match sub {
-                1 => 4,
-                3 => 3,
-                6 => 1,
-                2 => 2,
-                _ => 0,
-            },
-        };
-        (high as u32, low as u32)
-    } else {
-        (0, 0)
-    }
-}
-
 //fn get_position(cpr: &[&[u32]]) -> (f64, f64) {
 //    let div = 1 << 17;
 //    let adl0 = 360.0 / 60.0;
@@ -245,27 +174,3 @@ fn graytobin(message: &[u32]) -> (u32, u32) {
 //
 //    (0.0, 0.0)
 //}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::adsb;
-
-    #[test]
-    fn test_graytobin() {
-        if let Some(message) = adsb::message("A8281200200464B3CF7820CD194C") {
-            let (high, low) = graytobin(&message);
-            assert_eq!(high, 31);
-            assert_eq!(low, 0);
-        }
-    }
-
-    #[test]
-    fn test_alt() {
-        if let Some(message) = adsb::message("A8281200200464B3CF7820CD194C") {
-            let df = adsb::df(&message);
-            let result = alt(&message, df);
-            assert_eq!(result, 16700);
-        }
-    }
-}

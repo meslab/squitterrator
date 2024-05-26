@@ -3,7 +3,7 @@ use crate::adsb;
 pub struct Plane {
     pub icao: u32,
     pub ais: Option<String>,
-    pub alt: u32,
+    pub alt: Option<u32>,
     pub squawk: Option<u32>,
     pub vsign: u32,
     pub vrate: i32,
@@ -25,7 +25,7 @@ impl Plane {
         Plane {
             icao: 0,
             ais: None,
-            alt: 0,
+            alt: None,
             squawk: None,
             vsign: 0,
             vrate: 0,
@@ -52,7 +52,7 @@ impl Plane {
         };
         if let Some(dm) = adsb::mode_e_decoded_message(message, df) {
             plane.alt = dm.alt;
-            plane.ais = Some(dm.ais);
+            plane.ais = dm.ais;
             plane.vsign = dm.vsign;
             plane.vrate = dm.vrate;
             match dm.cpr_form {
@@ -79,7 +79,7 @@ impl Plane {
     pub fn update(&mut self, message: &[u32], df: u32) {
         if let Some(dm) = adsb::mode_e_decoded_message(message, df) {
             self.alt = dm.alt;
-            self.ais = Some(dm.ais);
+            self.ais = dm.ais;
             self.vsign = dm.vsign;
             self.vrate = dm.vrate;
             match dm.cpr_form {

@@ -1,4 +1,5 @@
 mod ais;
+mod alt;
 mod crc;
 mod format;
 mod icao;
@@ -9,6 +10,7 @@ mod squawk;
 mod utils;
 
 pub use ais::*;
+pub use alt::*;
 pub use crc::*;
 pub use format::*;
 pub use icao::*;
