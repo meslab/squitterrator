@@ -2,7 +2,7 @@ use crate::adsb::{ais, alt};
 use log::debug;
 
 pub struct DecodedMessage {
-    pub alt: u32,
+    pub alt: Option<u32>,
     pub ais: Option<String>,
     pub vsign: u32,
     pub vrate: i32,
@@ -22,7 +22,7 @@ pub struct DecodedMessage {
 impl DecodedMessage {
     pub fn new() -> Self {
         DecodedMessage {
-            alt: 0,
+            alt: None,
             ais: None,
             vsign: 0,
             vrate: 0,

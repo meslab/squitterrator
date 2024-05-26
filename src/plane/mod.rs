@@ -3,7 +3,7 @@ use crate::adsb;
 pub struct Plane {
     pub icao: u32,
     pub ais: Option<String>,
-    pub alt: u32,
+    pub alt: Option<u32>,
     pub squawk: Option<u32>,
     pub vsign: u32,
     pub vrate: i32,
@@ -25,7 +25,7 @@ impl Plane {
         Plane {
             icao: 0,
             ais: None,
-            alt: 0,
+            alt: None,
             squawk: None,
             vsign: 0,
             vrate: 0,
