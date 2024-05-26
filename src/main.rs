@@ -1,12 +1,15 @@
 mod reader;
 
+use crate::reader::read_lines;
 use clap::Parser;
 use env_logger::{Builder, Env};
+use log::info;
+use squitterator::plane::Plane;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Write};
 use std::net::TcpStream;
 use std::sync::Mutex;
-use crate::reader::read_lines;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -57,6 +60,7 @@ fn main() -> io::Result<()> {
 
     let log_file = File::create(&args.log).expect("Unable to create log file");
     let log_file = Mutex::new(log_file);
+    let mut planes: HashMap<u32, Plane> = HashMap::new();
 
     // Initialize the logger
     Builder::from_env(Env::default().default_filter_or("error"))
@@ -73,7 +77,7 @@ fn main() -> io::Result<()> {
         true => {
             let stream = match TcpStream::connect(&args.tcp) {
                 Ok(stream) => {
-                    println!("Successfully connected to the server");
+                    info!("Successfully connected to the server {}", &args.tcp);
                     stream
                 }
                 Err(e) => {
@@ -82,13 +86,12 @@ fn main() -> io::Result<()> {
                 }
             };
             let reader = BufReader::new(stream);
-            read_lines(reader, &args)
+            read_lines(reader, &args, &mut planes)
         }
         _ => {
             let file = File::open(&args.source)?;
             let reader = BufReader::new(file);
-            read_lines(reader, &args)
+            read_lines(reader, &args, &mut planes)
         }
     }
 }
-
