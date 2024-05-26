@@ -52,7 +52,7 @@ impl Plane {
         };
         if let Some(dm) = adsb::mode_e_decoded_message(message, df) {
             plane.alt = dm.alt;
-            plane.ais = Some(dm.ais);
+            plane.ais = dm.ais;
             plane.vsign = dm.vsign;
             plane.vrate = dm.vrate;
             match dm.cpr_form {
@@ -79,7 +79,7 @@ impl Plane {
     pub fn update(&mut self, message: &[u32], df: u32) {
         if let Some(dm) = adsb::mode_e_decoded_message(message, df) {
             self.alt = dm.alt;
-            self.ais = Some(dm.ais);
+            self.ais = dm.ais;
             self.vsign = dm.vsign;
             self.vrate = dm.vrate;
             match dm.cpr_form {

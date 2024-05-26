@@ -3,7 +3,7 @@ use log::debug;
 
 pub struct DecodedMessage {
     pub alt: u32,
-    pub ais: String,
+    pub ais: Option<String>,
     pub vsign: u32,
     pub vrate: i32,
     pub cpr_form: u32,
@@ -23,7 +23,7 @@ impl DecodedMessage {
     pub fn new() -> Self {
         DecodedMessage {
             alt: 0,
-            ais: "".to_string(),
+            ais: None,
             vsign: 0,
             vrate: 0,
             cpr_form: 2,
@@ -66,12 +66,12 @@ pub fn mode_e_decoded_message(message: &[u32], df: u32) -> Option<DecodedMessage
 
     match message_type {
         1..=4 => {
-            decoded_message.ais = ais(message)?;
+            decoded_message.ais = ais(message);
             Some(decoded_message)
         }
         0 | 9..=18 | 20..=21 => {
             if message_type == 20 || message_type == 21 {
-                decoded_message.ais = ais(message)?;
+                decoded_message.ais = ais(message);
             }
             decoded_message.alt = alt(message, df);
             decoded_message.cpr_form = (message[13] & 4) >> 2;

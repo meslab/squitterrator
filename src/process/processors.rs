@@ -1,4 +1,4 @@
-use crate::adsb::{icao, ais, mode_e_decoded_message};
+use crate::adsb::{ais, icao, mode_e_decoded_message};
 use crate::country::icao_to_country;
 use log::debug;
 
@@ -14,7 +14,7 @@ pub fn squitter_decode(message: &[u32], df: u32) {
             "DF:{:>2}, Alt:{:>5}, AIS:{:8}, Vs:{}, Vr:{:>5}, F:{}, Lat:{:>6}, Lon:{:>6}, W:{}, S:{}, Gs:{}, As:{}, H:{}, Tu:{}, Tr:{}",
             df,
             r.alt,
-            r.ais,
+            r.ais.unwrap_or("".to_string()),
             r.vsign,
             r.vrate,
             r.cpr_form,
