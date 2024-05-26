@@ -16,6 +16,7 @@ pub struct DecodedMessage {
     pub heading: f64,
     pub turn: u32,
     pub track: f64,
+    pub squawk: u32,
 }
 
 impl DecodedMessage {
@@ -35,6 +36,7 @@ impl DecodedMessage {
             heading: 0.0,
             turn: 0,
             track: 0.0,
+            squawk: 0,
         }
     }
 }

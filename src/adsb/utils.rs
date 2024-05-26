@@ -43,8 +43,43 @@ pub fn message(squitter: &str) -> Option<Vec<u32>> {
 /// # Returns
 ///
 /// The Downlink Format (DF) value.
+/// # Examples
+///
+/// ```
+/// use squitterator::adsb::{message, df};
+/// let squitter = "8D40621D58C382D690C8AC2863A7";
+/// if let Some(message) = message(squitter) {
+///    let df = df(&message);
+///    assert_eq!(df, 17);
+/// }
+/// ```
 pub fn df(message: &[u32]) -> u32 {
     (message[0] << 1) | (message[1] >> 3)
+}
+
+/// Retrieves the message type and subtype from a message.
+///
+/// # Arguments
+///
+/// * `message` - The message to extract the message type and subtype from.
+///
+/// # Returns
+///
+/// A tuple containing the message type and subtype.
+///
+/// # Examples
+///
+/// ```
+/// use squitterator::adsb::{message, message_type};
+/// let squitter = "8D40621D58C382D690C8AC2863A7";
+/// if let Some(message) = message(squitter) {
+///    let (message_type, message_subtype) = message_type(&message);
+///    assert_eq!(message_type, 11);
+///    assert_eq!(message_subtype, 2);
+/// }
+/// ```
+pub fn message_type(message: &[u32]) -> (u32, u32) {
+    ((message[8] << 1) | (message[9] >> 3), message[5] & 7)
 }
 
 /// Retrieves the IC (Interrogator Code) value from a message.
@@ -160,6 +195,24 @@ mod tests {
         let squitter = "8D40621D58C382D690C8AC2863A7";
         if let Some(message) = message(squitter) {
             assert_eq!(ca(&message), 5);
+        }
+    }
+
+    #[test]
+    fn test_pmod() {
+        let x = -5;
+        let y = 3;
+        let result = pmod(x, y);
+        assert_eq!(result, 1);
+    }
+
+    #[test]
+    fn test_message_type() {
+        let squitter = "8D40621D58C382D690C8AC2863A7";
+        if let Some(message) = message(squitter) {
+            let (message_type, message_subtype) = message_type(&message);
+            assert_eq!(message_type, 11);
+            assert_eq!(message_subtype, 2);
         }
     }
 }
