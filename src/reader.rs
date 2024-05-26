@@ -1,14 +1,19 @@
-use log::{debug, warn};
-use squitterator::adsb::clean_squitter;
-use squitterator::adsb::df;
+use crate::Args;
+use log::{debug, info, warn};
 use squitterator::adsb::message;
+use squitterator::adsb::{clean_squitter, df, icao};
+use squitterator::plane::Plane;
 use squitterator::process::generate_ais;
 use squitterator::process::icao_decode;
 use squitterator::process::squitter_decode;
+use std::collections::HashMap;
 use std::io::{BufRead, Result};
-use crate::Args;
 
-pub fn read_lines<R: BufRead>(reader: R, args: &Args) -> Result<()> {
+pub fn read_lines<R: BufRead>(
+    reader: R,
+    args: &Args,
+    planes: &mut HashMap<u32, Plane>,
+) -> Result<()> {
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -26,7 +31,14 @@ pub fn read_lines<R: BufRead>(reader: R, args: &Args) -> Result<()> {
                     if args.icao {
                         icao_decode(&message, df, clean_squitter(&squitter).unwrap().as_str());
                     }
-                }
+                    if let Some(icao) = icao(&message, df) {
+                        planes
+                            .entry(icao)
+                            .and_modify(|p| p.update(&message, df))
+                            .or_insert(Plane::from_message(&message, df, icao));
+                        info!("Total planes in view: {}", planes.len());
+                    }
+                };
             }
             Err(e) => warn!("Warn: {}", e),
         }
