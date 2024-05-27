@@ -77,9 +77,26 @@ fn clear_screen() {
 }
 
 fn print_header() {
-    println!(
-        "{:6} {:2} {:5} {:4} {:8} {:>7}{:3} {:>8}{:3} {:3}",
-        "ICAO", "RG", "ALT", "SQK", "AIS", "LAT", "", "LON", "", "TRK"
-    );
-    println!("{:-<57}", "");
+    let headers = [
+        ("ICAO", 6),
+        ("RG", 2),
+        ("ALT", 5),
+        ("SQK", 4),
+        ("AIS", 8),
+        ("LATITUDE", 10),
+        ("LONGITUDE", 11),
+        ("TRK", 3),
+        ("HDN", 3),
+        ("AGE", 3),
+    ];
+
+    for &(header, width) in &headers {
+        print!("{:width$} ", header, width = width);
+    }
+    println!();
+
+    for &(_, width) in &headers {
+        print!("{:-<width$} ", "", width = width);
+    }
+    println!();
 }
