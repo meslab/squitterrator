@@ -52,6 +52,11 @@ impl Plane {
     }
 
     pub fn update(&mut self, message: &[u32], df: u32) {
+        if df == 4 {
+            if let Some(alt) = adsb::alt(message, df) {
+                self.alt = Some(alt);
+            }
+        }
         if df == 5 || df == 21 {
             if let Some(squawk) = adsb::squawk(message) {
                 self.squawk = Some(squawk);
@@ -65,6 +70,7 @@ impl Plane {
                 }
                 9..=18 => {
                     self.track = adsb::track(message);
+                    self.alt = adsb::alt(message, df);
                     let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
                     match cpr_form {
                         0 | 1 => {
@@ -103,7 +109,7 @@ impl Display for Plane {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ICAO: {:06X}", self.icao)?;
         if let Some(alt) = self.alt {
-            write!(f, " Alt: {}", alt)?;
+            write!(f, " Alt: {:>5}", alt)?;
         } else {
             write!(f, " {:10}", "")?;
         }
@@ -118,9 +124,9 @@ impl Display for Plane {
             write!(f, " {:13}", "")?;
         }
         if self.lat != 0.0 && self.lon != 0.0 {
-            write!(f, " Lat: {:12.6} Lon: {:12.6}", self.lat, self.lon)?;
+            write!(f, " Lat: {:10.6} Lon: {:11.6}", self.lat, self.lon)?;
         } else {
-            write!(f, " {:17} {:17}", "", "")?;
+            write!(f, " {:15} {:16}", "", "")?;
         }
         if let Some(track) = self.track {
             write!(f, " Track: {:>3.0}", track)?;
@@ -128,8 +134,5 @@ impl Display for Plane {
             write!(f, " {:15}", "")?;
         }
         write!(f, "")
-
-        //write!(f, "ICAO: {:06X} Alt: {:?} Squawk: {:?} Lat: {:.6} Lon: {:.6} Heading: {:.1} Track: {:.1} Airspeed: {} Groundspeed: {:.1} Vrate: {}",
-        //    self.icao, self.alt, self.squawk, self.lat, self.lon, self.heading, self.track, self.airspeed, self.grspeed, self.vrate)
     }
 }
