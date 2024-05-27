@@ -178,7 +178,13 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:3}", "")?;
         }
-        write!(f, "")
+        write!(
+            f,
+            " {:>3}",
+            Utc::now()
+                .signed_duration_since(self.timestamp)
+                .num_seconds()
+        )
     }
 }
 
