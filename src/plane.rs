@@ -136,3 +136,51 @@ impl Display for Plane {
         write!(f, "")
     }
 }
+
+pub trait SimpleDisplay {
+    fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result;
+}
+
+impl SimpleDisplay for Plane {
+    fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:06X}", self.icao)?;
+        if let Some(alt) = self.alt {
+            write!(f, " {:>5}", alt)?;
+        } else {
+            write!(f, " {:5}", "")?;
+        }
+        if let Some(squawk) = self.squawk {
+            write!(f, " {:04}", squawk)?;
+        } else {
+            write!(f, " {:4}", "")?;
+        }
+        if let Some(ais) = &self.ais {
+            write!(f, " {:8}", ais)?;
+        } else {
+            write!(f, " {:8}", "")?;
+        }
+        if self.lat != 0.0 && self.lon != 0.0 {
+            write!(f, " {:10.6} {:11.6}", self.lat, self.lon)?;
+        } else {
+            write!(f, " {:10} {:11}", "", "")?;
+        }
+        if let Some(track) = self.track {
+            write!(f, " {:>3.0}", track)?;
+        } else {
+            write!(f, " {:3}", "")?;
+        }
+        write!(f, "")
+    }
+}
+
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T);
+
+impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.simple_display(f)
+    }
+}
+
+pub fn format_simple_display<T: SimpleDisplay>(item: &T) -> String {
+    format!("{}", SimpleDisplayWrapper(item))
+}
