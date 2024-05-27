@@ -7,7 +7,7 @@
 /// # Returns
 ///
 /// A tuple containing the BDS1 and BDS2 values.
-fn bds(message: &[u32]) -> (u32, u32) {
+pub fn bds(message: &[u32]) -> (u32, u32) {
     (message[8], message[9])
 }
 
@@ -38,26 +38,22 @@ fn ia5(ch: u32) -> char {
 ///
 /// An `Option` containing the AIS data as a `String`, or `None` if the message does not contain AIS data.
 pub fn ais(message: &[u32]) -> Option<String> {
-    let (bds1, bds2) = bds(message);
-    if bds1 == 2 && bds2 == 0 {
-        Some(
-            [
-                ((message[10] << 2) | (message[11] >> 2)),
-                (((message[11] & 3) << 4) | message[12]),
-                ((message[13] << 2) | (message[14] >> 2)),
-                (((message[14] & 3) << 4) | message[15]),
-                ((message[16] << 2) | (message[17] >> 2)),
-                (((message[17] & 3) << 4) | message[18]),
-                ((message[19] << 2) | (message[20] >> 2)),
-                (((message[20] & 3) << 4) | message[21]),
-            ]
-            .iter()
-            .map(|&c| ia5(c))
-            .collect::<String>(),
-        )
-    } else {
-        None
-    }
+    Some(
+        [
+            ((message[10] << 2) | (message[11] >> 2)),
+            (((message[11] & 3) << 4) | message[12]),
+            ((message[13] << 2) | (message[14] >> 2)),
+            (((message[14] & 3) << 4) | message[15]),
+            ((message[16] << 2) | (message[17] >> 2)),
+            (((message[17] & 3) << 4) | message[18]),
+            ((message[19] << 2) | (message[20] >> 2)),
+            (((message[20] & 3) << 4) | message[21]),
+        ]
+        .iter()
+        .map(|&c| ia5(c))
+        .filter(|&c| c != ' ')
+        .collect::<String>(),
+    )
 }
 
 #[cfg(test)]

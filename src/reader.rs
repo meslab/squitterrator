@@ -1,5 +1,5 @@
 use crate::Args;
-use log::{debug, info, warn};
+use log::{debug, warn};
 use squitterator::adsb::message;
 use squitterator::adsb::{clean_squitter, df, icao};
 use squitterator::plane::Plane;
@@ -36,7 +36,9 @@ pub fn read_lines<R: BufRead>(
                             .entry(icao)
                             .and_modify(|p| p.update(&message, df))
                             .or_insert(Plane::from_message(&message, df, icao));
-                        info!("Total planes in view: {}", planes.len());
+                        debug!("Total planes in view: {}", planes.len());
+                        debug!("{}", planes[&icao]);
+                        println!("{}", planes[&icao]);
                     }
                 };
             }

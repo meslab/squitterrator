@@ -69,7 +69,25 @@ pub fn mode_e_decoded_message(message: &[u32], df: u32) -> Option<DecodedMessage
             decoded_message.ais = ais(message);
             Some(decoded_message)
         }
-        0 | 9..=18 | 20..=21 => {
+        5..=8 => {
+            decoded_message.track = (((message[11] >> 3) << 4) | message[12]) as f64 * 2.8125;
+            if message[11] >> 3 != 0 {
+                decoded_message.track = 360.0 - decoded_message.track;
+            }
+            decoded_message.cpr_form = (message[13] & 4) >> 2;
+            decoded_message.cpr_lat = ((message[13] & 3) << 15)
+                | (message[14] << 11)
+                | (message[15] << 7)
+                | (message[16] << 3)
+                | (message[17] >> 1);
+            decoded_message.cpr_long = ((message[17] & 1) << 16)
+                | (message[18] << 12)
+                | (message[19] << 8)
+                | (message[20] << 4)
+                | message[21];
+            Some(decoded_message)
+        }
+        9..=18 => {
             if message_type == 20 || message_type == 21 {
                 decoded_message.ais = ais(message);
             }
@@ -87,24 +105,6 @@ pub fn mode_e_decoded_message(message: &[u32], df: u32) -> Option<DecodedMessage
                     | (message[20] << 4)
                     | message[21];
             }
-            Some(decoded_message)
-        }
-        5..=8 => {
-            decoded_message.track = (((message[11] >> 3) << 4) | message[12]) as f64 * 2.8125;
-            if message[11] >> 3 != 0 {
-                decoded_message.track = 360.0 - decoded_message.track;
-            }
-            decoded_message.cpr_form = (message[13] & 4) >> 2;
-            decoded_message.cpr_lat = ((message[13] & 3) << 15)
-                | (message[14] << 11)
-                | (message[15] << 7)
-                | (message[16] << 3)
-                | (message[17] >> 1);
-            decoded_message.cpr_long = ((message[17] & 1) << 16)
-                | (message[18] << 12)
-                | (message[19] << 8)
-                | (message[20] << 4)
-                | message[21];
             Some(decoded_message)
         }
         19 => {
