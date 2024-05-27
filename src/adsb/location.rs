@@ -27,22 +27,18 @@ pub fn cpr_location(cpr_lat: &[u32; 2], cpr_lon: &[u32; 2], cpr_form: u32) -> Op
     ];
 
     let nl = [nl(rlat[0]), nl(rlat[1])];
-    match nl[0] == nl[1] && !(rlat[0].abs() > 90.0) && !(rlat[1].abs() > 90.0) {
+    match nl[0] == nl[1] {
         true => {
             let (ni, nlt, lngt) = match cpr_form {
-                1 => (
-                    [nl[1] - 1, 1].iter().max().unwrap().clone(),
-                    nl[1],
-                    cpr_lon[1],
-                ),
-                _ => ([nl[0], 1].iter().max().unwrap().clone(), nl[0], cpr_lon[0]),
+                1 => (*[nl[1] - 1, 1].iter().max().unwrap(), nl[1], cpr_lon[1]),
+                _ => (*[nl[0], 1].iter().max().unwrap(), nl[0], cpr_lon[0]),
             };
             let dlngt = 360.0 / ni as f64;
             let m = (((cpr_lon[0] as f64 * (nlt - 1) as f64 - cpr_lon[1] as f64 * nlt as f64)
                 / div)
                 + 0.5)
                 .floor();
-            let lon = dlngt * (pmod(m as i32, ni as i32) as f64 + lngt as f64 / div) as f64;
+            let lon = dlngt * (pmod(m as i32, ni) as f64 + lngt as f64 / div) as f64;
 
             Some((rlat[cpr_form as usize], signed_lon(lon)))
         }
