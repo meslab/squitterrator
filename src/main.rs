@@ -56,6 +56,9 @@ pub struct Args {
 
     #[clap(short, long, default_value = None)]
     format: Option<String>,
+
+    #[clap(short, long, default_value = "3")]
+    refresh: i64,
 }
 
 fn main() -> io::Result<()> {
