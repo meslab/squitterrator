@@ -29,6 +29,9 @@ pub struct Args {
     icao: bool,
 
     #[clap(short, long)]
+    planes: bool,
+
+    #[clap(short, long)]
     verbose: bool,
 
     #[clap(short, long, default_value = "log.log")]

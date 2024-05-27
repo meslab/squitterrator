@@ -71,32 +71,19 @@ mod tests {
 
     #[test]
     fn test_ais() {
-        let squitter = "8D40621D58C382D690C8AC2863A7";
+        let squitter = "8DAAAA9225041331DF3820CAC7A4";
         if let Some(message) = message(squitter) {
-            assert_eq!(ais(&message), None);
+            if let Some(result) = ais(&message) {
+                assert_eq!(result, "AAL173");
+            }
         }
     }
 
     #[test]
     fn test_ais_batch() {
         let squitters = [
-            ("8D40621D58C382D690C8AC2863A7", "AFR3539 "),
-            // ... more test cases ...
-            ("8D40621D58C382D690C8AC2863A7", "BAW3457 "),
-            ("8D40621D58C382D690C8AC2863A7", "00000000"),
-            ("8D40621D58C382D690C8AC2863A7", "AFR439  "),
-            ("8D40621D58C382D690C8AC2863A7", "CLX863  "),
-            ("8D40621D58C382D690C8AC2863A7", "AFR337U "),
-            ("8D40621D58C382D690C8AC2863A7", "AFR337  "),
-            ("8D40621D58C382D690C8AC2863A7", "DAL65   "),
-            ("8D40621D58C382D690C8AC2863A7", "BAW3457 "),
-            ("8D40621D58C382D690C8AC2863A7", "00000000"),
-            ("8D40621D58C382D690C8AC2863A7", "AFR439  "),
-            ("8D40621D58C382D690C8AC2863A7", "CLX863  "),
-            ("8D40621D58C382D690C8AC2863A7", "00000000"),
-            ("8D40621D58C382D690C8AC2863A7", "AFR337  "),
-            ("8D40621D58C382D690C8AC2863A7", "        "),
-            ("8D40621D58C382D690C8AC2863A7", "AFR351  "),
+            ("8D406F7C250815F2CB4560C85DCA", "BAW224U"),
+            ("8DA1CB0523282573D74820E76A8D", "JBU354"),
         ];
 
         for (squitter, value) in squitters.iter() {

@@ -9,7 +9,7 @@ pub struct Plane {
     pub vsign: u32,
     pub vrate: i32,
     pub cpr_lat: [u32; 2],
-    pub cpr_long: [u32; 2],
+    pub cpr_lon: [u32; 2],
     pub lat: f64,
     pub lon: f64,
     pub sp_west: i32,
@@ -18,7 +18,7 @@ pub struct Plane {
     pub airspeed: u32,
     pub heading: f64,
     pub turn: u32,
-    pub track: f64,
+    pub track: Option<f64>,
 }
 
 impl Plane {
@@ -31,7 +31,7 @@ impl Plane {
             vsign: 0,
             vrate: 0,
             cpr_lat: [0, 0],
-            cpr_long: [0, 0],
+            cpr_lon: [0, 0],
             lat: 0.0,
             lon: 0.0,
             sp_west: 0,
@@ -40,7 +40,7 @@ impl Plane {
             airspeed: 0,
             heading: 0.0,
             turn: 0,
-            track: 0.0,
+            track: None,
         }
     }
 
@@ -61,20 +61,35 @@ impl Plane {
             let (message_type, _message_subtype) = adsb::message_type(message);
             match message_type {
                 1..=4 => {
-                    if let Some(result) = adsb::ais(message) {
-                        self.ais = Some(result);
+                    self.ais = adsb::ais(message);
+                }
+                9..=18 => {
+                    self.track = adsb::track(message);
+                    let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
+                    match cpr_form {
+                        0 | 1 => {
+                            self.cpr_lat[cpr_form as usize] = cpr_lat;
+                            self.cpr_lon[cpr_form as usize] = cpr_lon;
+                        }
+                        _ => {}
+                    }
+                    if self.cpr_lat[0] != 0
+                        && self.cpr_lat[1] != 0
+                        && self.cpr_lon[0] != 0
+                        && self.cpr_lon[1] != 0
+                    {
+                        if let Some((lat, lon)) =
+                            adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form)
+                        {
+                            self.lat = lat;
+                            self.lon = lon;
+                        }
                     }
                 }
-                5..=8 => {}
                 _ => {}
             }
         }
-        if df == 20 || df == 21 {
-            let (bds1, bds2) = adsb::bds(message);
-            if bds1 == 2 && bds2 == 0 {
-                self.ais = adsb::ais(message);
-            }
-        }
+        if df == 20 || df == 21 {}
     }
 }
 
@@ -101,6 +116,16 @@ impl Display for Plane {
             write!(f, " AIS: {:8}", ais)?;
         } else {
             write!(f, " {:13}", "")?;
+        }
+        if self.lat != 0.0 && self.lon != 0.0 {
+            write!(f, " Lat: {:12.6} Lon: {:12.6}", self.lat, self.lon)?;
+        } else {
+            write!(f, " {:17} {:17}", "", "")?;
+        }
+        if let Some(track) = self.track {
+            write!(f, " Track: {:>3.0}", track)?;
+        } else {
+            write!(f, " {:15}", "")?;
         }
         write!(f, "")
 
