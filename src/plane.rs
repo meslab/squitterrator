@@ -1,8 +1,10 @@
 use crate::adsb;
+use chrono::{DateTime, Utc};
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
     pub icao: u32,
+    pub reg: &'static str,
     pub ais: Option<String>,
     pub alt: Option<u32>,
     pub squawk: Option<u32>,
@@ -19,12 +21,14 @@ pub struct Plane {
     pub heading: f64,
     pub turn: u32,
     pub track: Option<f64>,
+    pub timestamp: DateTime<Utc>,
 }
 
 impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
+            reg: "",
             ais: None,
             alt: None,
             squawk: None,
@@ -41,17 +45,20 @@ impl Plane {
             heading: 0.0,
             turn: 0,
             track: None,
+            timestamp: Utc::now(),
         }
     }
 
     pub fn from_message(message: &[u32], df: u32, icao: u32) -> Self {
         let mut plane = Plane::new();
         plane.icao = icao;
+        (_, plane.reg) = crate::country::icao_to_country(icao);
         plane.update(message, df);
         plane
     }
 
     pub fn update(&mut self, message: &[u32], df: u32) {
+        self.timestamp = Utc::now();
         if df == 4 {
             if let Some(alt) = adsb::alt(message, df) {
                 self.alt = Some(alt);
@@ -108,6 +115,7 @@ impl Default for Plane {
 impl Display for Plane {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ICAO: {:06X}", self.icao)?;
+        write!(f, " Reg: {:2}", self.reg)?;
         if let Some(alt) = self.alt {
             write!(f, " Alt: {:>5}", alt)?;
         } else {
@@ -144,6 +152,7 @@ pub trait SimpleDisplay {
 impl SimpleDisplay for Plane {
     fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
+        write!(f, " {:2}", self.reg)?;
         if let Some(alt) = self.alt {
             write!(f, " {:>5}", alt)?;
         } else {

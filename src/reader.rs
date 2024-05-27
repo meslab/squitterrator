@@ -14,13 +14,14 @@ pub fn read_lines<R: BufRead>(
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
-    let mut counter: u32 = 0;
+    let mut timestamp = chrono::Utc::now();
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
+                    let now = chrono::Utc::now();
                     if args.ais {
                         generate_ais(&message, &squitter);
                     }
@@ -42,15 +43,24 @@ pub fn read_lines<R: BufRead>(
                             debug!("{}", planes[&icao]);
                             debug!("{}", planes[&icao]);
 
-                            if counter % 100 == 0 {
+                            if now.signed_duration_since(timestamp).num_seconds() > args.refresh {
                                 clear_screen();
                                 print_header();
+                                planes.retain(|_, plane| {
+                                    let elapsed =
+                                        now.signed_duration_since(plane.timestamp).num_seconds();
+                                    if elapsed < 60 {
+                                        true
+                                    } else {
+                                        debug!("Plane {} has been removed from view", plane.icao);
+                                        false
+                                    }
+                                });
                                 for (_, plane) in planes.iter() {
                                     println!("{}", format_simple_display(plane));
                                 }
-                                counter = 0;
+                                timestamp = now;
                             }
-                            counter += 1;
                         }
                     }
                 };
@@ -68,8 +78,8 @@ fn clear_screen() {
 
 fn print_header() {
     println!(
-        "{:6} {:5} {:4} {:8} {:>7}{:3} {:>8}{:3} {:3}",
-        "ICAO", "ALT", "SQK", "AIS", "LAT", "", "LON", "", "TRK"
+        "{:6} {:2} {:5} {:4} {:8} {:>7}{:3} {:>8}{:3} {:3}",
+        "ICAO", "RG", "ALT", "SQK", "AIS", "LAT", "", "LON", "", "TRK"
     );
-    println!("{:-<54}", "");
+    println!("{:-<57}", "");
 }
