@@ -86,6 +86,7 @@ fn print_header() {
         ("LATITUDE", 10),
         ("LONGITUDE", 11),
         ("TRK", 3),
+        ("HDN", 3),
         ("AGE", 3),
     ];
 

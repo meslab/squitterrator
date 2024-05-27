@@ -10,6 +10,7 @@ mod me_decoder;
 mod squawk;
 mod track;
 mod utils;
+mod heading;
 
 pub use ais::*;
 pub use alt::*;
@@ -23,3 +24,4 @@ pub use me_decoder::*;
 pub use squawk::*;
 pub use track::*;
 pub use utils::*;
+pub use heading::*;

@@ -18,9 +18,9 @@ pub struct Plane {
     pub sp_south: i32,
     pub grspeed: f64,
     pub airspeed: u32,
-    pub heading: f64,
     pub turn: u32,
     pub track: Option<f64>,
+    pub heading: Option<f64>,
     pub timestamp: DateTime<Utc>,
 }
 
@@ -42,9 +42,9 @@ impl Plane {
             sp_south: 0,
             grspeed: 0.0,
             airspeed: 0,
-            heading: 0.0,
             turn: 0,
             track: None,
+            heading: None,
             timestamp: Utc::now(),
         }
     }
@@ -70,7 +70,7 @@ impl Plane {
             }
         }
         if df == 17 || df == 18 {
-            let (message_type, _message_subtype) = adsb::message_type(message);
+            let (message_type, message_subtype) = adsb::message_type(message);
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
@@ -99,6 +99,13 @@ impl Plane {
                         }
                     }
                 }
+                19 => match message_subtype {
+                    1 | 2 => {}
+                    3 | 4 => {
+                        self.heading = adsb::heading(message);
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }
@@ -141,6 +148,11 @@ impl Display for Plane {
         } else {
             write!(f, " {:15}", "")?;
         }
+        if let Some(heading) = self.heading {
+            write!(f, " Heading: {:>3.0}", heading)?;
+        } else {
+            write!(f, " {:15}", "")?;
+        }
         write!(f, "")
     }
 }
@@ -175,6 +187,11 @@ impl SimpleDisplay for Plane {
         }
         if let Some(track) = self.track {
             write!(f, " {:>3.0}", track)?;
+        } else {
+            write!(f, " {:3}", "")?;
+        }
+        if let Some(heading) = self.heading {
+            write!(f, " {:>3.0}", heading)?;
         } else {
             write!(f, " {:3}", "")?;
         }
