@@ -22,8 +22,8 @@ pub fn cpr_location(cpr_lat: &[u32; 2], cpr_lon: &[u32; 2], cpr_form: u32) -> Op
 
     let j = ((59.0 * cpr_lat[0] as f64 - 60.0 * cpr_lat[1] as f64) / div + 0.5).floor();
     let rlat = [
-        adl0 * ((j % 60.0) + (cpr_lat[0] as f64 / div)),
-        adl1 * ((j % 59.0) + (cpr_lat[1] as f64 / div)),
+        fixed_lat(adl0 * ((j % 60.0) + (cpr_lat[0] as f64 / div))),
+        fixed_lat(adl1 * ((j % 59.0) + (cpr_lat[1] as f64 / div))),
     ];
 
     let nl = [nl(rlat[0]), nl(rlat[1])];
@@ -51,6 +51,14 @@ fn signed_lon(lon: f64) -> f64 {
         _ if lon > 180.0 => lon - 360.0,
         _ if lon < -180.0 => lon + 360.0,
         _ => lon,
+    }
+}
+
+fn fixed_lat(lat: f64) -> f64 {
+    match lat {
+        _ if lat > 90.0 => lat - 360.0,
+        _ if lat < -90.0 => lat + 360.0,
+        _ => lat,
     }
 }
 
