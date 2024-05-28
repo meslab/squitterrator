@@ -8,7 +8,7 @@ rust-version:
 format:
 	cargo fmt
 
-lint:
+lint: format
 	cargo clippy
 
 test:
