@@ -119,9 +119,11 @@ impl Plane {
                             }
                             _ => None,
                         } {
-                            self.lat = lat;
-                            self.lon = lon;
-                            self.position_timestamp = Some(Utc::now());
+                            if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) {
+                                self.lat = lat;
+                                self.lon = lon;
+                                self.position_timestamp = Some(Utc::now());
+                            }
                             self.last_type_code = message_type;
                         }
                     }
