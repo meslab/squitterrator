@@ -12,16 +12,18 @@ pub struct Plane {
     pub vrate: i32,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
+    pub cpr_time: [DateTime<Utc>; 2],
     pub lat: f64,
     pub lon: f64,
     pub sp_west: i32,
     pub sp_south: i32,
-    pub grspeed: f64,
+    pub grspeed: Option<f64>,
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
     pub heading: Option<f64>,
     pub timestamp: DateTime<Utc>,
+    pub position_timestamp: Option<DateTime<Utc>>,
 }
 
 impl Plane {
@@ -36,16 +38,18 @@ impl Plane {
             vrate: 0,
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
+            cpr_time: [Utc::now(), Utc::now()],
             lat: 0.0,
             lon: 0.0,
             sp_west: 0,
             sp_south: 0,
-            grspeed: 0.0,
+            grspeed: None,
             airspeed: 0,
             turn: 0,
             track: None,
             heading: None,
             timestamp: Utc::now(),
+            position_timestamp: None,
         }
     }
 
@@ -75,14 +79,25 @@ impl Plane {
                 1..=4 => {
                     self.ais = adsb::ais(message);
                 }
-                9..=18 => {
+                5..=8 => {
                     self.track = adsb::track(message);
+                    //    self.alt = adsb::alt(message, df);
+                    //    self.vsign = adsb::vsign(message);
+                    //    self.vrate = adsb::vrate(message);
+                    //    self.sp_west = adsb::sp_west(message);
+                    //    self.sp_south = adsb::sp_south(message);
+                    //    self.grspeed = adsb::grspeed(message);
+                    //    self.airspeed = adsb::airspeed(message);
+                    //    self.turn = adsb::turn(message);
+                }
+                9..=18 => {
                     self.alt = adsb::alt(message, df);
                     let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
                     match cpr_form {
                         0 | 1 => {
                             self.cpr_lat[cpr_form as usize] = cpr_lat;
                             self.cpr_lon[cpr_form as usize] = cpr_lon;
+                            self.cpr_time[cpr_form as usize] = Utc::now();
                         }
                         _ => {}
                     }
@@ -90,17 +105,25 @@ impl Plane {
                         && self.cpr_lat[1] != 0
                         && self.cpr_lon[0] != 0
                         && self.cpr_lon[1] != 0
+                        && self.cpr_time[0]
+                            .signed_duration_since(self.cpr_time[1])
+                            .num_seconds()
+                            .abs()
+                            < 10
                     {
                         if let Some((lat, lon)) =
                             adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form)
                         {
                             self.lat = lat;
                             self.lon = lon;
+                            self.position_timestamp = Some(Utc::now());
                         }
                     }
                 }
                 19 => match message_subtype {
-                    1 | 2 => {}
+                    1 | 2 => {
+                        (self.track, self.grspeed) = adsb::track_and_groundspeed(message);
+                    }
                     3 | 4 => {
                         self.heading = adsb::heading(message);
                     }
@@ -185,6 +208,11 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:10} {:11}", "", "")?;
         }
+        if let Some(grspeed) = self.grspeed {
+            write!(f, " {:>4.0}", grspeed)?;
+        } else {
+            write!(f, " {:4}", "")?;
+        }
         if let Some(track) = self.track {
             write!(f, " {:>3.0}", track)?;
         } else {
@@ -195,9 +223,20 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:3}", "")?;
         }
+        if let Some(position_timestamp) = self.position_timestamp {
+            write!(
+                f,
+                " {:>3}",
+                Utc::now()
+                    .signed_duration_since(position_timestamp)
+                    .num_seconds()
+            )?;
+        } else {
+            write!(f, " {:3}", "")?;
+        }
         write!(
             f,
-            " {:>3}",
+            " {:>2}",
             Utc::now()
                 .signed_duration_since(self.timestamp)
                 .num_seconds()
