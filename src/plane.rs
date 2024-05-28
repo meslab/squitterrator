@@ -166,6 +166,11 @@ impl Display for Plane {
         } else {
             write!(f, " {:15} {:16}", "", "")?;
         }
+        if let Some(grspeed) = self.grspeed {
+            write!(f, " GSpd: {:>4.0}", grspeed)?;
+        } else {
+            write!(f, " {:10}", "")?;
+        }
         if let Some(track) = self.track {
             write!(f, " Track: {:>3.0}", track)?;
         } else {
@@ -204,9 +209,9 @@ impl SimpleDisplay for Plane {
             write!(f, " {:8}", "")?;
         }
         if self.lat != 0.0 && self.lon != 0.0 {
-            write!(f, " {:10.6} {:11.6}", self.lat, self.lon)?;
+            write!(f, " {:9.5} {:12.5}", self.lat, self.lon)?;
         } else {
-            write!(f, " {:10} {:11}", "", "")?;
+            write!(f, " {:9} {:12}", "", "")?;
         }
         if let Some(grspeed) = self.grspeed {
             write!(f, " {:>4.0}", grspeed)?;

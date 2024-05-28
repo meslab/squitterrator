@@ -32,3 +32,20 @@ pub fn track_and_groundspeed(message: &[u32]) -> (Option<f64>, Option<f64>) {
     let track = (sp_west.atan2(sp_south).to_degrees() + 360.0) % 360.0;
     (Some(track), Some(groundspeed))
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::adsb;
+
+    use super::*;
+
+    #[test]
+    fn test_track_and_groundspeed() {
+        if let Some(message) = adsb::message("8DC06A75990D0628B0040C8AA788") {
+            if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message) {
+                assert_eq!(track, 321.14662565964665);
+                assert_eq!(groundspeed, 416.0492759277439);
+            };
+        };
+    }
+}
