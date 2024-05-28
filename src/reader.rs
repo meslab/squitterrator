@@ -59,6 +59,8 @@ pub fn read_lines<R: BufRead>(
                                 for (_, plane) in planes.iter() {
                                     println!("{}", format_simple_display(plane));
                                 }
+                                debug!("Squirter: {}", squitter);
+                                debug!("{}", planes[&icao]);
                                 timestamp = now;
                             }
                         }
@@ -81,13 +83,16 @@ fn print_header() {
         ("ICAO", 6),
         ("RG", 2),
         ("ALT", 5),
+        // ("ALTG", 5),
         ("SQWK", 4),
         ("CALLSIGN", 8),
-        ("LATITUDE", 10),
+        ("LATITUDE", 9),
         ("LONGITUDE", 11),
         ("GSPD", 4),
         ("TRK", 3),
         ("HDN", 3),
+        ("DF", 2),
+        ("TC", 2),
         ("LPC", 3),
         ("LC", 2),
     ];

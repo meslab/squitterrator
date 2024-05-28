@@ -15,7 +15,12 @@ pub fn cpr(message: &[u32]) -> (u32, u32, u32) {
     (cpr_form, cpr_lat, cpr_long)
 }
 
-pub fn cpr_location(cpr_lat: &[u32; 2], cpr_lon: &[u32; 2], cpr_form: u32) -> Option<(f64, f64)> {
+pub fn cpr_location(
+    cpr_lat: &[u32; 2],
+    cpr_lon: &[u32; 2],
+    cpr_form: u32,
+    coeff: i32,
+) -> Option<(f64, f64)> {
     let div = (1 << 17) as f64;
     let adl0 = 6.0; // 360 / 60
     let adl1 = 360.0 / 59.0;
@@ -30,8 +35,16 @@ pub fn cpr_location(cpr_lat: &[u32; 2], cpr_lon: &[u32; 2], cpr_form: u32) -> Op
     match nl[0] == nl[1] {
         true => {
             let (ni, nlt, lngt) = match cpr_form {
-                1 => (*[nl[1] - 1, 1].iter().max().unwrap(), nl[1], cpr_lon[1]),
-                _ => (*[nl[0], 1].iter().max().unwrap(), nl[0], cpr_lon[0]),
+                1 => (
+                    *[nl[1] / coeff - 1, 1].iter().max().unwrap(), // coeff = 4 for ground location
+                    nl[1] / coeff, // coeff = 1 for airborne location
+                    cpr_lon[1],
+                ),
+                _ => (
+                    *[nl[0] / coeff, 1].iter().max().unwrap(), // coeff = 4 for ground location
+                    nl[0] / coeff,                             // coeff = 1 for airborne location
+                    cpr_lon[0],
+                ),
             };
             let dlngt = 360.0 / ni as f64;
             let m = (((cpr_lon[0] as f64 * (nlt - 1) as f64 - cpr_lon[1] as f64 * nlt as f64)
@@ -62,6 +75,7 @@ fn fixed_lat(lat: f64) -> f64 {
     }
 }
 
+/// Calculate the latitude .
 fn nl(lat: f64) -> i32 {
     let lat = lat.abs();
     let boundaries = [
