@@ -7,6 +7,7 @@ pub struct Plane {
     pub reg: &'static str,
     pub ais: Option<String>,
     pub alt: Option<u32>,
+    pub alt_gnss: Option<u32>,
     pub squawk: Option<u32>,
     pub vsign: u32,
     pub vrate: i32,
@@ -24,6 +25,8 @@ pub struct Plane {
     pub heading: Option<f64>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
+    pub last_type_code: u32,
+    pub last_df: u32,
 }
 
 impl Plane {
@@ -33,6 +36,7 @@ impl Plane {
             reg: "",
             ais: None,
             alt: None,
+            alt_gnss: None,
             squawk: None,
             vsign: 0,
             vrate: 0,
@@ -50,6 +54,8 @@ impl Plane {
             heading: None,
             timestamp: Utc::now(),
             position_timestamp: None,
+            last_type_code: 0,
+            last_df: 0,
         }
     }
 
@@ -63,6 +69,8 @@ impl Plane {
 
     pub fn update(&mut self, message: &[u32], df: u32) {
         self.timestamp = Utc::now();
+        self.last_df = df;
+
         if df == 4 {
             if let Some(alt) = adsb::alt(message, df) {
                 self.alt = Some(alt);
@@ -74,23 +82,12 @@ impl Plane {
             }
         }
         if df == 17 || df == 18 {
-            let (message_type, message_subtype) = adsb::message_type(message);
+            let (message_type, _message_subtype) = adsb::message_type(message);
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
                 }
-                5..=8 => {
-                    self.track = adsb::track(message);
-                    //    self.alt = adsb::alt(message, df);
-                    //    self.vsign = adsb::vsign(message);
-                    //    self.vrate = adsb::vrate(message);
-                    //    self.sp_west = adsb::sp_west(message);
-                    //    self.sp_south = adsb::sp_south(message);
-                    //    self.grspeed = adsb::grspeed(message);
-                    //    self.airspeed = adsb::airspeed(message);
-                    //    self.turn = adsb::turn(message);
-                }
-                9..=18 => {
+                5..=18 => {
                     self.alt = adsb::alt(message, df);
                     let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
                     match cpr_form {
@@ -111,24 +108,32 @@ impl Plane {
                             .abs()
                             < 10
                     {
-                        if let Some((lat, lon)) =
-                            adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form)
-                        {
+                        //5..=8 => {
+                        //    self.track = adsb::ground_track(message);
+                        //}
+                        if let Some((lat, lon)) = match message_type {
+                            9..=18 => adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
+                            5..=8 => {
+                                self.track = adsb::ground_track(message);
+                                adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
+                            }
+                            _ => None,
+                        } {
                             self.lat = lat;
                             self.lon = lon;
                             self.position_timestamp = Some(Utc::now());
+                            self.last_type_code = message_type;
                         }
                     }
                 }
-                19 => match message_subtype {
-                    1 | 2 => {
-                        (self.track, self.grspeed) = adsb::track_and_groundspeed(message);
-                    }
-                    3 | 4 => {
-                        self.heading = adsb::heading(message);
-                    }
-                    _ => {}
-                },
+                19 => {
+                    (self.track, self.grspeed) = adsb::track_and_groundspeed(message);
+                    self.last_type_code = message_type;
+                }
+                20..=22 => {
+                    self.alt_gnss = adsb::alt_gnss(message);
+                    self.last_type_code = message_type;
+                }
                 _ => {}
             }
         }
@@ -151,6 +156,11 @@ impl Display for Plane {
         } else {
             write!(f, " {:10}", "")?;
         }
+        // if let Some(alt_gnss) = self.alt_gnss {
+        //     write!(f, " GNS: {:>5}", alt_gnss)?;
+        // } else {
+        //     write!(f, " {:10}", "")?;
+        // }
         if let Some(squawk) = self.squawk {
             write!(f, " Squawk: {:04}", squawk)?;
         } else {
@@ -198,6 +208,11 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:5}", "")?;
         }
+        // if let Some(alt_gnss) = self.alt_gnss {
+        //     write!(f, " {:>5}", alt_gnss)?;
+        // } else {
+        //     write!(f, " {:5}", "")?;
+        // }
         if let Some(squawk) = self.squawk {
             write!(f, " {:04}", squawk)?;
         } else {
@@ -209,9 +224,9 @@ impl SimpleDisplay for Plane {
             write!(f, " {:8}", "")?;
         }
         if self.lat != 0.0 && self.lon != 0.0 {
-            write!(f, " {:9.5} {:12.5}", self.lat, self.lon)?;
+            write!(f, " {:9.5} {:11.5}", self.lat, self.lon)?;
         } else {
-            write!(f, " {:9} {:12}", "", "")?;
+            write!(f, " {:9} {:11}", "", "")?;
         }
         if let Some(grspeed) = self.grspeed {
             write!(f, " {:>4.0}", grspeed)?;
@@ -227,6 +242,16 @@ impl SimpleDisplay for Plane {
             write!(f, " {:>3.0}", heading)?;
         } else {
             write!(f, " {:3}", "")?;
+        }
+        if self.last_df != 0 {
+            write!(f, " {:>2}", self.last_df)?;
+        } else {
+            write!(f, " {:2}", "")?;
+        }
+        if self.last_type_code != 0 {
+            write!(f, " {:>2}", self.last_type_code)?;
+        } else {
+            write!(f, " {:2}", "")?;
         }
         if let Some(position_timestamp) = self.position_timestamp {
             write!(

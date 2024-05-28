@@ -1,9 +1,7 @@
-pub fn track(message: &[u32]) -> Option<f64> {
-    let track = (((message[11] & 0x7) << 4) | message[12] & 0xF) as f64 * 2.8125;
-    if (message[11] & 0x8) >> 3 != 0 {
-        Some(360.0 - track)
-    } else {
-        Some(track)
+pub fn ground_track(message: &[u32]) -> Option<f64> {
+    match (message[11] >> 3) & 1 {
+        1 => Some((((message[11] & 0x7) << 4) | (message[12] & 0xF)) as f64 * 360.0 / 128.0),
+        _ => None,
     }
 }
 

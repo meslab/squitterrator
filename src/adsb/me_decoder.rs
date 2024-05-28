@@ -166,11 +166,3 @@ pub fn mode_e_decoded_message(message: &[u32], df: u32) -> Option<DecodedMessage
         _ => None,
     }
 }
-
-//fn get_position(cpr: &[&[u32]]) -> (f64, f64) {
-//    let div = 1 << 17;
-//    let adl0 = 360.0 / 60.0;
-//    let ald1 = 360.0 / 59.0;
-//
-//    (0.0, 0.0)
-//}
