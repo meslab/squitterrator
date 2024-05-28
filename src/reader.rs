@@ -81,13 +81,15 @@ fn print_header() {
         ("ICAO", 6),
         ("RG", 2),
         ("ALT", 5),
-        ("SQK", 4),
-        ("AIS", 8),
+        ("SQWK", 4),
+        ("CALLSIGN", 8),
         ("LATITUDE", 10),
         ("LONGITUDE", 11),
+        ("GSPD", 4),
         ("TRK", 3),
         ("HDN", 3),
-        ("AGE", 3),
+        ("LPC", 3),
+        ("LC", 2),
     ];
 
     for &(header, width) in &headers {
