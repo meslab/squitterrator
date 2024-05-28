@@ -25,27 +25,27 @@ use crate::adsb::get_crc;
 
 pub fn icao(message: &[u32], df: u32) -> Option<u32> {
     let crc = get_crc(message, df);
-    match df {
+    let icao = match df {
         0 | 4 | 5 | 16 | 20 | 21 => {
             let len = message.len();
-            Some(
                 (((message[len - 6]) << 20)
                     | ((message[len - 5]) << 16)
                     | ((message[len - 4]) << 12)
                     | ((message[len - 3]) << 8)
                     | ((message[len - 2]) << 4)
                     | message[len - 1])
-                    ^ crc,
-            )
+                    ^ crc
         }
-        _ => Some(
-            message[2] << 20
+        _ => message[2] << 20
                 | message[3] << 16
                 | message[4] << 12
                 | message[5] << 8
                 | message[6] << 4
                 | message[7],
-        ),
+    };
+    match icao {
+        0 => None,
+        _ => Some(icao),
     }
 }
 
