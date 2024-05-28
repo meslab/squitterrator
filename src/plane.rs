@@ -123,8 +123,8 @@ impl Plane {
                                 self.lat = lat;
                                 self.lon = lon;
                                 self.position_timestamp = Some(Utc::now());
-                                self.last_type_code = message_type;
                             }
+                            self.last_type_code = message_type;
                         }
                     }
                 }
