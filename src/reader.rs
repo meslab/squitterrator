@@ -21,6 +21,12 @@ pub fn read_lines<R: BufRead>(
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
+                    if let Some(only) = args.only {
+                        if only != df {
+                            continue;
+                        }
+                    }
+
                     let now = chrono::Utc::now();
                     if args.ais {
                         generate_ais(&message, &squitter);
