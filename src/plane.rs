@@ -205,11 +205,11 @@ impl Display for Plane {
 }
 
 pub trait SimpleDisplay {
-    fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result;
+    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result;
 }
 
 impl SimpleDisplay for Plane {
-    fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
         if let Some(alt) = self.alt {
@@ -252,31 +252,33 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:5}", "")?;
         }
-        if self.last_df != 0 {
-            write!(f, " {:>2}", self.last_df)?;
-        } else {
-            write!(f, " {:2}", "")?;
-        }
-        if self.last_type_code != 0 {
-            write!(f, " {:>2}", self.last_type_code)?;
-        } else {
-            write!(f, " {:2}", "")?;
-        }
-        if let Some(version) = self.adsb_version {
-            write!(f, " {:1}", version)?;
-        } else {
-            write!(f, " {:1}", "")?;
-        }
-        if let Some(position_timestamp) = self.position_timestamp {
-            write!(
-                f,
-                " {:>3}",
-                Utc::now()
-                    .signed_duration_since(position_timestamp)
-                    .num_seconds()
-            )?;
-        } else {
-            write!(f, " {:3}", "")?;
+        if wide {
+            if self.last_df != 0 {
+                write!(f, " {:>2}", self.last_df)?;
+            } else {
+                write!(f, " {:2}", "")?;
+            }
+            if self.last_type_code != 0 {
+                write!(f, " {:>2}", self.last_type_code)?;
+            } else {
+                write!(f, " {:2}", "")?;
+            }
+            if let Some(version) = self.adsb_version {
+                write!(f, " {:1}", version)?;
+            } else {
+                write!(f, " {:1}", "")?;
+            }
+            if let Some(position_timestamp) = self.position_timestamp {
+                write!(
+                    f,
+                    " {:>3}",
+                    Utc::now()
+                        .signed_duration_since(position_timestamp)
+                        .num_seconds()
+                )?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
         }
         write!(
             f,
@@ -288,14 +290,14 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool);
 
 impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.simple_display(f)
+        self.0.simple_display(f, self.1)
     }
 }
 
-pub fn format_simple_display<T: SimpleDisplay>(item: &T) -> String {
-    format!("{}", SimpleDisplayWrapper(item))
+pub fn format_simple_display<T: SimpleDisplay>(item: &T, wide: bool) -> String {
+    format!("{}", SimpleDisplayWrapper(item, wide))
 }
