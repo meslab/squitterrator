@@ -6,7 +6,7 @@ pub fn vertical_rate(message: &[u32]) -> Option<i32> {
     match absolute_rate {
         0 => None,
         _ => match is_negative {
-            1 => Some(absolute_rate as i32 * (-1)),
+            1 => Some(-(absolute_rate as i32)),
             _ => Some(absolute_rate as i32),
         },
     }

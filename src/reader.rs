@@ -90,7 +90,7 @@ fn print_header(wide: bool) {
         ("VRATE", 5),
     ];
 
-    let extra_headers = [("DF", 2), ("TC", 2), ("V", 1), ("LPC", 3)];
+    let extra_headers = [("DF", 2), ("TC", 2), ("V", 1), ("S", 1), ("LPC", 3)];
 
     for &(header, width) in &headers {
         print!("{:width$} ", header, width = width);

@@ -10,6 +10,7 @@ pub struct Plane {
     pub alt: Option<u32>,
     pub alt_gnss: Option<u32>,
     pub squawk: Option<u32>,
+    pub survelliance_status: char,
     pub vrate: Option<i32>,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
@@ -19,6 +20,7 @@ pub struct Plane {
     pub sp_west: i32,
     pub sp_south: i32,
     pub grspeed: Option<f64>,
+    pub ground_movement: Option<f64>,
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
@@ -39,6 +41,7 @@ impl Plane {
             alt: None,
             alt_gnss: None,
             squawk: None,
+            survelliance_status: 'N',
             vrate: None,
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
@@ -49,6 +52,7 @@ impl Plane {
             sp_south: 0,
             grspeed: None,
             airspeed: 0,
+            ground_movement: None,
             turn: 0,
             track: None,
             heading: None,
@@ -101,6 +105,12 @@ impl Plane {
                         }
                         _ => {}
                     }
+                    if let 5..=8 = message_type {
+                        self.ground_movement = adsb::ground_movement(message);
+                    }
+                    if let 9..=18 = message_type {
+                        self.survelliance_status = adsb::survelliance_status(message);
+                    }
                     if self.cpr_lat[0] != 0
                         && self.cpr_lat[1] != 0
                         && self.cpr_lon[0] != 0
@@ -144,6 +154,7 @@ impl Plane {
                 }
                 20..=22 => {
                     self.alt_gnss = adsb::alt_gnss(message);
+                    self.survelliance_status = adsb::survelliance_status(message);
                 }
                 31 => {
                     self.adsb_version = adsb::version(message);
@@ -268,6 +279,7 @@ impl SimpleDisplay for Plane {
             } else {
                 write!(f, " {:1}", "")?;
             }
+            write!(f, " {}", self.survelliance_status)?;
             if let Some(position_timestamp) = self.position_timestamp {
                 write!(
                     f,
