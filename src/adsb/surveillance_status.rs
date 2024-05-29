@@ -1,4 +1,4 @@
-pub fn survelliance_status(message: &[u32]) -> char {
+pub fn surveillance_status(message: &[u32]) -> char {
     match (message[9] & 7) >> 1 {
         0 => 'N',
         1 => 'P',

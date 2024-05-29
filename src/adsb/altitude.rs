@@ -11,9 +11,9 @@ pub fn alt(message: &[u32], df: u32) -> Option<u32> {
             0 => match code & 1 {
                 0 => {
                     let (high, low) = graytobin(message);
-                    Some(high * 500 + low * 100 + 1200)
+                    Some(high * 500 + low * 100 - 1200)
                 }
-                _ => Some((((code >> 7) << 4) | ((code >> 2) & 0b1111)) as u32 * 25 + 1000),
+                _ => Some((((code >> 7) << 4) | ((code >> 2) & 0b1111)) as u32 * 25 - 1000),
             },
             _ => Some(
                 ((((code >> 7) << 4) & 0b11111110000 | (code >> 2) & 0b1111) as f32 * 0.31) as u32,
