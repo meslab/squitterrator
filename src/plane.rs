@@ -1,5 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
+use log::info;
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -9,8 +10,8 @@ pub struct Plane {
     pub alt: Option<u32>,
     pub alt_gnss: Option<u32>,
     pub squawk: Option<u32>,
-    pub vsign: u32,
-    pub vrate: i32,
+    pub surveillance_status: char,
+    pub vrate: Option<i32>,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
     pub cpr_time: [DateTime<Utc>; 2],
@@ -19,6 +20,7 @@ pub struct Plane {
     pub sp_west: i32,
     pub sp_south: i32,
     pub grspeed: Option<f64>,
+    pub ground_movement: Option<f64>,
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
@@ -39,8 +41,8 @@ impl Plane {
             alt: None,
             alt_gnss: None,
             squawk: None,
-            vsign: 0,
-            vrate: 0,
+            surveillance_status: ' ',
+            vrate: None,
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
             cpr_time: [Utc::now(), Utc::now()],
@@ -50,6 +52,7 @@ impl Plane {
             sp_south: 0,
             grspeed: None,
             airspeed: 0,
+            ground_movement: None,
             turn: 0,
             track: None,
             heading: None,
@@ -84,8 +87,9 @@ impl Plane {
             }
         }
         if df == 17 || df == 18 {
-            let (message_type, _message_subtype) = adsb::message_type(message);
+            let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
+            info!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
@@ -100,6 +104,12 @@ impl Plane {
                             self.cpr_time[cpr_form as usize] = Utc::now();
                         }
                         _ => {}
+                    }
+                    if let 5..=8 = message_type {
+                        self.ground_movement = adsb::ground_movement(message);
+                    }
+                    if let 9..=18 = message_type {
+                        self.surveillance_status = adsb::surveillance_status(message);
                     }
                     if self.cpr_lat[0] != 0
                         && self.cpr_lat[1] != 0
@@ -124,15 +134,26 @@ impl Plane {
                                 self.lon = lon;
                                 self.position_timestamp = Some(Utc::now());
                             }
-                            self.last_type_code = message_type;
                         }
                     }
                 }
                 19 => {
-                    (self.track, self.grspeed) = adsb::track_and_groundspeed(message);
+                    self.vrate = adsb::vertical_rate(message);
+                    match message_subtype {
+                        1 => {
+                            (self.track, self.grspeed) =
+                                adsb::track_and_groundspeed(message, false);
+                        }
+                        2 => {
+                            // 4 knots units for supersonic
+                            (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
+                        }
+                        _ => {}
+                    }
                 }
                 20..=22 => {
                     self.alt_gnss = adsb::alt_gnss(message);
+                    self.surveillance_status = adsb::surveillance_status(message);
                 }
                 31 => {
                     self.adsb_version = adsb::version(message);
@@ -159,11 +180,6 @@ impl Display for Plane {
         } else {
             write!(f, " {:10}", "")?;
         }
-        // if let Some(alt_gnss) = self.alt_gnss {
-        //     write!(f, " GNS: {:>5}", alt_gnss)?;
-        // } else {
-        //     write!(f, " {:10}", "")?;
-        // }
         if let Some(squawk) = self.squawk {
             write!(f, " Squawk: {:04}", squawk)?;
         } else {
@@ -199,11 +215,11 @@ impl Display for Plane {
 }
 
 pub trait SimpleDisplay {
-    fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result;
+    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result;
 }
 
 impl SimpleDisplay for Plane {
-    fn simple_display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
         if let Some(alt) = self.alt {
@@ -211,11 +227,6 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:5}", "")?;
         }
-        // if let Some(alt_gnss) = self.alt_gnss {
-        //     write!(f, " {:>5}", alt_gnss)?;
-        // } else {
-        //     write!(f, " {:5}", "")?;
-        // }
         if let Some(squawk) = self.squawk {
             write!(f, " {:04}", squawk)?;
         } else {
@@ -241,36 +252,39 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:3}", "")?;
         }
-        if let Some(heading) = self.heading {
-            write!(f, " {:>3.0}", heading)?;
+        if let Some(vrate) = self.vrate {
+            write!(f, " {:>5}", vrate)?;
         } else {
-            write!(f, " {:3}", "")?;
+            write!(f, " {:5}", "")?;
         }
-        if self.last_df != 0 {
-            write!(f, " {:>2}", self.last_df)?;
-        } else {
-            write!(f, " {:2}", "")?;
-        }
-        if self.last_type_code != 0 {
-            write!(f, " {:>2}", self.last_type_code)?;
-        } else {
-            write!(f, " {:2}", "")?;
-        }
-        if let Some(version) = self.adsb_version {
-            write!(f, " {:1}", version)?;
-        } else {
-            write!(f, " {:1}", "")?;
-        }
-        if let Some(position_timestamp) = self.position_timestamp {
-            write!(
-                f,
-                " {:>3}",
-                Utc::now()
-                    .signed_duration_since(position_timestamp)
-                    .num_seconds()
-            )?;
-        } else {
-            write!(f, " {:3}", "")?;
+        if wide {
+            if self.last_df != 0 {
+                write!(f, " {:>2}", self.last_df)?;
+            } else {
+                write!(f, " {:2}", "")?;
+            }
+            if self.last_type_code != 0 {
+                write!(f, " {:>2}", self.last_type_code)?;
+            } else {
+                write!(f, " {:2}", "")?;
+            }
+            if let Some(version) = self.adsb_version {
+                write!(f, " {:1}", version)?;
+            } else {
+                write!(f, " {:1}", "")?;
+            }
+            write!(f, " {}", self.surveillance_status)?;
+            if let Some(position_timestamp) = self.position_timestamp {
+                write!(
+                    f,
+                    " {:>3}",
+                    Utc::now()
+                        .signed_duration_since(position_timestamp)
+                        .num_seconds()
+                )?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
         }
         write!(
             f,
@@ -282,14 +296,14 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool);
 
 impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.simple_display(f)
+        self.0.simple_display(f, self.1)
     }
 }
 
-pub fn format_simple_display<T: SimpleDisplay>(item: &T) -> String {
-    format!("{}", SimpleDisplayWrapper(item))
+pub fn format_simple_display<T: SimpleDisplay>(item: &T, wide: bool) -> String {
+    format!("{}", SimpleDisplayWrapper(item, wide))
 }

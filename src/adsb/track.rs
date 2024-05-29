@@ -5,7 +5,7 @@ pub fn ground_track(message: &[u32]) -> Option<f64> {
     }
 }
 
-pub fn track_and_groundspeed(message: &[u32]) -> (Option<f64>, Option<f64>) {
+pub fn track_and_groundspeed(message: &[u32], is_supersonic: bool) -> (Option<f64>, Option<f64>) {
     let dir_west = (message[11] >> 2) & 1;
     let mut sp_west =
         ((message[11] & 3) << 8 | (message[12] & 0xF) << 4 | message[13] & 0xF) as f64;
@@ -26,7 +26,8 @@ pub fn track_and_groundspeed(message: &[u32]) -> (Option<f64>, Option<f64>) {
         sp_south *= -1.0;
     }
 
-    let groundspeed = (sp_west.powi(2) + sp_south.powi(2)).sqrt();
+    let supersonic = |x| if is_supersonic { x * 4.0 } else { x };
+    let groundspeed = supersonic((sp_west.powi(2) + sp_south.powi(2)).sqrt());
     let track = (sp_west.atan2(sp_south).to_degrees() + 360.0) % 360.0;
     (Some(track), Some(groundspeed))
 }
@@ -40,7 +41,7 @@ mod tests {
     #[test]
     fn test_track_and_groundspeed() {
         if let Some(message) = adsb::message("8DC06A75990D0628B0040C8AA788") {
-            if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message) {
+            if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message, false) {
                 assert_eq!(track, 321.14662565964665);
                 assert_eq!(groundspeed, 416.0492759277439);
             };

@@ -32,6 +32,9 @@ pub struct Args {
     planes: bool,
 
     #[clap(short, long)]
+    wide: bool,
+
+    #[clap(short, long)]
     verbose: bool,
 
     #[clap(short, long, default_value = "log.log")]

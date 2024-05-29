@@ -42,7 +42,7 @@ pub fn read_lines<R: BufRead>(
 
                             if now.signed_duration_since(timestamp).num_seconds() > args.refresh {
                                 clear_screen();
-                                print_header();
+                                print_header(args.wide);
                                 planes.retain(|_, plane| {
                                     let elapsed =
                                         now.signed_duration_since(plane.timestamp).num_seconds();
@@ -54,7 +54,7 @@ pub fn read_lines<R: BufRead>(
                                     }
                                 });
                                 for (_, plane) in planes.iter() {
-                                    println!("{}", format_simple_display(plane));
+                                    println!("{}", format_simple_display(plane, args.wide));
                                 }
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
@@ -75,33 +75,39 @@ fn clear_screen() {
     print!("{}[H", 27 as char);
 }
 
-fn print_header() {
+fn print_header(wide: bool) {
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
         ("ALT", 5),
-        // ("ALTG", 5),
         ("SQWK", 4),
         ("CALLSIGN", 8),
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
         ("GSPD", 4),
         ("TRK", 3),
-        ("HDN", 3),
-        ("DF", 2),
-        ("TC", 2),
-        ("V", 1),
-        ("LPC", 3),
-        ("LC", 2),
+        ("VRATE", 5),
     ];
+
+    let extra_headers = [("DF", 2), ("TC", 2), ("V", 1), ("S", 1), ("LPC", 3)];
 
     for &(header, width) in &headers {
         print!("{:width$} ", header, width = width);
     }
-    println!();
+    if wide {
+        for &(header, width) in &extra_headers {
+            print!("{:width$} ", header, width = width);
+        }
+    }
+    println!("LC");
 
     for &(_, width) in &headers {
         print!("{:-<width$} ", "", width = width);
     }
-    println!();
+    if wide {
+        for &(_, width) in &extra_headers {
+            print!("{:-<width$} ", "", width = width);
+        }
+    }
+    println!("--");
 }
