@@ -19,6 +19,13 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         }
         return (2, 0);
     };
+    if let (3, 0) = (message[8] & 0xF, message[9] & 0xF) {
+        if message[7] & 0b1100 != 0b1100
+            && ((message[3] & 1) << 6 | (message[4] & 0xF) << 2 | (message[5] & 0b1100) >> 2) < 48
+        {
+            return (3, 0);
+        }
+    };
     (0, 0)
 }
 
