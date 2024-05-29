@@ -29,7 +29,7 @@ pub struct Args {
     icao: bool,
 
     #[clap(short, long, default_value = None)]
-    only: Option<u32>,
+    only: Option<Vec<u32>>,
 
     #[clap(short, long)]
     planes: bool,

@@ -161,7 +161,12 @@ impl Plane {
                 _ => {}
             }
         }
-        if df == 20 || df == 21 {}
+        if df == 20 || df == 21 {
+            let bds = adsb::bds(message);
+            if bds == (2, 0) {
+                self.ais = adsb::ais(message);
+            }
+        }
     }
 }
 

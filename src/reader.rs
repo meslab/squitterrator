@@ -21,8 +21,8 @@ pub fn read_lines<R: BufRead>(
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
-                    if let Some(only) = args.only {
-                        if only != df {
+                    if let Some(only) = &args.only {
+                        if only.iter().all(|&x| x != df) {
                             continue;
                         }
                     }
