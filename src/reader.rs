@@ -39,9 +39,6 @@ pub fn read_lines<R: BufRead>(
                                 .entry(icao)
                                 .and_modify(|p| p.update(&message, df))
                                 .or_insert(Plane::from_message(&message, df, icao));
-                            debug!("Total planes in view: {}", planes.len());
-                            debug!("{}", planes[&icao]);
-                            debug!("{}", planes[&icao]);
 
                             if now.signed_duration_since(timestamp).num_seconds() > args.refresh {
                                 clear_screen();
@@ -93,6 +90,7 @@ fn print_header() {
         ("HDN", 3),
         ("DF", 2),
         ("TC", 2),
+        ("V", 1),
         ("LPC", 3),
         ("LC", 2),
     ];
