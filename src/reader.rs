@@ -88,6 +88,7 @@ fn print_header() {
         ("GSPD", 4),
         ("TRK", 3),
         ("HDN", 3),
+        ("VRATE", 5),
         ("DF", 2),
         ("TC", 2),
         ("V", 1),

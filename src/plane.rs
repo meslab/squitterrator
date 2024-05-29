@@ -10,8 +10,7 @@ pub struct Plane {
     pub alt: Option<u32>,
     pub alt_gnss: Option<u32>,
     pub squawk: Option<u32>,
-    pub vsign: u32,
-    pub vrate: i32,
+    pub vrate: Option<i32>,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
     pub cpr_time: [DateTime<Utc>; 2],
@@ -40,8 +39,7 @@ impl Plane {
             alt: None,
             alt_gnss: None,
             squawk: None,
-            vsign: 0,
-            vrate: 0,
+            vrate: None,
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
             cpr_time: [Utc::now(), Utc::now()],
@@ -130,16 +128,20 @@ impl Plane {
                         }
                     }
                 }
-                19 => match message_subtype {
-                    1 => {
-                        (self.track, self.grspeed) = adsb::track_and_groundspeed(message, false);
+                19 => {
+                    self.vrate = adsb::vertical_rate(message);
+                    match message_subtype {
+                        1 => {
+                            (self.track, self.grspeed) =
+                                adsb::track_and_groundspeed(message, false);
+                        }
+                        2 => {
+                            // 4 knots units for supersonic
+                            (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
+                        }
+                        _ => {}
                     }
-                    2 => {
-                        // 4 knots units for supersonic
-                        (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
-                    }
-                    _ => {}
-                },
+                }
                 20..=22 => {
                     self.alt_gnss = adsb::alt_gnss(message);
                 }
@@ -168,11 +170,6 @@ impl Display for Plane {
         } else {
             write!(f, " {:10}", "")?;
         }
-        // if let Some(alt_gnss) = self.alt_gnss {
-        //     write!(f, " GNS: {:>5}", alt_gnss)?;
-        // } else {
-        //     write!(f, " {:10}", "")?;
-        // }
         if let Some(squawk) = self.squawk {
             write!(f, " Squawk: {:04}", squawk)?;
         } else {
@@ -220,11 +217,6 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:5}", "")?;
         }
-        // if let Some(alt_gnss) = self.alt_gnss {
-        //     write!(f, " {:>5}", alt_gnss)?;
-        // } else {
-        //     write!(f, " {:5}", "")?;
-        // }
         if let Some(squawk) = self.squawk {
             write!(f, " {:04}", squawk)?;
         } else {
@@ -254,6 +246,11 @@ impl SimpleDisplay for Plane {
             write!(f, " {:>3.0}", heading)?;
         } else {
             write!(f, " {:3}", "")?;
+        }
+        if let Some(vrate) = self.vrate {
+            write!(f, " {:>5}", vrate)?;
+        } else {
+            write!(f, " {:5}", "")?;
         }
         if self.last_df != 0 {
             write!(f, " {:>2}", self.last_df)?;

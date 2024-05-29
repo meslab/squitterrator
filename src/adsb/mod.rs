@@ -14,6 +14,7 @@ mod squawk;
 mod track;
 mod utils;
 mod version;
+mod vertical_rate;
 
 pub use ais::*;
 pub use alt::*;
@@ -31,3 +32,4 @@ pub use squawk::*;
 pub use track::*;
 pub use utils::*;
 pub use version::*;
+pub use vertical_rate::*;
