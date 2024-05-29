@@ -27,6 +27,7 @@ pub struct Plane {
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
     pub last_df: u32,
+    pub adsb_version: Option<u32>,
 }
 
 impl Plane {
@@ -56,6 +57,7 @@ impl Plane {
             position_timestamp: None,
             last_type_code: 0,
             last_df: 0,
+            adsb_version: None,
         }
     }
 
@@ -83,6 +85,7 @@ impl Plane {
         }
         if df == 17 || df == 18 {
             let (message_type, _message_subtype) = adsb::message_type(message);
+            self.last_type_code = message_type;
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
@@ -108,15 +111,12 @@ impl Plane {
                             .abs()
                             < 10
                     {
-                        //5..=8 => {
-                        //    self.track = adsb::ground_track(message);
-                        //}
                         if let Some((lat, lon)) = match message_type {
-                            9..=18 => adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
                             5..=8 => {
                                 self.track = adsb::ground_track(message);
                                 adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
                             }
+                            9..=18 => adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
                             _ => None,
                         } {
                             if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) {
@@ -130,11 +130,12 @@ impl Plane {
                 }
                 19 => {
                     (self.track, self.grspeed) = adsb::track_and_groundspeed(message);
-                    self.last_type_code = message_type;
                 }
                 20..=22 => {
                     self.alt_gnss = adsb::alt_gnss(message);
-                    self.last_type_code = message_type;
+                }
+                31 => {
+                    self.adsb_version = adsb::version(message);
                 }
                 _ => {}
             }
@@ -254,6 +255,11 @@ impl SimpleDisplay for Plane {
             write!(f, " {:>2}", self.last_type_code)?;
         } else {
             write!(f, " {:2}", "")?;
+        }
+        if let Some(version) = self.adsb_version {
+            write!(f, " {:1}", version)?;
+        } else {
+            write!(f, " {:1}", "")?;
         }
         if let Some(position_timestamp) = self.position_timestamp {
             write!(
