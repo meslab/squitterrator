@@ -1,5 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
+use log::info;
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -84,8 +85,9 @@ impl Plane {
             }
         }
         if df == 17 || df == 18 {
-            let (message_type, _message_subtype) = adsb::message_type(message);
+            let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
+            info!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
@@ -128,9 +130,16 @@ impl Plane {
                         }
                     }
                 }
-                19 => {
-                    (self.track, self.grspeed) = adsb::track_and_groundspeed(message);
-                }
+                19 => match message_subtype {
+                    1 => {
+                        (self.track, self.grspeed) = adsb::track_and_groundspeed(message, false);
+                    }
+                    2 => {
+                        // 4 knots units for supersonic
+                        (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
+                    }
+                    _ => {}
+                },
                 20..=22 => {
                     self.alt_gnss = adsb::alt_gnss(message);
                 }

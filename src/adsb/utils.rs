@@ -52,11 +52,11 @@ pub fn message(squitter: &str) -> Option<Vec<u32>> {
 /// if let Some(message) = message(squitter) {
 ///    let (message_type, message_subtype) = message_type(&message);
 ///    assert_eq!(message_type, 11);
-///    assert_eq!(message_subtype, 2);
+///    assert_eq!(message_subtype, 0);
 /// }
 /// ```
 pub fn message_type(message: &[u32]) -> (u32, u32) {
-    ((message[8] << 1) | (message[9] >> 3), message[5] & 7)
+    ((message[8] << 1) | (message[9] >> 3), message[9] & 7)
 }
 
 /// Retrieves the IC (Interrogator Code) value from a message.
@@ -221,7 +221,7 @@ mod tests {
         if let Some(message) = message(squitter) {
             let (message_type, message_subtype) = message_type(&message);
             assert_eq!(message_type, 11);
-            assert_eq!(message_subtype, 2);
+            assert_eq!(message_subtype, 0);
         }
     }
 
