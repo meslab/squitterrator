@@ -39,7 +39,7 @@ pub fn read_lines<R: BufRead>(
                                 .entry(icao)
                                 .and_modify(|p| p.update(&message, df))
                                 .or_insert(Plane::from_message(&message, df, icao));
-                            
+
                             if now.signed_duration_since(timestamp).num_seconds() > args.refresh {
                                 clear_screen();
                                 print_header();
