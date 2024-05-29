@@ -86,7 +86,6 @@ fn print_header(wide: bool) {
         ("LONGITUDE", 11),
         ("GSPD", 4),
         ("TRK", 3),
-        ("HDN", 3),
         ("VRATE", 5),
     ];
 

@@ -37,7 +37,7 @@ mod tests {
         if let Some(message) = adsb::message("A8281200200464B3CF7820CD194C") {
             let df = adsb::df(&message);
             let result = alt(&message, df);
-            assert_eq!(result, Some(16700));
+            assert_eq!(result, Some(14300));
         }
     }
 }

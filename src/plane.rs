@@ -252,11 +252,6 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:3}", "")?;
         }
-        if let Some(heading) = self.heading {
-            write!(f, " {:>3.0}", heading)?;
-        } else {
-            write!(f, " {:3}", "")?;
-        }
         if let Some(vrate) = self.vrate {
             write!(f, " {:>5}", vrate)?;
         } else {
