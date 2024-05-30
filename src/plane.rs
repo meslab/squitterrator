@@ -25,7 +25,6 @@ pub struct Plane {
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
-    pub heading: Option<f64>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -57,7 +56,6 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
-            heading: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -142,6 +140,11 @@ impl Plane {
                 }
                 19 => {
                     self.vrate = adsb::vertical_rate(message);
+                    if let Some(alt) = self.alt {
+                        if let Some(alt_delta) = adsb::alt_delta(message) {
+                            self.alt_gnss = Some((alt as i32 + alt_delta) as u32);
+                        }
+                    }
                     match message_subtype {
                         1 => {
                             (self.track, self.grspeed) =
@@ -150,6 +153,9 @@ impl Plane {
                         2 => {
                             // 4 knots units for supersonic
                             (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
+                        }
+                        3 | 4 => {
+                            self.track = adsb::heading(message);
                         }
                         _ => {}
                     }
@@ -213,11 +219,6 @@ impl Display for Plane {
         } else {
             write!(f, " {:15}", "")?;
         }
-        if let Some(heading) = self.heading {
-            write!(f, " Heading: {:>3.0}", heading)?;
-        } else {
-            write!(f, " {:15}", "")?;
-        }
         write!(f, "")
     }
 }
@@ -271,6 +272,11 @@ impl SimpleDisplay for Plane {
             write!(f, " {:5}", "")?;
         }
         if wide {
+            if let Some(alt_gnss) = self.alt_gnss {
+                write!(f, " {:>5}", alt_gnss)?;
+            } else {
+                write!(f, " {:5}", "")?;
+            }
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, " {:>2}", self.last_df)?;

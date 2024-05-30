@@ -97,6 +97,7 @@ fn print_header(wide: bool) {
     ];
 
     let extra_headers = [
+        ("AGNSS", 5),
         ("VX", 2),
         ("DF", 2),
         ("TC", 2),
@@ -155,6 +156,8 @@ fn print_legend(wide: bool) {
     ];
 
     let legend_wide = [
+        ("AGNSS", "Altitude GNSS"),
+        ("HDG", "Heading"),
         ("VX", "Wake Vortex ADS-B Category"),
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),

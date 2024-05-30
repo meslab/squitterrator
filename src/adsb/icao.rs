@@ -69,6 +69,7 @@ pub fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
         (4, 3) => Some('M'),
         (4, 4) => Some('H'),
         (4, 5) => Some('J'),
+        (4, 7) => Some('R'),
         _ => None,
     }
 }
@@ -108,6 +109,7 @@ mod tests {
             ((4, 3), 'M'),
             ((4, 4), 'H'),
             ((4, 5), 'J'),
+            ((4, 7), 'R'),
         ];
 
         for (vc, value) in vcs.iter() {
@@ -119,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_icao_wtc_none() {
-        let vcs = [(4, 0), (4, 6), (4, 7)];
+        let vcs = [(4, 0), (4, 6)];
 
         for vc in vcs.iter() {
             assert_eq!(crate::adsb::icao_wtc(vc), None, "VC: {:?}", vc);

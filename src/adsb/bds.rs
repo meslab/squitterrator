@@ -14,9 +14,6 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         }
     };
     if let (2, 0) = (message[8] & 0xF, message[9] & 0xF) {
-        if message[7..14].iter().all(|&x| x == 0) {
-            return (1, 7);
-        }
         return (2, 0);
     };
     if let (3, 0) = (message[8] & 0xF, message[9] & 0xF) {
@@ -26,6 +23,10 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
             return (3, 0);
         }
     };
+    if message[15..19].iter().all(|&x| x == 0) {
+        return (1, 7);
+    }
+
     (0, 0)
 }
 
