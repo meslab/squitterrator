@@ -25,25 +25,25 @@ use log::debug;
 pub fn ma_code(message: &[u32]) -> Option<u16> {
     let mut result = 0u16;
 
-    let flags = [
-        message[4] & 1,
-        (message[5] >> 3) & 1,
-        (message[5] >> 2) & 1,
-        (message[5] >> 1) & 1,
-        message[5] & 1,
-        (message[6] >> 3) & 1,
-        (message[6] >> 1) & 1,
-        message[6] & 1,
-        (message[7] >> 3) & 1,
-        (message[7] >> 2) & 1,
-        (message[7] >> 1) & 1,
-        message[7] & 1,
-        (message[6] >> 2) & 1,
-        message[6] & 1,
+    let bit_positions = [
+        (4, 0),
+        (5, 3),
+        (5, 2),
+        (5, 1),
+        (5, 0),
+        (6, 3),
+        (6, 1),
+        (6, 0),
+        (7, 3),
+        (7, 2),
+        (7, 1),
+        (7, 0),
+        (6, 2),
+        (6, 0),
     ];
 
-    for (i, bit) in flags.iter().enumerate() {
-        result |= (*bit as u16) << (13 - i);
+    for (i, (byte_index, bit_index)) in bit_positions.iter().enumerate() {
+        result |= (((message[*byte_index] >> bit_index) & 1) as u16) << (13 - i);
     }
 
     debug!("MA code: {:016b}", result);

@@ -105,6 +105,7 @@ pub fn icao_to_country(icao: u32) -> (&'static str, &'static str) {
                     0b000001010100 => ("Madagascar", "MG"),
                     0b000001011000 => ("Malawi", "MW"),
                     0b000001011100 => ("Mali", "ML"),
+                    0b010011010010 => ("Malta", "MT"),
                     0b000000000110 => ("Mozambique", "MZ"),
                     0b011100000100 => ("Myanmar", "MM"),
                     0b011100001010 => ("Nepal", "NP"),
@@ -160,7 +161,6 @@ pub fn icao_to_country(icao: u32) -> (&'static str, &'static str) {
                         0b01010000001111 => ("Lithuania", "LT"),
                         0b01001101000000 => ("Luxembourg", "LU"),
                         0b00000101101000 => ("Maldives", "MV"),
-                        0b01001101001000 => ("Malta", "MT"),
                         0b10010000000000 => ("Marshall Islands", "MH"),
                         0b00000101111000 => ("Mauritania", "MR"),
                         0b00000110000000 => ("Mauritius", "MU"),
@@ -550,7 +550,7 @@ mod tests {
             ("Zambia", "ZM")
         );
         assert_eq!(
-            icao_to_country(0b01001101001000_0000000000),
+            icao_to_country(0b010011010010_000000000000),
             ("Malta", "MT")
         );
         assert_eq!(
