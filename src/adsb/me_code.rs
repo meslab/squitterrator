@@ -28,7 +28,7 @@ pub fn me_code(message: &[u32]) -> Option<u16> {
         | (message[12] & 0xF) << 2
         | message[11] & 1;
 
-    debug!("MA code: {:016b}", result);
+    debug!("MA code: {:016b}", result as u16);
 
     Some(result as u16)
 }
