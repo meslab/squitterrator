@@ -86,13 +86,13 @@ fn print_header(wide: bool) {
         ("RG", 2),
         ("ALT", 5),
         ("SQWK", 4),
+        ("W", 1),
         ("CALLSIGN", 8),
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
         ("GSPD", 4),
         ("TRK", 3),
         ("VRATE", 5),
-        ("W", 1),
         ];
 
     let extra_headers = [
