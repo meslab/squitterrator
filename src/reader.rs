@@ -59,15 +59,18 @@ pub fn read_lines<R: BufRead>(
                                         false
                                     }
                                 });
+
+                                // Print the entire result string at once
                                 print!(
                                     "{}",
-                                    planes
-                                        .iter()
-                                        .map(|(_, plane)| {
-                                            format!("{}\n", format_simple_display(plane, args.wide))
-                                        })
-                                        .collect::<String>()
+                                    planes.iter().fold(String::new(), |acc, (_, plane)| {
+                                        acc + &format!(
+                                            "{}\n",
+                                            format_simple_display(plane, args.wide)
+                                        )
+                                    })
                                 );
+
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
