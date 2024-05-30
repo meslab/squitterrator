@@ -23,32 +23,14 @@ use log::debug;
 /// }
 /// ```
 pub fn me_code(message: &[u32]) -> Option<u16> {
-    let mut result = 0u16;
-
-    let flags: [u32; 14] = [
-        (message[10] >> 3) & 1,
-        (message[10] >> 2) & 1,
-        (message[10] >> 1) & 1,
-        message[10] & 1,
-        (message[11] >> 3) & 1,
-        (message[11] >> 2) & 1,
-        (message[11] >> 1) & 1,
-        message[11] & 1,
-        (message[12] >> 3) & 1,
-        (message[12] >> 2) & 1,
-        (message[12] >> 1) & 1,
-        message[12] & 1,
-        0,
-        message[11] & 1,
-    ];
-
-    for (i, bit) in flags.iter().enumerate() {
-        result |= (*bit as u16) << (13 - i);
-    }
+    let result = (message[10] & 0xF) << 10
+        | (message[11] & 0xF) << 6
+        | (message[12] & 0xF) << 2
+        | message[11] & 1;
 
     debug!("MA code: {:016b}", result);
 
-    Some(result)
+    Some(result as u16)
 }
 
 #[cfg(test)]
