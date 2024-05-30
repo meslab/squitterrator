@@ -59,9 +59,15 @@ pub fn read_lines<R: BufRead>(
                                         false
                                     }
                                 });
-                                for (_, plane) in planes.iter() {
-                                    println!("{}", format_simple_display(plane, args.wide));
-                                }
+                                print!(
+                                    "{}",
+                                    planes
+                                        .iter()
+                                        .map(|(_, plane)| {
+                                            format!("{}\n", format_simple_display(plane, args.wide))
+                                        })
+                                        .collect::<String>()
+                                );
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
@@ -97,23 +103,34 @@ fn print_header(wide: bool) {
 
     let extra_headers = [("DF", 2), ("TC", 2), ("V", 1), ("S", 1), ("LPC", 3)];
 
-    for &(header, width) in &headers {
-        print!("{:width$} ", header, width = width);
-    }
-    if wide {
-        for &(header, width) in &extra_headers {
-            print!("{:width$} ", header, width = width);
-        }
-    }
-    println!("LC");
+    let header_line: String = headers
+        .iter()
+        .map(|&(header, width)| format!("{:width$} ", header, width = width))
+        .chain(if wide {
+            extra_headers
+                .iter()
+                .map(|&(header, width)| format!("{:width$} ", header, width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .collect::<String>()
+        + "LC\n";
 
-    for &(_, width) in &headers {
-        print!("{:-<width$} ", "", width = width);
-    }
-    if wide {
-        for &(_, width) in &extra_headers {
-            print!("{:-<width$} ", "", width = width);
-        }
-    }
-    println!("--");
+    let separator_line: String = headers
+        .iter()
+        .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+        .chain(if wide {
+            extra_headers
+                .iter()
+                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .collect::<String>()
+        + "--\n";
+
+    // Print the result
+    print!("{}{}", header_line, separator_line);
 }
