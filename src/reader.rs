@@ -98,7 +98,6 @@ fn print_header(wide: bool) {
 
     let extra_headers = [
         ("AGNSS", 5),
-        ("HDG", 3),
         ("VX", 2),
         ("DF", 2),
         ("TC", 2),
