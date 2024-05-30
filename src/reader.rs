@@ -109,7 +109,7 @@ fn print_header(wide: bool) {
     ];
 
     let extra_headers = [
-        ("VX", 2),
+        ("W", 1),
         ("DF", 2),
         ("TC", 2),
         ("V", 1),
@@ -166,7 +166,7 @@ fn print_legend(wide: bool) {
     ];
 
     let legend_wide = [
-        ("VX", "Vortex Category"),
+        ("W", "Wake Turbulence Category"),
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
         ("S", "Surveillance Status"),
