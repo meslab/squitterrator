@@ -1,11 +1,8 @@
 use crate::Args;
 use log::{debug, warn};
 use squitterator::adsb::message;
-use squitterator::adsb::{clean_squitter, df, icao};
+use squitterator::adsb::{df, icao};
 use squitterator::plane::{format_simple_display, Plane};
-use squitterator::process::generate_ais;
-use squitterator::process::icao_decode;
-use squitterator::process::squitter_decode;
 use std::collections::HashMap;
 use std::io::{BufRead, Result};
 
@@ -32,17 +29,6 @@ pub fn read_lines<R: BufRead>(
                     }
 
                     let now = chrono::Utc::now();
-                    if args.ais {
-                        generate_ais(&message, &squitter);
-                    }
-
-                    if args.decode {
-                        squitter_decode(&message, df);
-                    }
-
-                    if args.icao {
-                        icao_decode(&message, df, clean_squitter(&squitter).unwrap().as_str());
-                    }
                     if args.planes {
                         if let Some(icao) = icao(&message, df) {
                             planes
