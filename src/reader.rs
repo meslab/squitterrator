@@ -108,7 +108,14 @@ fn print_header(wide: bool) {
         ("VRATE", 5),
     ];
 
-    let extra_headers = [("DF", 2), ("TC", 2), ("V", 1), ("S", 1), ("LPC", 3)];
+    let extra_headers = [
+        ("VX", 2),
+        ("DF", 2),
+        ("TC", 2),
+        ("V", 1),
+        ("S", 1),
+        ("LPC", 3),
+    ];
 
     let header_line: String = headers
         .iter()
@@ -159,9 +166,10 @@ fn print_legend(wide: bool) {
     ];
 
     let legend_wide = [
+        ("VX", "Vortex Category"),
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
-        ("S", "Flight Status"),
+        ("S", "Surveillance Status"),
         ("LPC", "Last Position Contact"),
     ];
 

@@ -5,6 +5,7 @@ use std::{fmt, fmt::Display};
 
 pub struct Plane {
     pub icao: u32,
+    pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
     pub alt: Option<u32>,
@@ -36,6 +37,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
+            category: (0, 0),
             reg: "",
             ais: None,
             alt: None,
@@ -93,6 +95,7 @@ impl Plane {
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
+                    self.category = (message_type, message_subtype);
                 }
                 5..=18 => {
                     self.alt = adsb::alt(message, df);
@@ -263,6 +266,7 @@ impl SimpleDisplay for Plane {
             write!(f, " {:5}", "")?;
         }
         if wide {
+            write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, " {:>2}", self.last_df)?;
             } else {
