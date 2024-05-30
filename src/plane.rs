@@ -266,6 +266,11 @@ impl SimpleDisplay for Plane {
             write!(f, " {:5}", "")?;
         }
         if wide {
+            if let Some(w) = adsb::icao_wtc(&self.category) {
+                write!(f, " {}", w)?;
+            } else {
+                write!(f, "  ")?;
+            }
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, " {:>2}", self.last_df)?;

@@ -65,8 +65,10 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
 pub fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
     match vc {
         (4, 1) => Some('L'),
-        (4, 2) | (4, 3) => Some('M'),
-        (4, 5) => Some('H'),
+        (4, 2) => Some('S'),
+        (4, 3) => Some('M'),
+        (4, 4) => Some('H'),
+        (4, 5) => Some('J'),
         _ => None,
     }
 }
@@ -100,7 +102,13 @@ mod tests {
 
     #[test]
     fn test_icao_wtc() {
-        let vcs = [((4, 1), 'L'), ((4, 2), 'M'), ((4, 3), 'M'), ((4, 5), 'H')];
+        let vcs = [
+            ((4, 1), 'L'),
+            ((4, 2), 'S'),
+            ((4, 3), 'M'),
+            ((4, 4), 'H'),
+            ((4, 5), 'J'),
+        ];
 
         for (vc, value) in vcs.iter() {
             if let Some(result) = crate::adsb::icao_wtc(vc) {
@@ -111,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_icao_wtc_none() {
-        let vcs = [(4, 0), (4, 4), (4, 6), (4, 7)];
+        let vcs = [(4, 0), (4, 6), (4, 7)];
 
         for vc in vcs.iter() {
             assert_eq!(crate::adsb::icao_wtc(vc), None, "VC: {:?}", vc);
