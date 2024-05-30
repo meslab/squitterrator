@@ -550,7 +550,7 @@ mod tests {
             ("Zambia", "ZM")
         );
         assert_eq!(
-            icao_to_country(0b01001101001000_0000000000),
+            icao_to_country(0b010011010010_000000000000),
             ("Malta", "MT")
         );
         assert_eq!(
