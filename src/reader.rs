@@ -49,6 +49,7 @@ pub fn read_lines<R: BufRead>(
                                         false
                                     }
                                 });
+                                planes.shrink_to_fit();
 
                                 // Print the entire result string at once
                                 print!(
@@ -93,7 +94,7 @@ fn print_header(wide: bool) {
         ("GSPD", 4),
         ("TRK", 3),
         ("VRATE", 5),
-        ];
+    ];
 
     let extra_headers = [
         ("VX", 2),
