@@ -14,7 +14,11 @@ pub fn read_lines<R: BufRead>(
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
-    let mut timestamp = chrono::Utc::now();
+    if args.planes {
+        clear_screen();
+        print_legend(args.wide);
+    }
+    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.refresh);
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -59,9 +63,18 @@ pub fn read_lines<R: BufRead>(
                                         false
                                     }
                                 });
-                                for (_, plane) in planes.iter() {
-                                    println!("{}", format_simple_display(plane, args.wide));
-                                }
+
+                                // Print the entire result string at once
+                                print!(
+                                    "{}",
+                                    planes.iter().fold(String::new(), |acc, (_, plane)| {
+                                        acc + &format!(
+                                            "{}\n",
+                                            format_simple_display(plane, args.wide)
+                                        )
+                                    })
+                                );
+
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
@@ -97,23 +110,90 @@ fn print_header(wide: bool) {
 
     let extra_headers = [("DF", 2), ("TC", 2), ("V", 1), ("S", 1), ("LPC", 3)];
 
-    for &(header, width) in &headers {
-        print!("{:width$} ", header, width = width);
-    }
-    if wide {
-        for &(header, width) in &extra_headers {
-            print!("{:width$} ", header, width = width);
-        }
-    }
-    println!("LC");
+    let header_line: String = headers
+        .iter()
+        .map(|&(header, width)| format!("{:width$} ", header, width = width))
+        .chain(if wide {
+            extra_headers
+                .iter()
+                .map(|&(header, width)| format!("{:width$} ", header, width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .collect::<String>()
+        + "LC\n";
 
-    for &(_, width) in &headers {
-        print!("{:-<width$} ", "", width = width);
-    }
-    if wide {
-        for &(_, width) in &extra_headers {
-            print!("{:-<width$} ", "", width = width);
-        }
-    }
-    println!("--");
+    let separator_line: String = headers
+        .iter()
+        .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+        .chain(if wide {
+            extra_headers
+                .iter()
+                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .collect::<String>()
+        + "--\n";
+
+    // Print the result
+    print!("{}{}", header_line, separator_line);
+}
+
+fn print_legend(wide: bool) {
+    let legend = [
+        ("ICAO", "ICAO Address"),
+        ("DF", "Downlink Format"),
+        ("RG", "Registraton Country Code"),
+        ("ALT", "Altitude"),
+        ("SQWK", "Squawk"),
+        ("CALLSIGN", "Callsign"),
+        ("LATITUDE", "Latitude"),
+        ("LONGITUDE", "Longitude"),
+        ("GSPD", "Ground Speed"),
+        ("TRK", "Track"),
+        ("VRATE", "Vertical Rate"),
+        ("LC", "Last Contact"),
+    ];
+
+    let legend_wide = [
+        ("TC", "Type Code"),
+        ("V", "ASD-B Version"),
+        ("S", "Flight Status"),
+        ("LPC", "Last Position Contact"),
+    ];
+
+    let width = (10, 28);
+    let legend_line = legend
+        .iter()
+        .map(|&(header, description)| {
+            format!(
+                "{:w0$}: {:w1$}\n",
+                header,
+                description,
+                w0 = width.0,
+                w1 = width.1
+            )
+        })
+        .chain(if wide {
+            legend_wide
+                .iter()
+                .map(|&(header, description)| {
+                    format!(
+                        "{:w0$}: {:w1$}\n",
+                        header,
+                        description,
+                        w0 = width.0,
+                        w1 = width.1
+                    )
+                })
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .collect::<String>();
+
+    print!("{}", legend_line);
 }
