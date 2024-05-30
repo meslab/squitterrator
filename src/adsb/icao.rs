@@ -51,6 +51,26 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
     }
 }
 
+/// Calculates the Wake Turbulence Category (WTC) based on the given VDL Mode 2 Code (VC).
+/// The WTC is used to determine the separation minima between aircraft.
+///
+/// # Arguments
+///
+/// * `vc` - The VDL Mode 2 Code (VC) as a tuple of two 32-bit unsigned integers.
+///
+/// # Returns
+///
+/// The calculated Wake Turbulence Category (WTC) as a character.
+///
+pub fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
+    match vc {
+        (4, 1) => Some('L'),
+        (4, 2) | (4, 3) => Some('M'),
+        (4, 5) => Some('H'),
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::adsb::{df, icao, message};
@@ -75,6 +95,26 @@ mod tests {
                     assert_eq!(result, *value, "Squitter: {}", squitter);
                 }
             }
+        }
+    }
+
+    #[test]
+    fn test_icao_wtc() {
+        let vcs = [((4, 1), 'L'), ((4, 2), 'M'), ((4, 3), 'M'), ((4, 5), 'H')];
+
+        for (vc, value) in vcs.iter() {
+            if let Some(result) = crate::adsb::icao_wtc(vc) {
+                assert_eq!(result, *value, "VC: {:?}", vc);
+            }
+        }
+    }
+
+    #[test]
+    fn test_icao_wtc_none() {
+        let vcs = [(4, 0), (4, 4), (4, 6), (4, 7)];
+
+        for vc in vcs.iter() {
+            assert_eq!(crate::adsb::icao_wtc(vc), None, "VC: {:?}", vc);
         }
     }
 }
