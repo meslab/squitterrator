@@ -92,10 +92,11 @@ fn print_header(wide: bool) {
         ("GSPD", 4),
         ("TRK", 3),
         ("VRATE", 5),
-    ];
+        ("W", 1),
+        ];
 
     let extra_headers = [
-        ("W", 1),
+        ("VX", 2),
         ("DF", 2),
         ("TC", 2),
         ("V", 1),
@@ -149,10 +150,11 @@ fn print_legend(wide: bool) {
         ("TRK", "Track"),
         ("VRATE", "Vertical Rate"),
         ("LC", "Last Contact"),
+        ("W", "Wake Turbulence Category"),
     ];
 
     let legend_wide = [
-        ("W", "Wake Turbulence Category"),
+        ("VX", "Wake Vortex ADS-B Category"),
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
         ("S", "Surveillance Status"),
