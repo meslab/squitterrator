@@ -27,6 +27,18 @@ pub fn alt_gnss(message: &[u32]) -> Option<u32> {
     Some(((message[12] & 0xF) << 8 | (message[13] & 0xF) << 4) | (message[14] & 0xF))
 }
 
+pub fn alt_delta(message: &[u32]) -> Option<i32> {
+    let is_negative = (message[20] >> 3) & 1;
+    let absolute_delta = ((message[20] & 0b111) << 4 | message[21] & 0xF) * 25;
+    match absolute_delta {
+        0 => None,
+        _ => match is_negative {
+            1 => Some(-(absolute_delta as i32)),
+            _ => Some(absolute_delta as i32),
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

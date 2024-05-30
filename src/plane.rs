@@ -142,6 +142,11 @@ impl Plane {
                 }
                 19 => {
                     self.vrate = adsb::vertical_rate(message);
+                    if let Some(alt) = self.alt {
+                        if let Some(alt_delta) = adsb::alt_delta(message) {
+                            self.alt_gnss = Some((alt as i32 + alt_delta) as u32);
+                        }
+                    }
                     match message_subtype {
                         1 => {
                             (self.track, self.grspeed) =
@@ -271,6 +276,11 @@ impl SimpleDisplay for Plane {
             write!(f, " {:5}", "")?;
         }
         if wide {
+            if let Some(alt_gnss) = self.alt_gnss {
+                write!(f, " {:>5}", alt_gnss)?;
+            } else {
+                write!(f, " {:5}", "")?;
+            }
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, " {:>2}", self.last_df)?;
