@@ -14,7 +14,11 @@ pub fn read_lines<R: BufRead>(
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
-    let mut timestamp = chrono::Utc::now();
+    if args.planes {
+        clear_screen();
+        print_legend(args.wide);
+    }
+    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.refresh);
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -136,4 +140,24 @@ fn print_header(wide: bool) {
 
     // Print the result
     print!("{}{}", header_line, separator_line);
+}
+
+fn print_legend(wide: bool) {
+    println!("{:10}: {:28}", "DF", "Downlink Format");
+    println!("{:10}: {:28}", "RG", "Registraton Country Code");
+    println!("{:10}: {:28}", "ALT", "Altitude");
+    println!("{:10}: {:28}", "SQWK", "Squawk");
+    println!("{:10}: {:28}", "CALLSIGN", "Callsign");
+    println!("{:10}: {:28}", "LATITUDE", "Latitude");
+    println!("{:10}: {:28}", "LONGITUDE", "Longitude");
+    println!("{:10}: {:28}", "GSPD", "Ground Speed");
+    println!("{:10}: {:28}", "TRK", "Track");
+    println!("{:10}: {:28}", "VRATE", "Vertical Rate");
+    println!("{:10}: {:28}", "LC", "Last Contact");
+    if wide {
+        println!("{:10}: {:28}", "TC", "Type Code");
+        println!("{:10}: {:28}", "V", "ASD-B Version");
+        println!("{:10}: {:28}", "S", "Flight Status");
+        println!("{:10}: {:28}", "LPC", "Last Position Contact");
+    }
 }
