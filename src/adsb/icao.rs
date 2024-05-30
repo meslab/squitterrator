@@ -69,6 +69,7 @@ pub fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
         (4, 3) => Some('M'),
         (4, 4) => Some('H'),
         (4, 5) => Some('J'),
+        (4, 7) => Some('R'),
         _ => None,
     }
 }
