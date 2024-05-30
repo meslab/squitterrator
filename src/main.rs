@@ -19,15 +19,6 @@ use std::sync::Mutex;
     about = "ADS-B squitter decoder"
 )]
 pub struct Args {
-    #[clap(long)]
-    ais: bool,
-
-    #[clap(long)]
-    decode: bool,
-
-    #[clap(long)]
-    icao: bool,
-
     #[clap(short, long, default_value = None)]
     only: Option<Vec<u32>>,
 
