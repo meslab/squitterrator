@@ -1,9 +1,29 @@
-# SQUITTERATOR: ADS-B Mode S decoder
-This app is based on my old Perl ADS-B Mode S decoder study written back in 2013. 
+# SQUITTERATOR: ADS-B Mode S Decoder
 
-# References
-https://mode-s.org/decode/index.html
+Welcome to Squitterator, an ADS-B Mode S decoder application! This project is a modernization of my original Perl-based ADS-B Mode S decoder study from 2013, now rewritten in Rust.
 
-https://www.faa.gov/air_traffic/technology/adsb/documents
+## Installation
 
-DOI: 10.1109/TIT.1964.1053665 - https://ieeexplore.ieee.org/document/1053665
+To get started with Squitterator, you'll need the Rust toolchain installed on your system. If you haven't already set it up, you can find detailed instructions on how to do so [here](https://www.rust-lang.org/tools/install).
+
+```
+git clone https://github.com/meslab/squitterator.git
+cd squitterator/
+make install
+```
+
+## Usage
+
+```
+squitterator -p -t <hostname>:30002
+```
+
+## References
+
+For more information on ADS-B Mode S decoding and related documentation, you may find the following resources helpful:
+
+- [The 1090 Megahertz Riddle: A Guide to Decoding Mode S and ADS-B Signals](https://mode-s.org/decode/index.html)
+- [FAA ADS-B Resources](https://www.faa.gov/air_traffic/technology/adsb/documents)
+- DOI: [10.1109/TIT.1964.1053665](https://ieeexplore.ieee.org/document/1053665)
+
+Feel free to explore these references to deepen your understanding of ADS-B Mode S and its decoding principles. Happy decoding!
