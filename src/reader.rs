@@ -165,13 +165,30 @@ fn print_legend(wide: bool) {
         ("LPC", "Last Position Contact"),
     ];
 
+    let width = (10, 28);
     let legend_line = legend
         .iter()
-        .map(|&(header, description)| format!("{:10}: {:28}\n", header, description))
+        .map(|&(header, description)| {
+            format!(
+                "{:w0$}: {:w1$}\n",
+                header,
+                description,
+                w0 = width.0,
+                w1 = width.1
+            )
+        })
         .chain(if wide {
             legend_wide
                 .iter()
-                .map(|&(header, description)| format!("{:10}: {:28}\n", header, description))
+                .map(|&(header, description)| {
+                    format!(
+                        "{:w0$}: {:w1$}\n",
+                        header,
+                        description,
+                        w0 = width.0,
+                        w1 = width.1
+                    )
+                })
                 .collect()
         } else {
             Vec::new()
