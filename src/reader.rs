@@ -143,21 +143,40 @@ fn print_header(wide: bool) {
 }
 
 fn print_legend(wide: bool) {
-    println!("{:10}: {:28}", "DF", "Downlink Format");
-    println!("{:10}: {:28}", "RG", "Registraton Country Code");
-    println!("{:10}: {:28}", "ALT", "Altitude");
-    println!("{:10}: {:28}", "SQWK", "Squawk");
-    println!("{:10}: {:28}", "CALLSIGN", "Callsign");
-    println!("{:10}: {:28}", "LATITUDE", "Latitude");
-    println!("{:10}: {:28}", "LONGITUDE", "Longitude");
-    println!("{:10}: {:28}", "GSPD", "Ground Speed");
-    println!("{:10}: {:28}", "TRK", "Track");
-    println!("{:10}: {:28}", "VRATE", "Vertical Rate");
-    println!("{:10}: {:28}", "LC", "Last Contact");
-    if wide {
-        println!("{:10}: {:28}", "TC", "Type Code");
-        println!("{:10}: {:28}", "V", "ASD-B Version");
-        println!("{:10}: {:28}", "S", "Flight Status");
-        println!("{:10}: {:28}", "LPC", "Last Position Contact");
-    }
+    let legend = [
+        ("ICAO", "ICAO Address"),
+        ("DF", "Downlink Format"),
+        ("RG", "Registraton Country Code"),
+        ("ALT", "Altitude"),
+        ("SQWK", "Squawk"),
+        ("CALLSIGN", "Callsign"),
+        ("LATITUDE", "Latitude"),
+        ("LONGITUDE", "Longitude"),
+        ("GSPD", "Ground Speed"),
+        ("TRK", "Track"),
+        ("VRATE", "Vertical Rate"),
+        ("LC", "Last Contact"),
+    ];
+
+    let legend_wide = [
+        ("TC", "Type Code"),
+        ("V", "ASD-B Version"),
+        ("S", "Flight Status"),
+        ("LPC", "Last Position Contact"),
+    ];
+
+    let legend_line = legend
+        .iter()
+        .map(|&(header, description)| format!("{:10}: {:28}\n", header, description))
+        .chain(if wide {
+            legend_wide
+                .iter()
+                .map(|&(header, description)| format!("{:10}: {:28}\n", header, description))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .collect::<String>();
+
+    print!("{}", legend_line);
 }
