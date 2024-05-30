@@ -25,7 +25,6 @@ pub struct Plane {
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
-    pub heading: Option<f64>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -57,7 +56,6 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
-            heading: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -156,6 +154,9 @@ impl Plane {
                             // 4 knots units for supersonic
                             (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
                         }
+                        3 | 4 => {
+                            self.track = adsb::heading(message);
+                        }
                         _ => {}
                     }
                 }
@@ -215,11 +216,6 @@ impl Display for Plane {
         }
         if let Some(track) = self.track {
             write!(f, " Track: {:>3.0}", track)?;
-        } else {
-            write!(f, " {:15}", "")?;
-        }
-        if let Some(heading) = self.heading {
-            write!(f, " Heading: {:>3.0}", heading)?;
         } else {
             write!(f, " {:15}", "")?;
         }
