@@ -62,6 +62,9 @@ pub struct Args {
 
     #[clap(short, long)]
     reverse: bool,
+
+    #[clap(short, long)]
+    count_df: bool,
 }
 
 fn main() -> io::Result<()> {

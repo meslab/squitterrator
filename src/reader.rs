@@ -23,7 +23,9 @@ pub fn read_lines<R: BufRead>(
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
-                    *df_count.entry(df).or_insert(1) += 1;
+                    if args.count_df {
+                        *df_count.entry(df).or_insert(1) += 1;
+                    }
                     if let Some(only) = &args.filter {
                         if only.iter().all(|&x| x != df) {
                             continue;
@@ -57,12 +59,13 @@ pub fn read_lines<R: BufRead>(
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
                                 print_header(args.wide, false);
-                                let df_line = df_count
-                                    .iter()
-                                    .map(|(df, count)| format!("DF{}:{} ", df, count))
-                                    .collect::<String>()
-                                    + "\n";
-                                print!("{}", df_line);
+                                if args.count_df {
+                                    let result =
+                                        df_count.iter().fold(String::new(), |acc, (df, count)| {
+                                            acc + &format!("DF{}:{} ", df, count)
+                                        }) + "\n";
+                                    println!("{}", result);
+                                }
                             }
                         }
                     }
@@ -132,8 +135,7 @@ fn print_header(wide: bool, header: bool) {
         .collect::<String>()
         + "--\n";
 
-    // Print the result
-    if header == true {
+    if header {
         print!("{}{}", header_line, separator_line);
     } else {
         print!("{}", separator_line);
