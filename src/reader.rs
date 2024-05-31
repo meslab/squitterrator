@@ -108,11 +108,11 @@ fn print_header(wide: bool) {
 
     let header_line: String = headers
         .iter()
-        .map(|&(header, width)| format!("{:width$} ", header, width = width))
+        .map(|&(header, width)| format!("{:>width$} ", header, width = width))
         .chain(if wide {
             extra_headers
                 .iter()
-                .map(|&(header, width)| format!("{:width$} ", header, width = width))
+                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
                 .collect()
         } else {
             Vec::new()
@@ -141,9 +141,8 @@ fn print_header(wide: bool) {
 fn print_legend(wide: bool) {
     let legend = [
         ("ICAO", "ICAO Address"),
-        ("DF", "Downlink Format"),
         ("RG", "Registraton Country Code"),
-        ("ALT", "Altitude"),
+        ("ALT", "Altitude (Barometric)"),
         ("SQWK", "Squawk"),
         ("CALLSIGN", "Callsign"),
         ("LATITUDE", "Latitude"),
@@ -156,9 +155,9 @@ fn print_legend(wide: bool) {
     ];
 
     let legend_wide = [
-        ("AGNSS", "Altitude GNSS"),
-        ("HDG", "Heading"),
+        ("AGNSS", "Altitude (GNSS)"),
         ("VX", "Wake Vortex ADS-B Category"),
+        ("DF", "Downlink Format"),
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
         ("S", "Surveillance Status"),

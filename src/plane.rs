@@ -12,6 +12,7 @@ pub struct Plane {
     pub alt_gnss: Option<u32>,
     pub squawk: Option<u32>,
     pub surveillance_status: char,
+    pub threat_encounter: Option<char>,
     pub vrate: Option<i32>,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
@@ -43,6 +44,7 @@ impl Plane {
             alt_gnss: None,
             squawk: None,
             surveillance_status: ' ',
+            threat_encounter: None,
             vrate: None,
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
@@ -175,6 +177,9 @@ impl Plane {
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
             }
+            if bds == (3, 0) {
+                self.threat_encounter = adsb::threat_encounter(message);
+            }
         }
     }
 }
@@ -241,10 +246,15 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:4}", "")?;
         }
-        if let Some(w) = adsb::icao_wtc(&self.category) {
-            write!(f, " {}", w)?;
+        if let Some(threat_encounter) = self.threat_encounter {
+            write!(f, "{}", threat_encounter)?;
         } else {
-            write!(f, "  ")?;
+            write!(f, " ")?;
+        }
+        if let Some(w) = adsb::icao_wtc(&self.category) {
+            write!(f, "{}", w)?;
+        } else {
+            write!(f, " ")?;
         }
         if let Some(ais) = &self.ais {
             write!(f, " {:8}", ais)?;

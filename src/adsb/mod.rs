@@ -1,3 +1,4 @@
+mod acas;
 mod ais;
 mod altitude;
 mod bds;
@@ -17,6 +18,7 @@ mod utils;
 mod version;
 mod vertical_rate;
 
+pub use acas::*;
 pub use ais::*;
 pub use altitude::*;
 pub use bds::*;
