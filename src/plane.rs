@@ -10,6 +10,7 @@ pub struct Plane {
     pub ais: Option<String>,
     pub altitude: Option<u32>,
     pub altitude_gnss: Option<u32>,
+    pub altitude_source: char,
     pub squawk: Option<u32>,
     pub surveillance_status: char,
     pub threat_encounter: Option<char>,
@@ -42,6 +43,7 @@ impl Plane {
             ais: None,
             altitude: None,
             altitude_gnss: None,
+            altitude_source: ' ',
             squawk: None,
             surveillance_status: ' ',
             threat_encounter: None,
@@ -81,6 +83,7 @@ impl Plane {
         if df == 4 {
             if let Some(altitude) = adsb::altitude(message, df) {
                 self.altitude = Some(altitude);
+                self.altitude_source = ' ';
             }
         }
         if df == 5 || df == 21 {
@@ -99,6 +102,7 @@ impl Plane {
                 }
                 5..=18 => {
                     self.altitude = adsb::altitude(message, df);
+                    self.altitude_source = ' ';
                     let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
                     match cpr_form {
                         0 | 1 => {
@@ -110,6 +114,7 @@ impl Plane {
                     }
                     if let 5..=8 = message_type {
                         self.ground_movement = adsb::ground_movement(message);
+                        self.altitude_source = '\u{2070}';
                     }
                     if let 9..=18 = message_type {
                         self.surveillance_status = adsb::surveillance_status(message);
@@ -158,6 +163,7 @@ impl Plane {
                         }
                         3 | 4 => {
                             self.track = adsb::heading(message);
+                            self.altitude_source = '"';
                         }
                         _ => {}
                     }
@@ -241,10 +247,11 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:5}", "")?;
         }
+        write!(f, "{}", self.altitude_source)?;
         if let Some(squawk) = self.squawk {
-            write!(f, " {:04}", squawk)?;
+            write!(f, "{:04}", squawk)?;
         } else {
-            write!(f, " {:4}", "")?;
+            write!(f, "{:4}", "")?;
         }
         if let Some(threat_encounter) = self.threat_encounter {
             write!(f, "{}", threat_encounter)?;

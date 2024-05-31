@@ -58,7 +58,7 @@ pub struct Args {
     update: i64,
 
     #[clap(short, long, default_value = " ")]
-    order_by: Vec<char>,
+    order_by: Vec<String>,
 
     #[clap(short, long)]
     reverse: bool,
