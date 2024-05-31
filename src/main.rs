@@ -55,7 +55,13 @@ pub struct Args {
     format: Option<String>,
 
     #[clap(short, long, default_value = "3")]
-    refresh: i64,
+    update: i64,
+
+    #[clap(short, long)]
+    altitude_sort: bool,
+
+    #[clap(short, long)]
+    reverse: bool,
 }
 
 fn main() -> io::Result<()> {

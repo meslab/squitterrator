@@ -15,7 +15,7 @@ pub fn read_lines<R: BufRead>(
         clear_screen();
         print_legend(args.wide);
     }
-    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.refresh);
+    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -36,7 +36,7 @@ pub fn read_lines<R: BufRead>(
                                 .and_modify(|p| p.update(&message, df))
                                 .or_insert(Plane::from_message(&message, df, icao));
 
-                            if now.signed_duration_since(timestamp).num_seconds() > args.refresh {
+                            if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
                                 print_header(args.wide);
                                 planes.retain(|_, plane| {
@@ -50,18 +50,7 @@ pub fn read_lines<R: BufRead>(
                                     }
                                 });
                                 planes.shrink_to_fit();
-
-                                // Print the entire result string at once
-                                print!(
-                                    "{}",
-                                    planes.iter().fold(String::new(), |acc, (_, plane)| {
-                                        acc + &format!(
-                                            "{}\n",
-                                            format_simple_display(plane, args.wide)
-                                        )
-                                    })
-                                );
-
+                                print_planes(planes, args);
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
@@ -195,4 +184,25 @@ fn print_legend(wide: bool) {
         .collect::<String>();
 
     print!("{}", legend_line);
+}
+
+fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
+    let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
+
+    if args.altitude_sort {
+        planes_vector.sort_by_cached_key(|&(_, plane)| plane.alt);
+    } else {
+        planes_vector.sort_by_cached_key(|&(k, _)| k);
+    }
+
+    if args.reverse {
+        planes_vector.reverse();
+    }
+
+    print!(
+        "{}",
+        planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
+            acc + &format!("{}\n", format_simple_display(*plane, args.wide))
+        })
+    );
 }
