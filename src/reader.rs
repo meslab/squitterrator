@@ -15,20 +15,19 @@ pub fn read_lines<R: BufRead>(
         clear_screen();
         print_legend(args.wide);
     }
-    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.refresh);
+    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
-                    if let Some(only) = &args.only {
+                    if let Some(only) = &args.filter {
                         if only.iter().all(|&x| x != df) {
                             continue;
                         }
                     }
 
-                    let now = chrono::Utc::now();
                     if args.planes {
                         if let Some(icao) = icao(&message, df) {
                             planes
@@ -36,7 +35,8 @@ pub fn read_lines<R: BufRead>(
                                 .and_modify(|p| p.update(&message, df))
                                 .or_insert(Plane::from_message(&message, df, icao));
 
-                            if now.signed_duration_since(timestamp).num_seconds() > args.refresh {
+                            let now = chrono::Utc::now();
+                            if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
                                 print_header(args.wide);
                                 planes.retain(|_, plane| {
@@ -50,18 +50,7 @@ pub fn read_lines<R: BufRead>(
                                     }
                                 });
                                 planes.shrink_to_fit();
-
-                                // Print the entire result string at once
-                                print!(
-                                    "{}",
-                                    planes.iter().fold(String::new(), |acc, (_, plane)| {
-                                        acc + &format!(
-                                            "{}\n",
-                                            format_simple_display(plane, args.wide)
-                                        )
-                                    })
-                                );
-
+                                print_planes(planes, args);
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
@@ -108,11 +97,11 @@ fn print_header(wide: bool) {
 
     let header_line: String = headers
         .iter()
-        .map(|&(header, width)| format!("{:width$} ", header, width = width))
+        .map(|&(header, width)| format!("{:>width$} ", header, width = width))
         .chain(if wide {
             extra_headers
                 .iter()
-                .map(|&(header, width)| format!("{:width$} ", header, width = width))
+                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
                 .collect()
         } else {
             Vec::new()
@@ -141,9 +130,8 @@ fn print_header(wide: bool) {
 fn print_legend(wide: bool) {
     let legend = [
         ("ICAO", "ICAO Address"),
-        ("DF", "Downlink Format"),
         ("RG", "Registraton Country Code"),
-        ("ALT", "Altitude"),
+        ("ALT", "Altitude (Barometric)"),
         ("SQWK", "Squawk"),
         ("CALLSIGN", "Callsign"),
         ("LATITUDE", "Latitude"),
@@ -156,9 +144,9 @@ fn print_legend(wide: bool) {
     ];
 
     let legend_wide = [
-        ("AGNSS", "Altitude GNSS"),
-        ("HDG", "Heading"),
+        ("AGNSS", "Altitude (GNSS)"),
         ("VX", "Wake Vortex ADS-B Category"),
+        ("DF", "Downlink Format"),
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
         ("S", "Surveillance Status"),
@@ -196,4 +184,28 @@ fn print_legend(wide: bool) {
         .collect::<String>();
 
     print!("{}", legend_line);
+}
+
+fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
+    let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
+
+    match args.order_by {
+        'a' => {
+            planes_vector.sort_by_cached_key(|&(_, p)| p.altitude);
+        }
+        _ => {
+            planes_vector.sort_by_cached_key(|&(k, _)| k);
+        }
+    }
+
+    if args.reverse {
+        planes_vector.reverse();
+    }
+
+    print!(
+        "{}",
+        planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
+            acc + &format!("{}\n", format_simple_display(*plane, args.wide))
+        })
+    );
 }

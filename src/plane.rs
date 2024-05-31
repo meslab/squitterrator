@@ -8,10 +8,11 @@ pub struct Plane {
     pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
-    pub alt: Option<u32>,
-    pub alt_gnss: Option<u32>,
+    pub altitude: Option<u32>,
+    pub altitude_gnss: Option<u32>,
     pub squawk: Option<u32>,
     pub surveillance_status: char,
+    pub threat_encounter: Option<char>,
     pub vrate: Option<i32>,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
@@ -39,10 +40,11 @@ impl Plane {
             category: (0, 0),
             reg: "",
             ais: None,
-            alt: None,
-            alt_gnss: None,
+            altitude: None,
+            altitude_gnss: None,
             squawk: None,
             surveillance_status: ' ',
+            threat_encounter: None,
             vrate: None,
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
@@ -77,8 +79,8 @@ impl Plane {
         self.last_df = df;
 
         if df == 4 {
-            if let Some(alt) = adsb::alt(message, df) {
-                self.alt = Some(alt);
+            if let Some(altitude) = adsb::altitude(message, df) {
+                self.altitude = Some(altitude);
             }
         }
         if df == 5 || df == 21 {
@@ -96,7 +98,7 @@ impl Plane {
                     self.category = (message_type, message_subtype);
                 }
                 5..=18 => {
-                    self.alt = adsb::alt(message, df);
+                    self.altitude = adsb::altitude(message, df);
                     let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
                     match cpr_form {
                         0 | 1 => {
@@ -140,9 +142,9 @@ impl Plane {
                 }
                 19 => {
                     self.vrate = adsb::vertical_rate(message);
-                    if let Some(alt) = self.alt {
-                        if let Some(alt_delta) = adsb::alt_delta(message) {
-                            self.alt_gnss = Some((alt as i32 + alt_delta) as u32);
+                    if let Some(altitude) = self.altitude {
+                        if let Some(altitude_delta) = adsb::altitude_delta(message) {
+                            self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
                         }
                     }
                     match message_subtype {
@@ -161,7 +163,7 @@ impl Plane {
                     }
                 }
                 20..=22 => {
-                    self.alt_gnss = adsb::alt_gnss(message);
+                    self.altitude_gnss = adsb::altitude_gnss(message);
                     self.surveillance_status = adsb::surveillance_status(message);
                 }
                 31 => {
@@ -174,6 +176,9 @@ impl Plane {
             let bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
+            }
+            if bds == (3, 0) {
+                self.threat_encounter = adsb::threat_encounter(message);
             }
         }
     }
@@ -189,8 +194,8 @@ impl Display for Plane {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ICAO: {:06X}", self.icao)?;
         write!(f, " Reg: {:2}", self.reg)?;
-        if let Some(alt) = self.alt {
-            write!(f, " Alt: {:>5}", alt)?;
+        if let Some(altitude) = self.altitude {
+            write!(f, " Alt: {:>5}", altitude)?;
         } else {
             write!(f, " {:10}", "")?;
         }
@@ -231,8 +236,8 @@ impl SimpleDisplay for Plane {
     fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
-        if let Some(alt) = self.alt {
-            write!(f, " {:>5}", alt)?;
+        if let Some(altitude) = self.altitude {
+            write!(f, " {:>5}", altitude)?;
         } else {
             write!(f, " {:5}", "")?;
         }
@@ -241,10 +246,15 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:4}", "")?;
         }
-        if let Some(w) = adsb::icao_wtc(&self.category) {
-            write!(f, " {}", w)?;
+        if let Some(threat_encounter) = self.threat_encounter {
+            write!(f, "{}", threat_encounter)?;
         } else {
-            write!(f, "  ")?;
+            write!(f, " ")?;
+        }
+        if let Some(w) = adsb::icao_wtc(&self.category) {
+            write!(f, "{}", w)?;
+        } else {
+            write!(f, " ")?;
         }
         if let Some(ais) = &self.ais {
             write!(f, " {:8}", ais)?;
@@ -272,8 +282,8 @@ impl SimpleDisplay for Plane {
             write!(f, " {:5}", "")?;
         }
         if wide {
-            if let Some(alt_gnss) = self.alt_gnss {
-                write!(f, " {:>5}", alt_gnss)?;
+            if let Some(altitude_gnss) = self.altitude_gnss {
+                write!(f, " {:>5}", altitude_gnss)?;
             } else {
                 write!(f, " {:5}", "")?;
             }
