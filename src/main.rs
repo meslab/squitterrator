@@ -20,7 +20,7 @@ use std::sync::Mutex;
 )]
 pub struct Args {
     #[clap(short, long, default_value = None)]
-    only: Option<Vec<u32>>,
+    filter: Option<Vec<u32>>,
 
     #[clap(short, long)]
     planes: bool,
@@ -57,8 +57,8 @@ pub struct Args {
     #[clap(short, long, default_value = "3")]
     update: i64,
 
-    #[clap(short, long)]
-    altitude_sort: bool,
+    #[clap(short, long, default_value = "a")]
+    order_by: char,
 
     #[clap(short, long)]
     reverse: bool,

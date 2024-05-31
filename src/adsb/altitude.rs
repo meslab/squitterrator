@@ -1,6 +1,6 @@
 use crate::adsb::{graytobin, ma_code, me_code};
 
-pub fn alt(message: &[u32], df: u32) -> Option<u32> {
+pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
     let code = match df {
         17 => me_code(message),
         _ => ma_code(message),
@@ -23,11 +23,11 @@ pub fn alt(message: &[u32], df: u32) -> Option<u32> {
     }
 }
 
-pub fn alt_gnss(message: &[u32]) -> Option<u32> {
+pub fn altitude_gnss(message: &[u32]) -> Option<u32> {
     Some(((message[12] & 0xF) << 8 | (message[13] & 0xF) << 4) | (message[14] & 0xF))
 }
 
-pub fn alt_delta(message: &[u32]) -> Option<i32> {
+pub fn altitude_delta(message: &[u32]) -> Option<i32> {
     let is_negative = (message[20] >> 3) & 1;
     let absolute_delta = ((message[20] & 0b111) << 4 | message[21] & 0xF) * 25;
     match absolute_delta {

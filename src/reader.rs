@@ -22,7 +22,7 @@ pub fn read_lines<R: BufRead>(
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
-                    if let Some(only) = &args.only {
+                    if let Some(only) = &args.filter {
                         if only.iter().all(|&x| x != df) {
                             continue;
                         }
@@ -189,10 +189,13 @@ fn print_legend(wide: bool) {
 fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
 
-    if args.altitude_sort {
-        planes_vector.sort_by_cached_key(|&(_, plane)| plane.alt);
-    } else {
-        planes_vector.sort_by_cached_key(|&(k, _)| k);
+    match args.order_by {
+        'a' => {
+            planes_vector.sort_by_cached_key(|&(_, p)| p.altitude);
+        }
+        _ => {
+            planes_vector.sort_by_cached_key(|&(k, _)| k);
+        }
     }
 
     if args.reverse {
