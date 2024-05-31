@@ -14,7 +14,7 @@ use std::sync::Mutex;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.1.1",
+    version = "v0.1.2",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
