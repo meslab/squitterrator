@@ -15,6 +15,7 @@ pub fn read_lines<R: BufRead>(
         clear_screen();
         print_legend(args.wide);
     }
+    let mut df_count = HashMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
     for line in reader.lines() {
         match line {
@@ -22,6 +23,9 @@ pub fn read_lines<R: BufRead>(
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
                     let df = df(&message);
+                    if args.count_df {
+                        *df_count.entry(df).or_insert(1) += 1;
+                    }
                     if let Some(only) = &args.filter {
                         if only.iter().all(|&x| x != df) {
                             continue;
@@ -38,7 +42,7 @@ pub fn read_lines<R: BufRead>(
                             let now = chrono::Utc::now();
                             if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
-                                print_header(args.wide);
+                                print_header(args.wide, true);
                                 planes.retain(|_, plane| {
                                     let elapsed =
                                         now.signed_duration_since(plane.timestamp).num_seconds();
@@ -54,6 +58,14 @@ pub fn read_lines<R: BufRead>(
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
+                                print_header(args.wide, false);
+                                if args.count_df {
+                                    let result =
+                                        df_count.iter().fold(String::new(), |acc, (df, count)| {
+                                            acc + &format!("DF{}:{} ", df, count)
+                                        }) + "\n";
+                                    println!("{}", result);
+                                }
                             }
                         }
                     }
@@ -70,7 +82,7 @@ fn clear_screen() {
     print!("{}[H", 27 as char);
 }
 
-fn print_header(wide: bool) {
+fn print_header(wide: bool, header: bool) {
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
@@ -123,8 +135,11 @@ fn print_header(wide: bool) {
         .collect::<String>()
         + "--\n";
 
-    // Print the result
-    print!("{}{}", header_line, separator_line);
+    if header {
+        print!("{}{}", header_line, separator_line);
+    } else {
+        print!("{}", separator_line);
+    }
 }
 
 fn print_legend(wide: bool) {
