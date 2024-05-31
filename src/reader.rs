@@ -188,13 +188,47 @@ fn print_legend(wide: bool) {
 
 fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
-
-    match args.order_by {
-        'a' => {
-            planes_vector.sort_by_cached_key(|&(_, p)| p.altitude);
-        }
-        _ => {
-            planes_vector.sort_by_cached_key(|&(k, _)| k);
+    planes_vector.sort_by_cached_key(|&(k, _)| k);
+    //let mut reversed_order = args.order_by.iter().collect::<Vec<_>>();
+    //reversed_order.reverse();
+    for order_by in &args.order_by {
+        match order_by {
+            'a' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.altitude);
+            }
+            'A' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.altitude);
+                planes_vector.reverse();
+            }
+            'c' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.category);
+            }
+            'C' => {
+                planes_vector
+                    .sort_by_cached_key(|&(_, p)| -(((p.category.0 << 1) | p.category.1) as i32));
+            }
+            'N' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.lat as i32);
+            }
+            'S' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| -(p.lat as i32));
+            }
+            'W' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.lon as i32);
+            }
+            'E' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| -(p.lon as i32));
+            }
+            's' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.squawk);
+            }
+            'V' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| -(p.vrate.unwrap_or(0)));
+            }
+            'v' => {
+                planes_vector.sort_by_cached_key(|&(_, p)| p.vrate.unwrap_or(0));
+            }
+            _ => {}
         }
     }
 
