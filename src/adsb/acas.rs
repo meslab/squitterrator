@@ -18,7 +18,7 @@ mod tests {
     fn test_threat_encounter() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
         if let Some(message) = adsb::message(squitter) {
-            assert_eq!(threat_encounter(&message), Some('"'));
+            assert_eq!(threat_encounter(&message), Some('\u{2072}'));
         }
     }
 }
