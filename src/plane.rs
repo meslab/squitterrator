@@ -101,8 +101,6 @@ impl Plane {
                     self.category = (message_type, message_subtype);
                 }
                 5..=18 => {
-                    self.altitude = adsb::altitude(message, df);
-                    self.altitude_source = ' ';
                     let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
                     match cpr_form {
                         0 | 1 => {
@@ -114,9 +112,12 @@ impl Plane {
                     }
                     if let 5..=8 = message_type {
                         self.ground_movement = adsb::ground_movement(message);
+                        self.altitude = None;
                         self.altitude_source = '\u{2070}';
                     }
                     if let 9..=18 = message_type {
+                        self.altitude = adsb::altitude(message, df);
+                        self.altitude_source = ' ';
                         self.surveillance_status = adsb::surveillance_status(message);
                     }
                     if self.cpr_lat[0] != 0
