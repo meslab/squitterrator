@@ -28,7 +28,6 @@ pub fn read_lines<R: BufRead>(
                         }
                     }
 
-                    let now = chrono::Utc::now();
                     if args.planes {
                         if let Some(icao) = icao(&message, df) {
                             planes
@@ -36,6 +35,7 @@ pub fn read_lines<R: BufRead>(
                                 .and_modify(|p| p.update(&message, df))
                                 .or_insert(Plane::from_message(&message, df, icao));
 
+                            let now = chrono::Utc::now();
                             if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
                                 print_header(args.wide);
