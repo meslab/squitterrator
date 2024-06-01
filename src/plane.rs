@@ -27,6 +27,7 @@ pub struct Plane {
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
+    pub temperature: Option<f64>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -60,6 +61,7 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
+            temperature: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -187,6 +189,9 @@ impl Plane {
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
+            if bds == (4, 4) {
+                self.temperature = adsb::temperature(message);
+            }
         }
     }
 }
@@ -292,6 +297,11 @@ impl SimpleDisplay for Plane {
         if wide {
             if let Some(altitude_gnss) = self.altitude_gnss {
                 write!(f, " {:>5}", altitude_gnss)?;
+            } else {
+                write!(f, " {:5}", "")?;
+            }
+            if let Some(temperature) = self.temperature {
+                write!(f, " {:>5.1}", temperature)?;
             } else {
                 write!(f, " {:5}", "")?;
             }
