@@ -14,16 +14,16 @@ pub fn ground_track(message: &[u32]) -> Option<f64> {
 pub fn track_and_groundspeed(message: &[u32], is_supersonic: bool) -> (Option<f64>, Option<f64>) {
     let sp_west = match crate::adsb::flag_and_range_value(message, 46, 47, 56) {
         Some((_, dir_west, speed_west, _, _, _, _)) => match dir_west {
-            0 => speed_west as f64 - 1.0,
-            _ => -(speed_west as f64 - 1.0),
+            1 => -(speed_west as f64 - 1.0),
+            _ => speed_west as f64 - 1.0,
         },
         _ => 0.0,
     };
 
     let sp_south = match crate::adsb::flag_and_range_value(message, 57, 58, 67) {
         Some((_, dir_south, speed_south, _, _, _, _)) => match dir_south {
-            0 => speed_south as f64 - 1.0,
-            _ => -(speed_south as f64 - 1.0),
+            1 => -(speed_south as f64 - 1.0),
+            _ => speed_south as f64 - 1.0,
         },
         _ => 0.0,
     };
