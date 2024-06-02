@@ -1,15 +1,23 @@
+use super::flag_and_range_value;
+
 pub fn temperature(message: &[u32]) -> Option<f64> {
-    match message[13] & 0x1 {
-        0 => Some(
-            (((message[14] & 0xF) << 6) | ((message[15] & 0xF) << 2) | (message[16] & 0b1100) >> 2)
-                as f64
-                / 4.0,
-        ),
-        _ => Some(
-            -((((message[14] & 0xF) << 6)
-                | ((message[15] & 0xF) << 2)
-                | (message[16] & 0b1100) >> 2) as f64
-                / 4.0),
-        ),
+    if let Some((_, sign, temp, _, _, _, _)) = flag_and_range_value(message, 56, 57, 66) {
+        match sign {
+            0 => Some(temp as f64 / 4.0),
+            _ => Some(-(temp as f64 / 4.0)),
+        }
+    } else {
+        None
+    }
+}
+
+pub fn wind_speed(message: &[u32]) -> Option<u32> {
+    if let Some((_, status, speed, _, _, _, _)) = flag_and_range_value(message, 37, 38, 46) {
+        match status {
+            1 => Some(speed),
+            _ => None,
+        }
+    } else {
+        None
     }
 }

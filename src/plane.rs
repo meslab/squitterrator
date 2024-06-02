@@ -28,6 +28,7 @@ pub struct Plane {
     pub turn: u32,
     pub track: Option<f64>,
     pub temperature: Option<f64>,
+    pub wind_speed: Option<u32>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -62,6 +63,7 @@ impl Plane {
             turn: 0,
             track: None,
             temperature: None,
+            wind_speed: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -207,6 +209,9 @@ impl Plane {
                         self.temperature = Some(temp);
                     }
                 }
+                if let Some(wind_speed) = adsb::wind_speed(message) {
+                    self.wind_speed = Some(wind_speed);
+                }
             }
         }
     }
@@ -320,6 +325,11 @@ impl SimpleDisplay for Plane {
                 write!(f, " {:>5.1}", temperature)?;
             } else {
                 write!(f, " {:5}", "")?;
+            }
+            if let Some(wind_speed) = self.wind_speed {
+                write!(f, " {:>3}", wind_speed)?;
+            } else {
+                write!(f, " {:3}", "")?;
             }
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
