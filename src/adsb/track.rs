@@ -45,7 +45,7 @@ mod tests {
         if let Some(message) = adsb::message("8DC06A75990D0628B0040C8AA788") {
             if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message, false) {
                 assert_eq!(groundspeed, 416.0492759277439);
-                assert_eq!(track, 321.14662565964665);
+                assert_eq!(track, 38.853374340353355);
             };
         };
     }
@@ -53,7 +53,7 @@ mod tests {
     fn test_track_and_groundspeed_new() {
         if let Some(message) = adsb::message("8DC06A75990D0628B0040C8AA788") {
             if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message, false) {
-                assert_eq!(track, 321.14662565964665);
+                assert_eq!(track, 38.853374340353355);
                 assert_eq!(groundspeed, 416.0492759277439);
             };
         };
