@@ -3,13 +3,15 @@ mod reader;
 use crate::reader::read_lines;
 use clap::Parser;
 use env_logger::{Builder, Env};
-use log::info;
+use log::{error, info};
 use squitterator::plane::Plane;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Write};
 use std::net::TcpStream;
 use std::sync::Mutex;
+use std::thread::sleep;
+use std::time::Duration;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -86,20 +88,24 @@ fn main() -> io::Result<()> {
         .init();
 
     match !args.tcp.is_empty() {
-        true => {
+        true => loop {
             let stream = match TcpStream::connect(&args.tcp) {
                 Ok(stream) => {
                     info!("Successfully connected to the server {}", &args.tcp);
                     stream
                 }
                 Err(e) => {
-                    eprintln!("Failed to connect: {}", e);
-                    return Err(e);
+                    error!("Failed to connect: {}", e);
+                    continue;
                 }
             };
             let reader = BufReader::new(stream);
-            read_lines(reader, &args, &mut planes)
-        }
+            if let Err(e) = read_lines(reader, &args, &mut planes) {
+                error!("Error during reading: {}", e);
+                sleep(Duration::from_secs(5));
+                continue;
+            }
+        },
         _ => {
             let file = File::open(&args.source)?;
             let reader = BufReader::new(file);
