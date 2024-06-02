@@ -34,37 +34,47 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     (0, 0)
 }
 
-pub fn badflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> (bool, u32, u32, usize, usize) {
-    let flag_ibit: usize = match flag % 4 {
-        0 => 3,
-        r => (r + 1) as usize,
-    };
-    let flag_ibyte: usize = ((flag - 1) / 4).try_into().unwrap();
-    let sb_ibit: usize = match sb % 4 {
-        0 => 3,
-        r => (r + 1) as usize,
-    };
-    let sb_ibyte: usize = ((sb - 1) / 4).try_into().unwrap();
-    let eb_ibit: usize = match eb % 4 {
-        0 => 3,
-        r => (r + 1) as usize,
-    };
-    let eb_ibyte: usize = ((eb - 1) / 4).try_into().unwrap();
+pub fn badflags(
+    message: &[u32],
+    flag: u32,
+    sb: u32,
+    eb: u32,
+) -> (bool, u32, u32, usize, usize, usize, usize) {
+    let (flag_ibyte, flag_ibit) = bit_location(flag);
+    let (sb_ibyte, sb_ibit) = bit_location(sb);
+    let (eb_ibyte, eb_ibit) = bit_location(eb);
 
-    let mut result = message[sb_ibyte] & (0xF >> (4 - sb_ibit));
-    for ibytes in (sb_ibyte + 1)..eb_ibyte {
-        result = (result << 4) | (message[ibytes] & 0xF);
-    }
-    result = (result << eb_ibit) | (message[eb_ibyte] & (0xF >> (4 - eb_ibit)));
+    let result = match eb_ibyte - sb_ibyte {
+        0 => (message[sb_ibyte] & (0xF >> sb_ibit)) >> (3 - eb_ibit),
+        1 => {
+            (message[sb_ibyte] & (0xF >> sb_ibit)) << (eb_ibit + 1)
+                | (message[eb_ibyte] >> (3 - eb_ibit))
+        }
+        _ => {
+            message[sb_ibyte + 1..eb_ibyte]
+                .iter()
+                .fold(message[sb_ibyte] & (0xF >> sb_ibit), |a, x| {
+                    a << 4 | x & 0xF
+                })
+                << (eb_ibit + 1)
+                | (message[eb_ibyte] >> (3 - eb_ibit))
+        }
+    };
 
-    let flag = message[flag_ibyte] >> (4 - flag_ibit);
+    let flag = message[flag_ibyte] >> (3 - flag_ibit);
     match flag {
-        0 => (true, flag, result, flag_ibyte, flag_ibit),
+        0 => (true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit),
         _ => match result {
-            0 => (true, flag, result, flag_ibyte, flag_ibit),
-            _ => (false, flag, result, flag_ibyte, flag_ibit),
+            0 => (true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit),
+            _ => (false, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit),
         },
     }
+}
+
+fn bit_location(position: u32) -> (usize, usize) {
+    let ibyte: usize = ((position - 1) / 4).try_into().unwrap();
+    let ibit: usize = ((position - 1) % 4).try_into().unwrap();
+    (ibyte, ibit)
 }
 
 #[cfg(test)]
@@ -81,59 +91,124 @@ mod tests {
     }
 
     #[test]
-    fn test_badflags_true() {
+    fn test_badflags() {
         let messages = [
             (
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
                 32,
-                36,
-                42,
-                (true, 0, 0, 7, 3),
+                33,
+                37,
+                (true, 1, 0, 8, 0, 9, 0),
             ),
             (
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
+                32,
                 33,
                 36,
-                42,
-                (true, 0, 0, 8, 2),
+                (false, 1, 8, 8, 0, 8, 3),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
+                32,
+                33,
+                37,
+                (false, 1, 16, 8, 0, 9, 0),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 8, 0, 0, 0, 0],
+                32,
+                33,
+                37,
+                (false, 1, 17, 8, 0, 9, 0),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 8, 0, 0, 0, 0],
+                32,
+                34,
+                37,
+                (false, 1, 1, 8, 1, 9, 0),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
+                32,
+                33,
+                38,
+                (false, 1, 32, 8, 0, 9, 1),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
+                32,
+                33,
+                39,
+                (false, 1, 64, 8, 0, 9, 2),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
+                32,
+                33,
+                40,
+                (false, 1, 128, 8, 0, 9, 3),
+            ),
+            //(
+            //    [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
+            //    32,
+            //    33,
+            //    37,
+            //    (false, 1, 16, 8, 0, 0, 0),
+            //),
+            //(
+            //    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+            //    32,
+            //    33,
+            //    42,
+            //    (true, 1, 0, 8, 0, 10, 1),
+            //),
+            //(
+            //    [0, 0, 0, 0, 0, 0, 0, 1, 0, 8, 0, 0, 0, 0],
+            //    32,
+            //    33,
+            //    42,
+            //    (false, 1, 32, 8, 0, 0, 0),
+            //),
+            //(
+            //    [0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 0],
+            //    32,
+            //    33,
+            //    42,
+            //    (false, 1, 4, 8, 0, 0, 0),
+            //),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0],
+                33,
+                34,
+                41,
+                (true, 1, 0, 8, 1, 10, 0),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0],
+                34,
+                35,
+                43,
+                (true, 1, 0, 8, 2, 10, 2),
+            ),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+                35,
+                36,
+                44,
+                (true, 1, 0, 8, 3, 10, 3),
             ),
         ];
         for (message, f, s, e, result) in messages {
             assert_eq!(
                 badflags(&message, f, s, e),
                 result,
-                "F:{} S:{} E:{}",
+                "F:{} S:{} E:{} L:{}",
                 f,
                 s,
-                e
+                e,
+                e - s + 1
             );
         }
-        //let message = [0, 0, 0, 0, 0, 0, 0, 0, 0b10, 0, 0, 0, 0, 0];
-        //assert_eq!(
-        //    badflags(&message, 35, 36, 42),
-        //    (true, 1, 0, 8, 2),
-        //    "only flag is 1"
-        //);
-        //
-        //let message = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        //assert_eq!(
-        //    badflags(&message, 34, 36, 42),
-        //    (true, 0, 0, 8, 2),
-        //    "all zeros"
-        //);
-        //let message = [0, 0, 0, 0, 0, 0, 0, 0, 0b10, 0, 0, 0, 0, 0];
-        //assert_eq!(
-        //    badflags(&message, 33, 36, 42),
-        //    (true, 1, 0, 8, 2),
-        //    "only flag is 1"
-        //);
     }
-
-    //#[test]
-    //fn test_badflags_false() {
-    //    let message = [0, 0, 0, 0, 0, 0, 0, 0, 0b11, 2, 0, 0, 0, 0];
-    //    assert_eq!(badflags(&message, 35, 36, 42), (false, 1, 1, 8, 2));
-    //    //let message = [0, 0, 0, 0, 0, 0, 0, 2, 0xf, 0, 0, 0, 0, 0];
-    //    //assert_eq!(badflags(&message, 35, 36, 42), false);
-    //}
 }
