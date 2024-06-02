@@ -1,6 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
-use log::info;
+use log::{error, info};
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -84,15 +84,18 @@ impl Plane {
 
         if df == 4 {
             if let Some(altitude) = adsb::altitude(message, df) {
-                self.altitude = Some(altitude);
-                self.altitude_source = ' ';
+                if altitude > 1000000 {
+                    error!("DF:{} ALT:{} ERR: {}", df, self.altitude.unwrap(), altitude);
+                } else {
+                    self.altitude = Some(altitude);
+                }
             }
+            self.altitude_source = ' ';
         }
         if df == 5 || df == 21 {
-            if let Some(squawk) = adsb::squawk(message) {
-                self.squawk = Some(squawk);
-            }
+            self.squawk = adsb::squawk(message);
         }
+
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
