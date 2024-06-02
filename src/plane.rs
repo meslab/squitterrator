@@ -86,10 +86,12 @@ impl Plane {
             if let Some(altitude) = adsb::altitude(message, df) {
                 if altitude > 1000000 {
                     error!(
-                        "DF:{} ALT:{} ERR: {}",
+                        "DF:{} ALT:{} ERR: {} ICAO:{}, M:{:?}",
                         df,
                         self.altitude.unwrap_or(0),
-                        altitude
+                        altitude,
+                        self.icao,
+                        message
                     );
                 } else {
                     self.altitude = Some(altitude);

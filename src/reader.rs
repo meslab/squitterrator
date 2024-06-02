@@ -1,5 +1,5 @@
 use crate::Args;
-use log::{debug, warn};
+use log::{debug, error, warn};
 use squitterator::adsb::message;
 use squitterator::adsb::{df, icao};
 use squitterator::plane::{format_simple_display, Plane};
@@ -25,6 +25,11 @@ pub fn read_lines<R: BufRead>(
                     let df = df(&message);
                     if args.count_df {
                         *df_count.entry(df).or_insert(1) += 1;
+                    }
+                    if let Some(m) = &args.log_messages {
+                        if m.contains(&df) {
+                            error!("DF:{}, L:{}", df, squitter);
+                        }
                     }
                     if let Some(only) = &args.filter {
                         if only.iter().all(|&x| x != df) {
