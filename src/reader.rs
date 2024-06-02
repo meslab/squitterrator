@@ -105,6 +105,7 @@ fn print_header(wide: bool, header: bool) {
     let extra_headers = [
         ("AGNSS", 5),
         ("TEMP", 5),
+        ("WND", 3),
         ("VX", 2),
         ("DF", 2),
         ("TC", 2),
@@ -166,6 +167,8 @@ fn print_legend(wide: bool) {
 
     let legend_wide = [
         ("AGNSS", "Altitude (GNSS)"),
+        ("TEMP", "Static temperature"),
+        ("WND", "Wind Speed"),
         ("VX", "Wake Vortex ADS-B Category"),
         ("DF", "Downlink Format"),
         ("TC", "Type Code"),
