@@ -85,7 +85,12 @@ impl Plane {
         if df == 4 {
             if let Some(altitude) = adsb::altitude(message, df) {
                 if altitude > 1000000 {
-                    error!("DF:{} ALT:{} ERR: {}", df, self.altitude.unwrap(), altitude);
+                    error!(
+                        "DF:{} ALT:{} ERR: {}",
+                        df,
+                        self.altitude.unwrap_or(0),
+                        altitude
+                    );
                 } else {
                     self.altitude = Some(altitude);
                 }
@@ -193,7 +198,13 @@ impl Plane {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
             if bds == (4, 4) {
-                self.temperature = adsb::temperature(message);
+                if let Some(temp) = adsb::temperature(message) {
+                    if temp > 45.0 {
+                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
+                    } else {
+                        self.temperature = Some(temp);
+                    }
+                }
             }
         }
     }

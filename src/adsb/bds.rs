@@ -16,6 +16,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     if let (2, 0) = (message[8] & 0xF, message[9] & 0xF) {
         return (2, 0);
     };
+
     if let (3, 0) = (message[8] & 0xF, message[9] & 0xF) {
         if message[7] & 0b1100 != 0b1100
             && ((message[3] & 1) << 6 | (message[4] & 0xF) << 2 | (message[5] & 0b1100) >> 2) < 48
@@ -23,21 +24,45 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
             return (3, 0);
         }
     };
+
     if message[15..19].iter().all(|&x| x == 0) {
         return (1, 7);
     }
+    if goodflags(message, 33, 34, 45)
+        && goodflags(message, 46, 47, 58)
+        && goodflags(message, 59, 60, 71)
+        && !goodflags(message, 33, 72, 79)
+        && !goodflags(message, 33, 84, 85)
+    {
+        return (4, 0);
+    };
+
+    if goodflags(message, 33, 34, 44)
+        && goodflags(message, 45, 46, 55)
+        && goodflags(message, 56, 57, 66)
+        && goodflags(message, 67, 68, 77)
+        && goodflags(message, 78, 79, 88)
+    {
+        return (5, 0);
+    };
     if let Some(temp) = crate::adsb::temperature(message) {
-        if (-80.0..=60.0).contains(&temp) {
+        if (-80.0..=60.0).contains(&temp)
+            && goodflags(message, 37, 38, 55)
+            && goodflags(message, 67, 68, 78)
+            && goodflags(message, 67, 68, 78)
+            && goodflags(message, 79, 80, 81)
+            && goodflags(message, 82, 83, 88)
+        {
             return (4, 4);
         };
     };
     (0, 0)
 }
 
-pub fn badflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
+pub fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
     match badflags_expanded(message, flag, sb, eb) {
-        Some((result, _, _, _, _, _, _)) => result,
-        None => true,
+        Some((result, _, _, _, _, _, _)) => !result,
+        None => false,
     }
 }
 
