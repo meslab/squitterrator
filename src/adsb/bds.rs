@@ -34,16 +34,26 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     (0, 0)
 }
 
-pub fn badflags(
+pub fn badflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
+    match badflags_expanded(message, flag, sb, eb) {
+        Some((result, _, _, _, _, _, _)) => result,
+        None => true,
+    }
+}
+
+fn badflags_expanded(
     message: &[u32],
     flag: u32,
     sb: u32,
     eb: u32,
-) -> (bool, u32, u32, usize, usize, usize, usize) {
+) -> Option<(bool, u32, u32, usize, usize, usize, usize)> {
     let (flag_ibyte, flag_ibit) = bit_location(flag);
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);
 
+    if eb_ibyte < sb_ibyte || (eb_ibyte == sb_ibyte && eb_ibit < sb_ibit) {
+        return None;
+    }
     let result = match eb_ibyte - sb_ibyte {
         0 => (message[sb_ibyte] & (0xF >> sb_ibit)) >> (3 - eb_ibit),
         1 => {
@@ -63,10 +73,10 @@ pub fn badflags(
 
     let flag = message[flag_ibyte] >> (3 - flag_ibit);
     match flag {
-        0 => (true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit),
+        0 => Some((true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit)),
         _ => match result {
-            0 => (true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit),
-            _ => (false, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit),
+            0 => Some((true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit)),
+            _ => Some((false, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit)),
         },
     }
 }
@@ -149,13 +159,13 @@ mod tests {
                 40,
                 (false, 1, 128, 8, 0, 9, 3),
             ),
-            //(
-            //    [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
-            //    32,
-            //    33,
-            //    37,
-            //    (false, 1, 16, 8, 0, 0, 0),
-            //),
+            (
+                [0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 0],
+                32,
+                34,
+                46,
+                (false, 1, 0b100_0000_0000_00, 8, 1, 11, 1),
+            ),
             //(
             //    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
             //    32,
@@ -201,8 +211,8 @@ mod tests {
         ];
         for (message, f, s, e, result) in messages {
             assert_eq!(
-                badflags(&message, f, s, e),
-                result,
+                badflags_expanded(&message, f, s, e),
+                Some(result),
                 "F:{} S:{} E:{} L:{}",
                 f,
                 s,
