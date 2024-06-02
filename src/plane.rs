@@ -1,6 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
-use log::info;
+use log::{error, info};
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -27,6 +27,7 @@ pub struct Plane {
     pub airspeed: u32,
     pub turn: u32,
     pub track: Option<f64>,
+    pub temperature: Option<f64>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -60,6 +61,7 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
+            temperature: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -82,15 +84,23 @@ impl Plane {
 
         if df == 4 {
             if let Some(altitude) = adsb::altitude(message, df) {
-                self.altitude = Some(altitude);
-                self.altitude_source = ' ';
+                if altitude > 1000000 {
+                    error!(
+                        "DF:{} ALT:{} ERR: {}",
+                        df,
+                        self.altitude.unwrap_or(0),
+                        altitude
+                    );
+                } else {
+                    self.altitude = Some(altitude);
+                }
             }
+            self.altitude_source = ' ';
         }
         if df == 5 || df == 21 {
-            if let Some(squawk) = adsb::squawk(message) {
-                self.squawk = Some(squawk);
-            }
+            self.squawk = adsb::squawk(message);
         }
+
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
@@ -186,6 +196,15 @@ impl Plane {
             }
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
+            }
+            if bds == (4, 4) {
+                if let Some(temp) = adsb::temperature(message) {
+                    if temp > 45.0 {
+                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
+                    } else {
+                        self.temperature = Some(temp);
+                    }
+                }
             }
         }
     }
@@ -292,6 +311,11 @@ impl SimpleDisplay for Plane {
         if wide {
             if let Some(altitude_gnss) = self.altitude_gnss {
                 write!(f, " {:>5}", altitude_gnss)?;
+            } else {
+                write!(f, " {:5}", "")?;
+            }
+            if let Some(temperature) = self.temperature {
+                write!(f, " {:>5.1}", temperature)?;
             } else {
                 write!(f, " {:5}", "")?;
             }
