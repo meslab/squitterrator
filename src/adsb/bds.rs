@@ -37,14 +37,24 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         return (4, 0);
     };
 
-    if goodflags(message, 33, 34, 44)
-        && goodflags(message, 45, 46, 55)
+    if goodflags(message, 33, 34, 43)
+        && goodflags(message, 44, 45, 55)
         && goodflags(message, 56, 57, 66)
         && goodflags(message, 67, 68, 77)
         && goodflags(message, 78, 79, 88)
     {
         return (5, 0);
     };
+
+    if goodflags(message, 33, 34, 44)
+        && goodflags(message, 45, 46, 55)
+        && goodflags(message, 56, 57, 66)
+        && goodflags(message, 67, 68, 77)
+        && goodflags(message, 78, 79, 88)
+    {
+        return (6, 0);
+    };
+
     if let Some(temp) = crate::adsb::temperature(message) {
         if (-80.0..=60.0).contains(&temp)
             && goodflags(message, 37, 38, 55)
@@ -55,6 +65,18 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         {
             return (4, 4);
         };
+    };
+    if goodflags(message, 33, 34, 35)
+        && goodflags(message, 36, 37, 38)
+        && goodflags(message, 39, 40, 41)
+        && goodflags(message, 42, 43, 44)
+        && goodflags(message, 45, 46, 47)
+        && goodflags(message, 48, 49, 58)
+        && goodflags(message, 59, 60, 60)
+        && goodflags(message, 71, 72, 83)
+        && !goodflags(message, 33, 84, 88)
+    {
+        return (4, 5);
     };
     (0, 0)
 }
