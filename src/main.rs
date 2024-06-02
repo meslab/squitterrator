@@ -36,6 +36,9 @@ pub struct Args {
     #[clap(short, long, default_value = "log.log")]
     log: String,
 
+    #[clap(short='M', long, default_value = None)]
+    log_messages: Option<Vec<u32>>,
+
     #[clap(
         short,
         long,
