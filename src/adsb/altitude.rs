@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_alt() {
         if let Some(message) = adsb::message("A8281200200464B3CF7820CD194C") {
-            let df = adsb::df(&message);
+            let df = adsb::df(&message).unwrap_or(0);
             let result = altitude(&message, df);
             assert_eq!(result, Some(14300));
         }

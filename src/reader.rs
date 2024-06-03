@@ -22,7 +22,12 @@ pub fn read_lines<R: BufRead>(
             Ok(squitter) => {
                 debug!("Squitter: {}", squitter);
                 if let Some(message) = message(&squitter) {
-                    let df = df(&message);
+                    let df = match df(&message) {
+                        Some(df) => df,
+                        None => {
+                            continue;
+                        }
+                    };
                     if args.count_df {
                         *df_count.entry(df).or_insert(1) += 1;
                     }

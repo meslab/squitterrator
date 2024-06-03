@@ -93,7 +93,7 @@ mod tests {
 
         for (squitter, value) in squitters.iter() {
             if let Some(message) = message(squitter) {
-                let df = df(&message);
+                let df = df(&message).unwrap();
                 if let Some(result) = icao(&message, df) {
                     assert_eq!(result, *value, "Squitter: {}", squitter);
                 }
