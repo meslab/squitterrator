@@ -19,7 +19,7 @@ pub fn track_and_groundspeed(message: &[u32], is_supersonic: bool) -> (Option<f6
     };
 
     let sp_south = match crate::adsb::flag_and_range_value(message, 57, 58, 67) {
-        Some((dir_south, speed_south)) => match dir_south {
+        Some((dir_south, speed_south)) => match dir_south & 1 {
             1 => -(speed_south as f64 - 1.0),
             _ => speed_south as f64 - 1.0,
         },
@@ -43,16 +43,7 @@ mod tests {
         if let Some(message) = adsb::message("8DC06A75990D0628B0040C8AA788") {
             if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message, false) {
                 assert_eq!(groundspeed, 416.0492759277439);
-                assert_eq!(track, 38.853374340353355);
-            };
-        };
-    }
-    #[test]
-    fn test_track_and_groundspeed_new() {
-        if let Some(message) = adsb::message("8DC06A75990D0628B0040C8AA788") {
-            if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message, false) {
-                assert_eq!(track, 38.853374340353355);
-                assert_eq!(groundspeed, 416.0492759277439);
+                assert_eq!(track, 321.14662565964665);
             };
         };
     }

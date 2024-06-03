@@ -119,7 +119,7 @@ pub fn flag_and_range_value(message: &[u32], flag: u32, sb: u32, eb: u32) -> Opt
         }
     };
 
-    let flag = message[flag_ibyte] >> (3 - flag_ibit);
+    let flag = (message[flag_ibyte] >> (3 - flag_ibit)) & 1;
     match flag {
         0 => Some((flag, result)),
         _ => match result {
