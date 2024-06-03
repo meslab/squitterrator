@@ -248,4 +248,19 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_bit_location() {
+        assert_eq!(bit_location(33), (8, 0));
+        assert_eq!(bit_location(34), (8, 1));
+        assert_eq!(bit_location(35), (8, 2));
+        assert_eq!(bit_location(36), (8, 3));
+        assert_eq!(bit_location(37), (9, 0));
+        assert_eq!(bit_location(38), (9, 1));
+        assert_eq!(bit_location(39), (9, 2));
+        assert_eq!(bit_location(40), (9, 3));
+        assert_eq!(bit_location(1), (0, 0));
+        assert_eq!(bit_location(57), (14, 0));
+        assert_eq!(bit_location(88), (21, 3));
+    }
 }
