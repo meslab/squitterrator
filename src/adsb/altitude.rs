@@ -28,14 +28,18 @@ pub fn altitude_gnss(message: &[u32]) -> Option<u32> {
 }
 
 pub fn altitude_delta(message: &[u32]) -> Option<i32> {
-    let is_negative = (message[20] >> 3) & 1;
-    let absolute_delta = ((message[20] & 0b111) << 4 | message[21] & 0xF) * 25;
-    match absolute_delta {
-        0 => None,
-        _ => match is_negative {
-            1 => Some(-(absolute_delta as i32)),
-            _ => Some(absolute_delta as i32),
-        },
+    if let Some((is_negative, absolute_delta)) =
+        crate::adsb::flag_and_range_value(message, 81, 82, 88)
+    {
+        match absolute_delta {
+            0 => None,
+            _ => match is_negative {
+                1 => Some(-(absolute_delta as i32) * 25),
+                _ => Some(absolute_delta as i32 * 25),
+            },
+        }
+    } else {
+        None
     }
 }
 

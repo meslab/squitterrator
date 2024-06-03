@@ -13,8 +13,9 @@
 /// use squitterator::adsb::{message, df};
 /// let squitter = "8D40621D58C382D690C8AC2863A7";
 /// if let Some(message) = message(squitter) {
-///    let df = df(&message);
-///    assert_eq!(df, 17);
+///     if let Some(df) = df(&message) {
+///         assert_eq!(df, 17);
+///     }
 /// }
 /// ```
 pub fn df(message: &[u32]) -> Option<u32> {
