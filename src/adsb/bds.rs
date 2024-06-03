@@ -30,6 +30,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     if message[15..19].iter().all(|&x| x == 0) {
         return (1, 7);
     }
+
     if goodflags(message, 33, 34, 45)
         && goodflags(message, 46, 47, 58)
         && goodflags(message, 59, 60, 71)
@@ -56,6 +57,14 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     {
         return (6, 0);
     };
+    if goodflags(message, 37, 38, 55)
+        && goodflags(message, 37, 57, 66)
+        && goodflags(message, 67, 68, 78)
+        && goodflags(message, 79, 80, 81)
+        && goodflags(message, 82, 83, 88)
+    {
+        return (4, 4);
+    };
     if goodflags(message, 33, 34, 35)
         && goodflags(message, 36, 37, 38)
         && goodflags(message, 39, 40, 41)
@@ -67,16 +76,6 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         && !goodflags(message, 33, 84, 88)
     {
         return (4, 5);
-    };
-    if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 33, 34, 36) {
-        if (0..=4).contains(&value)
-        && goodflags(message, 37, 38, 56)
-        && goodflags(message, 67, 68, 78)
-        && goodflags(message, 79, 80, 81)
-        && goodflags(message, 82, 83, 88)
-        {
-            return (4, 4);
-        };
     };
     (0, 0)
 }
