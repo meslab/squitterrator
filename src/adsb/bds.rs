@@ -83,17 +83,15 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
 
 pub fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
     match flag_and_range_value(message, flag, sb, eb) {
-        Some((result, _, _, _, _, _, _)) => result,
+        Some((flag, result)) => match flag {
+            0 => false,
+            _ => !matches!(result, 0),
+        },
         None => false,
     }
 }
 
-pub fn flag_and_range_value(
-    message: &[u32],
-    flag: u32,
-    sb: u32,
-    eb: u32,
-) -> Option<(bool, u32, u32, usize, usize, usize, usize)> {
+pub fn flag_and_range_value(message: &[u32], flag: u32, sb: u32, eb: u32) -> Option<(u32, u32)> {
     let (flag_ibyte, flag_ibit) = bit_location(flag);
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);
@@ -118,12 +116,12 @@ pub fn flag_and_range_value(
         }
     };
 
-    let flag = message[flag_ibyte] >> (3 - flag_ibit);
+    let flag = (message[flag_ibyte] >> (3 - flag_ibit)) & 1;
     match flag {
-        0 => Some((false, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit)),
+        0 => Some((flag, result)),
         _ => match result {
-            0 => Some((false, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit)),
-            _ => Some((true, flag, result, sb_ibyte, sb_ibit, eb_ibyte, eb_ibit)),
+            0 => Some((flag, result)),
+            _ => Some((flag, result)),
         },
     }
 }
@@ -155,105 +153,84 @@ mod tests {
                 32,
                 33,
                 37,
-                (false, 1, 0, 8, 0, 9, 0),
+                (1, 0),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
                 32,
                 33,
                 36,
-                (true, 1, 8, 8, 0, 8, 3),
+                (1, 8),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
                 32,
                 33,
                 37,
-                (true, 1, 16, 8, 0, 9, 0),
+                (1, 16),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 8, 0, 0, 0, 0],
                 32,
                 33,
                 37,
-                (true, 1, 17, 8, 0, 9, 0),
+                (1, 17),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 8, 0, 0, 0, 0],
                 32,
                 34,
                 37,
-                (true, 1, 1, 8, 1, 9, 0),
+                (1, 1),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
                 32,
                 33,
                 38,
-                (true, 1, 32, 8, 0, 9, 1),
+                (1, 32),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
                 32,
                 33,
                 39,
-                (true, 1, 64, 8, 0, 9, 2),
+                (1, 64),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0],
                 32,
                 33,
                 40,
-                (true, 1, 128, 8, 0, 9, 3),
+                (1, 128),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 0],
                 32,
                 34,
                 46,
-                (true, 1, 0b100_0000_0000_00, 8, 1, 11, 1),
+                (1, 0b100_0000_0000_00),
             ),
-            //(
-            //    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-            //    32,
-            //    33,
-            //    42,
-            //    (true, 1, 0, 8, 0, 10, 1),
-            //),
-            //(
-            //    [0, 0, 0, 0, 0, 0, 0, 1, 0, 8, 0, 0, 0, 0],
-            //    32,
-            //    33,
-            //    42,
-            //    (false, 1, 32, 8, 0, 0, 0),
-            //),
-            //(
-            //    [0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 0],
-            //    32,
-            //    33,
-            //    42,
-            //    (false, 1, 4, 8, 0, 0, 0),
-            //),
             (
                 [0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0],
                 33,
                 34,
                 41,
-                (false, 1, 0, 8, 1, 10, 0),
+                (1, 0),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0],
                 34,
                 35,
                 43,
-                (false, 1, 0, 8, 2, 10, 2),
+                (1, 0),
             ),
             (
                 [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
                 35,
                 36,
                 44,
-                (false, 1, 0, 8, 3, 10, 3),
+                (1, 0),
             ),
         ];
         for (message, f, s, e, result) in messages {
@@ -267,5 +244,20 @@ mod tests {
                 e - s + 1
             );
         }
+    }
+
+    #[test]
+    fn test_bit_location() {
+        assert_eq!(bit_location(33), (8, 0));
+        assert_eq!(bit_location(34), (8, 1));
+        assert_eq!(bit_location(35), (8, 2));
+        assert_eq!(bit_location(36), (8, 3));
+        assert_eq!(bit_location(37), (9, 0));
+        assert_eq!(bit_location(38), (9, 1));
+        assert_eq!(bit_location(39), (9, 2));
+        assert_eq!(bit_location(40), (9, 3));
+        assert_eq!(bit_location(1), (0, 0));
+        assert_eq!(bit_location(57), (14, 0));
+        assert_eq!(bit_location(88), (21, 3));
     }
 }

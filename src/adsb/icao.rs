@@ -16,9 +16,10 @@ use crate::adsb::get_crc;
 /// ```
 /// use squitterator::adsb::{message, df, icao};
 /// if let Some(message) = message("A0001838300000000000007ADA59") {
-///     let df = df(&message);
-///     if let Some(icao_address) = icao(&message, df) {
-///         assert_eq!(icao_address, 7453696);
+///     if let Some(df) = df(&message) {
+///         if let Some(icao_address) = icao(&message, df) {
+///             assert_eq!(icao_address, 7453696);
+///         }
 ///     }
 /// }
 /// ```
@@ -93,7 +94,7 @@ mod tests {
 
         for (squitter, value) in squitters.iter() {
             if let Some(message) = message(squitter) {
-                let df = df(&message);
+                let df = df(&message).unwrap();
                 if let Some(result) = icao(&message, df) {
                     assert_eq!(result, *value, "Squitter: {}", squitter);
                 }
