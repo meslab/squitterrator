@@ -1,3 +1,6 @@
+use crate::adsb::flag_and_range_value;
+use log::error;
+
 /// Retrieves the BDS values from a message.
 ///
 /// # Arguments
@@ -54,18 +57,6 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     {
         return (6, 0);
     };
-
-    if let Some(temp) = crate::adsb::temperature(message) {
-        if (-80.0..=60.0).contains(&temp)
-            && goodflags(message, 37, 38, 55)
-            && goodflags(message, 67, 68, 78)
-            && goodflags(message, 67, 68, 78)
-            && goodflags(message, 79, 80, 81)
-            && goodflags(message, 82, 83, 88)
-        {
-            return (4, 4);
-        };
-    };
     if goodflags(message, 33, 34, 35)
         && goodflags(message, 36, 37, 38)
         && goodflags(message, 39, 40, 41)
@@ -78,6 +69,18 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     {
         return (4, 5);
     };
+    if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 33, 33, 36) {
+        if true // (0..=4).contains(&value)
+        && goodflags(message, 37, 38, 56)
+        && goodflags(message, 67, 68, 78)
+        && goodflags(message, 79, 80, 81)
+        && goodflags(message, 82, 83, 88)
+        {
+            return (4, 4);
+        } else {
+            error!("DBS:4.4? V:{}", value);
+        };
+    };
     (0, 0)
 }
 
@@ -89,47 +92,6 @@ pub fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
         },
         None => false,
     }
-}
-
-pub fn flag_and_range_value(message: &[u32], flag: u32, sb: u32, eb: u32) -> Option<(u32, u32)> {
-    let (flag_ibyte, flag_ibit) = bit_location(flag);
-    let (sb_ibyte, sb_ibit) = bit_location(sb);
-    let (eb_ibyte, eb_ibit) = bit_location(eb);
-
-    if eb_ibyte < sb_ibyte || (eb_ibyte == sb_ibyte && eb_ibit < sb_ibit) {
-        return None;
-    }
-    let result = match eb_ibyte - sb_ibyte {
-        0 => (message[sb_ibyte] & (0xF >> sb_ibit)) >> (3 - eb_ibit),
-        1 => {
-            (message[sb_ibyte] & (0xF >> sb_ibit)) << (eb_ibit + 1)
-                | (message[eb_ibyte] >> (3 - eb_ibit))
-        }
-        _ => {
-            message[sb_ibyte + 1..eb_ibyte]
-                .iter()
-                .fold(message[sb_ibyte] & (0xF >> sb_ibit), |a, x| {
-                    a << 4 | x & 0xF
-                })
-                << (eb_ibit + 1)
-                | (message[eb_ibyte] >> (3 - eb_ibit))
-        }
-    };
-
-    let flag = (message[flag_ibyte] >> (3 - flag_ibit)) & 1;
-    match flag {
-        0 => Some((flag, result)),
-        _ => match result {
-            0 => Some((flag, result)),
-            _ => Some((flag, result)),
-        },
-    }
-}
-
-fn bit_location(position: u32) -> (usize, usize) {
-    let ibyte: usize = ((position - 1) / 4).try_into().unwrap();
-    let ibit: usize = ((position - 1) % 4).try_into().unwrap();
-    (ibyte, ibit)
 }
 
 #[cfg(test)]
@@ -244,20 +206,5 @@ mod tests {
                 e - s + 1
             );
         }
-    }
-
-    #[test]
-    fn test_bit_location() {
-        assert_eq!(bit_location(33), (8, 0));
-        assert_eq!(bit_location(34), (8, 1));
-        assert_eq!(bit_location(35), (8, 2));
-        assert_eq!(bit_location(36), (8, 3));
-        assert_eq!(bit_location(37), (9, 0));
-        assert_eq!(bit_location(38), (9, 1));
-        assert_eq!(bit_location(39), (9, 2));
-        assert_eq!(bit_location(40), (9, 3));
-        assert_eq!(bit_location(1), (0, 0));
-        assert_eq!(bit_location(57), (14, 0));
-        assert_eq!(bit_location(88), (21, 3));
     }
 }

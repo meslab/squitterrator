@@ -1,6 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
-use log::{error, info};
+use log::{debug, error, info};
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -195,6 +195,7 @@ impl Plane {
         }
         if df == 20 || df == 21 {
             let bds = adsb::bds(message);
+            debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
             }
@@ -202,7 +203,7 @@ impl Plane {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
             if bds == (4, 4) {
-                if let Some(temp) = adsb::temperature(message) {
+                if let Some(temp) = adsb::temperature_4_4(message) {
                     if temp > 45.0 {
                         error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
                     } else {
@@ -231,6 +232,15 @@ impl Plane {
                         self.pressure = Some(pressure);
                     } else {
                         error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, pressure);
+                    }
+                }
+            }
+            if bds == (4, 5) {
+                if let Some(temp) = adsb::temperature_4_5(message) {
+                    if temp > 45.0 {
+                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
+                    } else {
+                        self.temperature = Some(temp);
                     }
                 }
             }

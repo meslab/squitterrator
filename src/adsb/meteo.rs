@@ -1,6 +1,6 @@
 use crate::adsb::flag_and_range_value;
 
-pub fn temperature(message: &[u32]) -> Option<f64> {
+pub fn temperature_4_4(message: &[u32]) -> Option<f64> {
     if let Some((sign, temp)) = flag_and_range_value(message, 56, 57, 66) {
         match sign {
             0 => Some(temp as f64 / 4.0),
@@ -36,11 +36,7 @@ fn wind_direction(message: &[u32]) -> Option<u32> {
 
 pub fn wind_4_4(message: &[u32]) -> Option<(u32, u32)> {
     if let Some(wind_speed) = wind_speed(message) {
-        if let Some(wind_direction) = wind_direction(message) {
-            Some((wind_speed, wind_direction))
-        } else {
-            None
-        }
+        wind_direction(message).map(|wind_direction| (wind_speed, wind_direction))
     } else {
         None
     }
@@ -72,6 +68,27 @@ pub fn pressure_4_4(message: &[u32]) -> Option<u32> {
     if let Some((status, pressure)) = crate::adsb::flag_and_range_value(message, 67, 68, 78) {
         match status {
             1 => Some(pressure),
+            _ => None,
+        }
+    } else {
+        None
+    }
+}
+
+pub fn temperature_4_5(message: &[u32]) -> Option<f64> {
+    if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 48, 49, 58) {
+        match status {
+            1 => {
+                if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 49, 50, 58)
+                {
+                    match sign {
+                        1 => Some(-(value as f64 * 0.25)),
+                        _ => Some(value as f64 * 0.25),
+                    }
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     } else {
