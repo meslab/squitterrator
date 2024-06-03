@@ -85,10 +85,7 @@ pub fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
     match flag_and_range_value(message, flag, sb, eb) {
         Some((flag, result)) => match flag {
             0 => false,
-            _ => match result {
-                0 => false,
-                _ => true,
-            },
+            _ => !matches!(result, 0),
         },
         None => false,
     }
