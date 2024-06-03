@@ -60,7 +60,7 @@ pub fn turbulence_4_4(message: &[u32]) -> Option<u32> {
 pub fn humidity_4_4(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 82, 83, 88) {
         match status {
-            1 => Some((value * 100) >> 5),
+            1 => Some((value * 100) >> 6),
             _ => None,
         }
     } else {
