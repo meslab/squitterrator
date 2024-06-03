@@ -1,5 +1,4 @@
 use crate::adsb::flag_and_range_value;
-use log::error;
 
 /// Retrieves the BDS values from a message.
 ///
@@ -69,16 +68,14 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     {
         return (4, 5);
     };
-    if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 33, 33, 36) {
-        if true // (0..=4).contains(&value)
+    if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 33, 34, 36) {
+        if (0..=4).contains(&value)
         && goodflags(message, 37, 38, 56)
         && goodflags(message, 67, 68, 78)
         && goodflags(message, 79, 80, 81)
         && goodflags(message, 82, 83, 88)
         {
             return (4, 4);
-        } else {
-            error!("DBS:4.4? V:{}", value);
         };
     };
     (0, 0)
