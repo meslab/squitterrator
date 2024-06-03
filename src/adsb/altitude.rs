@@ -24,7 +24,11 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
 }
 
 pub fn altitude_gnss(message: &[u32]) -> Option<u32> {
-    Some(((message[12] & 0xF) << 8 | (message[13] & 0xF) << 4) | (message[14] & 0xF))
+    if let Some((_, altitude)) = crate::adsb::flag_and_range_value(message, 1, 49, 60) {
+        Some(altitude)
+    } else {
+        None
+    }
 }
 
 pub fn altitude_delta(message: &[u32]) -> Option<i32> {
