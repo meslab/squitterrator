@@ -31,6 +31,7 @@ pub struct Plane {
     pub wind: Option<(u32, u32)>,
     pub turbulence: Option<u32>,
     pub humidity: Option<u32>,
+    pub pressure: Option<u32>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -68,6 +69,7 @@ impl Plane {
             wind: None,
             turbulence: None,
             humidity: None,
+            pressure: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -230,6 +232,13 @@ impl Plane {
                 if let Some(turbulence) = adsb::turbulence_4_4(message) {
                     self.turbulence = Some(turbulence);
                 }
+                if let Some(pressure) = adsb::pressure_4_4(message) {
+                    if (0..=2048).contains(&pressure) {
+                        self.pressure = Some(pressure);
+                    } else {
+                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, pressure);
+                    }
+                }
             }
         }
     }
@@ -354,6 +363,11 @@ impl SimpleDisplay for Plane {
                 write!(f, " {:>3}", humidity)?;
             } else {
                 write!(f, " {:3}", "")?;
+            }
+            if let Some(pressure) = self.pressure {
+                write!(f, " {:>4}", pressure)?;
+            } else {
+                write!(f, " {:4}", "")?;
             }
             if let Some(turbulence) = self.turbulence {
                 write!(f, " {:>2}", turbulence)?;

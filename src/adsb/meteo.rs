@@ -1,4 +1,4 @@
-use super::flag_and_range_value;
+use crate::adsb::flag_and_range_value;
 
 pub fn temperature(message: &[u32]) -> Option<f64> {
     if let Some((sign, temp)) = flag_and_range_value(message, 56, 57, 66) {
@@ -61,6 +61,17 @@ pub fn humidity_4_4(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 82, 83, 88) {
         match status {
             1 => Some((value * 100) >> 6),
+            _ => None,
+        }
+    } else {
+        None
+    }
+}
+
+pub fn pressure_4_4(message: &[u32]) -> Option<u32> {
+    if let Some((status, pressure)) = crate::adsb::flag_and_range_value(message, 67, 68, 78) {
+        match status {
+            1 => Some(pressure),
             _ => None,
         }
     } else {
