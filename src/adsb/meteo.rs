@@ -1,7 +1,7 @@
 use super::flag_and_range_value;
 
 pub fn temperature(message: &[u32]) -> Option<f64> {
-    if let Some((_, sign, temp, _, _, _, _)) = flag_and_range_value(message, 56, 57, 66) {
+    if let Some((sign, temp)) = flag_and_range_value(message, 56, 57, 66) {
         match sign {
             0 => Some(temp as f64 / 4.0),
             _ => Some(-(temp as f64 / 4.0)),
@@ -12,7 +12,7 @@ pub fn temperature(message: &[u32]) -> Option<f64> {
 }
 
 pub fn wind_speed(message: &[u32]) -> Option<u32> {
-    if let Some((_, status, speed, _, _, _, _)) = flag_and_range_value(message, 37, 38, 46) {
+    if let Some((status, speed)) = flag_and_range_value(message, 37, 38, 46) {
         match status {
             1 => Some(speed),
             _ => None,
