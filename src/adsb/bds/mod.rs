@@ -75,13 +75,16 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     {
         return (6, 0);
     };
-    if goodflags(message, 37, 38, 55)
-        && goodflags(message, 37, 57, 66)
-        && goodflags(message, 67, 68, 78)
-        && goodflags(message, 79, 80, 81)
-        && goodflags(message, 82, 83, 88)
-    {
-        return (4, 4);
+    if let Some((_, fom)) = crate::adsb::flag_and_range_value(message, 33, 33, 36) {
+        if fom < 4
+            && goodflags(message, 37, 38, 55)
+            && goodflags(message, 37, 57, 66)
+            && goodflags(message, 67, 68, 78)
+            && goodflags(message, 79, 80, 81)
+            && goodflags(message, 82, 83, 88)
+        {
+            return (4, 4);
+        }
     };
     if goodflags(message, 33, 34, 35)
         && goodflags(message, 36, 37, 38)
