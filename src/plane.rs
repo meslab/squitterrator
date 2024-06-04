@@ -1,6 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
-use log::{error, info};
+use log::{debug, error, info};
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -20,15 +20,15 @@ pub struct Plane {
     pub cpr_time: [DateTime<Utc>; 2],
     pub lat: f64,
     pub lon: f64,
-    pub sp_west: i32,
-    pub sp_south: i32,
-    pub grspeed: Option<f64>,
+    pub grspeed: Option<u32>,
     pub ground_movement: Option<f64>,
-    pub airspeed: u32,
     pub turn: u32,
-    pub track: Option<f64>,
+    pub track: Option<u32>,
     pub temperature: Option<f64>,
-    pub wind_speed: Option<u32>,
+    pub wind: Option<(u32, u32)>,
+    pub turbulence: Option<u32>,
+    pub humidity: Option<u32>,
+    pub pressure: Option<u32>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
@@ -55,15 +55,15 @@ impl Plane {
             cpr_time: [Utc::now(), Utc::now()],
             lat: 0.0,
             lon: 0.0,
-            sp_west: 0,
-            sp_south: 0,
             grspeed: None,
-            airspeed: 0,
             ground_movement: None,
             turn: 0,
             track: None,
             temperature: None,
-            wind_speed: None,
+            wind: None,
+            turbulence: None,
+            humidity: None,
+            pressure: None,
             timestamp: Utc::now(),
             position_timestamp: None,
             last_type_code: 0,
@@ -195,6 +195,7 @@ impl Plane {
         }
         if df == 20 || df == 21 {
             let bds = adsb::bds(message);
+            debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
             }
@@ -202,15 +203,45 @@ impl Plane {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
             if bds == (4, 4) {
-                if let Some(temp) = adsb::temperature(message) {
+                if let Some(temp) = adsb::temperature_4_4(message) {
                     if temp > 45.0 {
                         error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
                     } else {
                         self.temperature = Some(temp);
                     }
                 }
-                if let Some(wind_speed) = adsb::wind_speed(message) {
-                    self.wind_speed = Some(wind_speed);
+                if let Some(wind) = adsb::wind_4_4(message) {
+                    if (0..=511).contains(&wind.0) && (0..=360).contains(&wind.1) {
+                        self.wind = Some(wind);
+                    } else {
+                        error!("DF:{} T:{}.{} W:{}.{}", df, bds.0, bds.1, wind.0, wind.1);
+                    }
+                }
+                if let Some(humidity) = adsb::humidity_4_4(message) {
+                    if (0..=100).contains(&humidity) {
+                        self.humidity = Some(humidity);
+                    } else {
+                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, humidity);
+                    }
+                }
+                if let Some(turbulence) = adsb::turbulence_4_4(message) {
+                    self.turbulence = Some(turbulence);
+                }
+                if let Some(pressure) = adsb::pressure_4_4(message) {
+                    if (0..=2048).contains(&pressure) {
+                        self.pressure = Some(pressure);
+                    } else {
+                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, pressure);
+                    }
+                }
+            }
+            if bds == (4, 5) {
+                if let Some(temp) = adsb::temperature_4_5(message) {
+                    if temp > 45.0 {
+                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
+                    } else {
+                        self.temperature = Some(temp);
+                    }
                 }
             }
         }
@@ -326,10 +357,26 @@ impl SimpleDisplay for Plane {
             } else {
                 write!(f, " {:5}", "")?;
             }
-            if let Some(wind_speed) = self.wind_speed {
-                write!(f, " {:>3}", wind_speed)?;
+            if let Some(wind) = self.wind {
+                write!(f, " {:>3}", wind.0)?;
+                write!(f, " {:>3}", wind.1)?;
+            } else {
+                write!(f, " {:7}", "")?;
+            }
+            if let Some(humidity) = self.humidity {
+                write!(f, " {:>3}", humidity)?;
             } else {
                 write!(f, " {:3}", "")?;
+            }
+            if let Some(pressure) = self.pressure {
+                write!(f, " {:>4}", pressure)?;
+            } else {
+                write!(f, " {:4}", "")?;
+            }
+            if let Some(turbulence) = self.turbulence {
+                write!(f, " {:>2}", turbulence)?;
+            } else {
+                write!(f, " {:2}", "")?;
             }
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {

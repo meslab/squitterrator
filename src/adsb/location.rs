@@ -1,18 +1,15 @@
 use crate::adsb::pmod;
 
 pub fn cpr(message: &[u32]) -> (u32, u32, u32) {
-    let cpr_form = (message[13] >> 2) & 1;
-    let cpr_lat = ((message[13] & 3) << 15)
-        | ((message[14] & 0xF) << 11)
-        | ((message[15] & 0xF) << 7)
-        | ((message[16] & 0xF) << 3)
-        | ((message[17] & 0xE) >> 1);
-    let cpr_long = ((message[17] & 1) << 16)
-        | ((message[18] & 0xF) << 12)
-        | ((message[19] & 0xF) << 8)
-        | ((message[20] & 0xF) << 4)
-        | message[21] & 0xF;
-    (cpr_form, cpr_lat, cpr_long)
+    if let Some((cpr_form, cpr_lat)) = crate::adsb::flag_and_range_value(message, 54, 55, 71) {
+        if let Some((_, cpr_long)) = crate::adsb::flag_and_range_value(message, 54, 72, 88) {
+            (cpr_form, cpr_lat, cpr_long)
+        } else {
+            (0, 0, 0)
+        }
+    } else {
+        (0, 0, 0)
+    }
 }
 
 pub fn cpr_location(
