@@ -1,9 +1,11 @@
-use crate::adsb::{flag_and_range_value, roll_angle_5_0, track_angle_5_0};
+mod bds_5_0;
+
+pub use bds_5_0::*;
 
 use super::{
-    barometric_altitude_rate_6_0, ground_speed_5_0, indicated_airspeed_6_0,
-    internal_vertical_velocity_6_0, mach_number_6_0, magnetic_heading_6_0, track_angle_rate_5_0,
-    true_airspeed_5_0,
+    barometric_altitude_rate_6_0, flag_and_range_value, ground_speed_5_0, indicated_airspeed_6_0,
+    internal_vertical_velocity_6_0, mach_number_6_0, magnetic_heading_6_0, roll_angle_5_0,
+    track_angle_5_0, track_angle_rate_5_0, true_airspeed_5_0,
 };
 
 /// Retrieves the BDS values from a message.
@@ -52,7 +54,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         && goodflags(message, 67, 68, 77)
         && goodflags(message, 78, 79, 88)
         && roll_angle_5_0(message).is_some_and(|x| (-90..=90).contains(&x))
-        && track_angle_5_0(message).is_some_and(|x| (-180..=180).contains(&x))
+        && track_angle_5_0(message).is_some_and(|x| (0..=360).contains(&x))
         && track_angle_rate_5_0(message).is_some_and(|x| (-16..=16).contains(&x))
         && ground_speed_5_0(message).is_some_and(|x| (0..=2046).contains(&x))
         && true_airspeed_5_0(message).is_some_and(|x| (0..=2046).contains(&x))
@@ -96,7 +98,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     (0, 0)
 }
 
-pub fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
+fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
     match flag_and_range_value(message, flag, sb, eb) {
         Some((flag, result)) => match flag {
             0 => false,

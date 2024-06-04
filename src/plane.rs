@@ -24,6 +24,10 @@ pub struct Plane {
     pub ground_movement: Option<f64>,
     pub turn: u32,
     pub track: Option<u32>,
+    pub roll_angle: Option<i32>,
+    pub track_angle_rate: Option<i32>,
+    pub true_airspeed: Option<u32>,
+    pub bds_5_0_timestamp: Option<DateTime<Utc>>,
     pub temperature: Option<f64>,
     pub wind: Option<(u32, u32)>,
     pub turbulence: Option<u32>,
@@ -59,6 +63,10 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
+            roll_angle: None,
+            track_angle_rate: None,
+            true_airspeed: None,
+            bds_5_0_timestamp: None,
             temperature: None,
             wind: None,
             turbulence: None,
@@ -201,6 +209,22 @@ impl Plane {
             }
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
+            }
+            if let Some(b50ts) = self.bds_5_0_timestamp {
+                if b50ts.signed_duration_since(self.timestamp).num_seconds() > 10 {
+                    self.roll_angle = None;
+                    self.track_angle_rate = None;
+                    self.true_airspeed = None;
+                    self.bds_5_0_timestamp = None;
+                }
+            }
+            if let Some(result) = adsb::is_bds_5_0(message) {
+                self.roll_angle = Some(result.0);
+                self.track = Some(result.1);
+                self.track_angle_rate = Some(result.2);
+                self.grspeed = Some(result.3);
+                self.true_airspeed = Some(result.4);
+                self.bds_5_0_timestamp = Some(self.timestamp);
             }
             if bds == (4, 4) {
                 if let Some(temp) = adsb::temperature_4_4(message) {
@@ -347,10 +371,25 @@ impl SimpleDisplay for Plane {
             write!(f, " {:5}", "")?;
         }
         if wide {
+            if let Some(roll_angle) = self.roll_angle {
+                write!(f, " {:>4}", roll_angle)?;
+            } else {
+                write!(f, " {:4}", "")?;
+            }
+            if let Some(track_angle_rate) = self.track_angle_rate {
+                write!(f, " {:>3}", track_angle_rate)?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
             if let Some(altitude_gnss) = self.altitude_gnss {
                 write!(f, " {:>5}", altitude_gnss)?;
             } else {
                 write!(f, " {:5}", "")?;
+            }
+            if let Some(tas) = self.true_airspeed {
+                write!(f, " {:>3}", tas)?;
+            } else {
+                write!(f, " {:3}", "")?;
             }
             if let Some(temperature) = self.temperature {
                 write!(f, " {:>5.1}", temperature)?;

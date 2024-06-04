@@ -108,8 +108,11 @@ fn print_header(wide: bool, header: bool) {
     ];
 
     let extra_headers = [
+        ("ROLL", 4),
+        ("TAR", 3),
         ("AGNSS", 5),
-        ("TEMP", 5),
+        ("TAS", 4),
+        ("TEMP", 4),
         ("WND", 3),
         ("WDR", 3),
         ("HUM", 3),
