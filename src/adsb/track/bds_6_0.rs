@@ -63,3 +63,25 @@ pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
         None
     }
 }
+
+pub fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
+    if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 78, 79, 88) {
+        match status {
+            0 => None,
+            _ => {
+                if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 79, 80, 88)
+                {
+                    let rate = (value << 5) as i32;
+                    match sign {
+                        0 => Some(rate),
+                        _ => Some(-rate),
+                    }
+                } else {
+                    None
+                }
+            }
+        }
+    } else {
+        None
+    }
+}
