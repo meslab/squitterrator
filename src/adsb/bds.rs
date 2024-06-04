@@ -1,8 +1,8 @@
 use crate::adsb::{flag_and_range_value, roll_angle_5_0, track_angle_5_0};
 
 use super::{
-    ground_speed_5_0, indicated_airspeed_6_0, mach_number_6_0, magnetic_heading_6_0,
-    track_angle_rate_5_0, true_airspeed_5_0,
+    barometric_altitude_rate_6_0, ground_speed_5_0, indicated_airspeed_6_0, mach_number_6_0,
+    magnetic_heading_6_0, track_angle_rate_5_0, true_airspeed_5_0,
 };
 
 /// Retrieves the BDS values from a message.
@@ -67,6 +67,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         && magnetic_heading_6_0(message).is_some_and(|x| (-180..=180).contains(&x))
         && indicated_airspeed_6_0(message).is_some_and(|x| (0..=1023).contains(&x))
         && mach_number_6_0(message).is_some_and(|x| (0.0..=4.092).contains(&x))
+        && barometric_altitude_rate_6_0(message).is_some_and(|x| (-16384..=16384).contains(&x))
     {
         return (6, 0);
     };
