@@ -11,9 +11,11 @@ pub fn read_lines<R: BufRead>(
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
-    if args.planes {
+    let display_flags = args.display.concat().chars().collect::<Vec<char>>();
+
+    if !args.display.is_empty() {
         clear_screen();
-        print_legend(args.weather);
+        print_legend(display_flags.contains(&'w'));
     }
     let mut df_count = HashMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
@@ -42,7 +44,7 @@ pub fn read_lines<R: BufRead>(
                         }
                     }
 
-                    if args.planes {
+                    if !args.display.is_empty() {
                         if let Some(icao) = icao(&message, df) {
                             planes
                                 .entry(icao)
@@ -52,7 +54,7 @@ pub fn read_lines<R: BufRead>(
                             let now = chrono::Utc::now();
                             if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
-                                print_header(args.weather, true);
+                                print_header(display_flags.contains(&'w'), true);
                                 planes.retain(|_, plane| {
                                     let elapsed =
                                         now.signed_duration_since(plane.timestamp).num_seconds();
@@ -64,11 +66,11 @@ pub fn read_lines<R: BufRead>(
                                     }
                                 });
                                 planes.shrink_to_fit();
-                                print_planes(planes, args);
+                                print_planes(planes, args, &display_flags);
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
-                                print_header(args.weather, false);
+                                print_header(display_flags.contains(&'w'), false);
                                 if args.count_df {
                                     let result =
                                         df_count.iter().fold(String::new(), |acc, (df, count)| {
@@ -226,7 +228,7 @@ fn print_legend(weather: bool) {
     print!("{}", legend_line);
 }
 
-fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
+fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args, display_flags: &[char]) {
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
     planes_vector.sort_by_cached_key(|&(k, _)| k);
     //let mut reversed_order = args.order_by.iter().collect::<Vec<_>>();
@@ -282,7 +284,10 @@ fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
     print!(
         "{}",
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
-            acc + &format!("{}\n", format_simple_display(*plane, args.weather))
+            acc + &format!(
+                "{}\n",
+                format_simple_display(*plane, display_flags.contains(&'w'))
+            )
         })
     );
 }
