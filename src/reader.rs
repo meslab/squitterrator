@@ -114,7 +114,7 @@ fn print_header(weather: bool, angles: bool, extra: bool, header: bool) {
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
-        ("ALT", 5),
+        ("ALT B", 5),
         ("SQWK", 4),
         ("W", 1),
         ("CALLSIGN", 8),
@@ -125,7 +125,7 @@ fn print_header(weather: bool, angles: bool, extra: bool, header: bool) {
         ("GSP", 3),
     ];
 
-    let headers_angles = [("TAS", 3), ("RLL", 3), ("TAR", 3), ("AGNSS", 5)];
+    let headers_angles = [("TAS", 3), ("RLL", 3), ("TAR", 3), ("ALT G", 5)];
 
     let headers_weather = [
         ("TEMP", 4),
@@ -216,7 +216,7 @@ fn print_legend(weather: bool, angles: bool) {
     let legend = [
         ("ICAO", "ICAO Address"),
         ("RG", "Registraton Country Code"),
-        ("ALT", "Altitude (Barometric)"),
+        ("ALT B", "Altitude (Barometric)"),
         ("SQWK", "Squawk"),
         ("CALLSIGN", "Callsign"),
         ("LATITUDE", "Latitude"),
@@ -238,7 +238,7 @@ fn print_legend(weather: bool, angles: bool) {
     ];
 
     let legend_weather = [
-        ("AGNSS", "Altitude (GNSS)"),
+        ("ALT G", "Altitude (GNSS)"),
         ("TEMP", "Static temperature"),
         ("WND", "Wind Speed"),
         ("WDR", "Wind Direction"),
