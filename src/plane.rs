@@ -318,11 +318,23 @@ impl Display for Plane {
 }
 
 pub trait SimpleDisplay {
-    fn simple_display(&self, f: &mut fmt::Formatter, weather: bool) -> fmt::Result;
+    fn simple_display(
+        &self,
+        f: &mut fmt::Formatter,
+        weather: bool,
+        angles: bool,
+        extra: bool,
+    ) -> fmt::Result;
 }
 
 impl SimpleDisplay for Plane {
-    fn simple_display(&self, f: &mut fmt::Formatter, weather: bool) -> fmt::Result {
+    fn simple_display(
+        &self,
+        f: &mut fmt::Formatter,
+        weather: bool,
+        angles: bool,
+        extra: bool,
+    ) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
         if let Some(altitude) = self.altitude {
@@ -356,26 +368,31 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:9} {:11}", "", "")?;
         }
-        if let Some(grspeed) = self.grspeed {
-            write!(f, " {:>4.0}", grspeed)?;
+        if let Some(vrate) = self.vrate {
+            write!(f, " {:>5}", vrate)?;
         } else {
-            write!(f, " {:4}", "")?;
+            write!(f, " {:5}", "")?;
         }
         if let Some(track) = self.track {
             write!(f, " {:>3.0}", track)?;
         } else {
             write!(f, " {:3}", "")?;
         }
-        if let Some(vrate) = self.vrate {
-            write!(f, " {:>5}", vrate)?;
+        if let Some(grspeed) = self.grspeed {
+            write!(f, " {:>3.0}", grspeed)?;
         } else {
-            write!(f, " {:5}", "")?;
+            write!(f, " {:3}", "")?;
         }
-        if weather {
-            if let Some(roll_angle) = self.roll_angle {
-                write!(f, " {:>4}", roll_angle)?;
+        if angles {
+            if let Some(tas) = self.true_airspeed {
+                write!(f, " {:>3}", tas)?;
             } else {
-                write!(f, " {:4}", "")?;
+                write!(f, " {:3}", "")?;
+            }
+            if let Some(roll_angle) = self.roll_angle {
+                write!(f, " {:>3}", roll_angle)?;
+            } else {
+                write!(f, " {:3}", "")?;
             }
             if let Some(track_angle_rate) = self.track_angle_rate {
                 write!(f, " {:>3}", track_angle_rate)?;
@@ -387,15 +404,12 @@ impl SimpleDisplay for Plane {
             } else {
                 write!(f, " {:5}", "")?;
             }
-            if let Some(tas) = self.true_airspeed {
-                write!(f, " {:>3}", tas)?;
-            } else {
-                write!(f, " {:3}", "")?;
-            }
+        }
+        if weather {
             if let Some(temperature) = self.temperature {
-                write!(f, " {:>5.1}", temperature)?;
+                write!(f, " {:>4.1}", temperature)?;
             } else {
-                write!(f, " {:5}", "")?;
+                write!(f, " {:4}", "")?;
             }
             if let Some(wind) = self.wind {
                 write!(f, " {:>3}", wind.0)?;
@@ -418,6 +432,8 @@ impl SimpleDisplay for Plane {
             } else {
                 write!(f, " {:2}", "")?;
             }
+        }
+        if extra {
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, " {:>2}", self.last_df)?;
@@ -457,14 +473,19 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool);
 
 impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.simple_display(f, self.1)
+        self.0.simple_display(f, self.1, self.2, self.3)
     }
 }
 
-pub fn format_simple_display<T: SimpleDisplay>(item: &T, weather: bool) -> String {
-    format!("{}", SimpleDisplayWrapper(item, weather))
+pub fn format_simple_display<T: SimpleDisplay>(
+    item: &T,
+    weather: bool,
+    angles: bool,
+    extra: bool,
+) -> String {
+    format!("{}", SimpleDisplayWrapper(item, weather, angles, extra))
 }

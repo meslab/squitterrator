@@ -71,7 +71,13 @@ pub fn read_lines<R: BufRead>(
                                     }
                                 });
                                 planes.shrink_to_fit();
-                                print_planes(planes, args, &display_flags);
+                                print_planes(
+                                    planes,
+                                    args,
+                                    display_flags.contains(&'w'),
+                                    display_flags.contains(&'a'),
+                                    display_flags.contains(&'e'),
+                                );
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
@@ -79,7 +85,7 @@ pub fn read_lines<R: BufRead>(
                                     display_flags.contains(&'w'),
                                     display_flags.contains(&'a'),
                                     display_flags.contains(&'e'),
-                                    true,
+                                    false,
                                 );
                                 if args.count_df {
                                     let result =
@@ -114,12 +120,12 @@ fn print_header(weather: bool, angles: bool, extra: bool, header: bool) {
         ("CALLSIGN", 8),
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
-        ("GSPD", 4),
-        ("TRK", 3),
         ("VRATE", 5),
+        ("TRK", 3),
+        ("GSP", 3),
     ];
 
-    let headers_angles = [("ROLL", 4), ("TAR", 3), ("AGNSS", 5), ("TAS", 4)];
+    let headers_angles = [("TAS", 3), ("RLL", 3), ("TAR", 3), ("AGNSS", 5)];
 
     let headers_weather = [
         ("TEMP", 4),
@@ -215,7 +221,7 @@ fn print_legend(weather: bool, angles: bool) {
         ("CALLSIGN", "Callsign"),
         ("LATITUDE", "Latitude"),
         ("LONGITUDE", "Longitude"),
-        ("GSPD", "Ground Speed"),
+        ("GSP", "Ground Speed"),
         ("TRK", "Track"),
         ("VRATE", "Vertical Rate"),
         ("LC", "Last Contact"),
@@ -296,7 +302,13 @@ fn print_legend(weather: bool, angles: bool) {
     print!("{}", legend_line);
 }
 
-fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args, display_flags: &[char]) {
+fn print_planes(
+    planes: &mut HashMap<u32, Plane>,
+    args: &Args,
+    weather: bool,
+    angles: bool,
+    extra: bool,
+) {
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
     planes_vector.sort_by_cached_key(|&(k, _)| k);
     //let mut reversed_order = args.order_by.iter().collect::<Vec<_>>();
@@ -354,7 +366,7 @@ fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args, display_flags: &[
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
             acc + &format!(
                 "{}\n",
-                format_simple_display(*plane, display_flags.contains(&'w'))
+                format_simple_display(*plane, weather, angles, extra)
             )
         })
     );
