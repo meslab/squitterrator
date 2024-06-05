@@ -28,7 +28,7 @@ pub struct Args {
     planes: bool,
 
     #[clap(short, long)]
-    wide: bool,
+    weather: bool,
 
     #[clap(short, long)]
     verbose: bool,

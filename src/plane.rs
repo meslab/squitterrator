@@ -1,6 +1,6 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
-use log::{debug, error, info};
+use log::{debug, error};
 use std::{fmt, fmt::Display};
 
 pub struct Plane {
@@ -268,7 +268,7 @@ impl Plane {
                     }
                 }
             }
-            info!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
+            debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
         }
     }
 }
@@ -318,11 +318,11 @@ impl Display for Plane {
 }
 
 pub trait SimpleDisplay {
-    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result;
+    fn simple_display(&self, f: &mut fmt::Formatter, weather: bool) -> fmt::Result;
 }
 
 impl SimpleDisplay for Plane {
-    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result {
+    fn simple_display(&self, f: &mut fmt::Formatter, weather: bool) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
         if let Some(altitude) = self.altitude {
@@ -371,7 +371,7 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:5}", "")?;
         }
-        if wide {
+        if weather {
             if let Some(roll_angle) = self.roll_angle {
                 write!(f, " {:>4}", roll_angle)?;
             } else {
@@ -465,6 +465,6 @@ impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     }
 }
 
-pub fn format_simple_display<T: SimpleDisplay>(item: &T, wide: bool) -> String {
-    format!("{}", SimpleDisplayWrapper(item, wide))
+pub fn format_simple_display<T: SimpleDisplay>(item: &T, weather: bool) -> String {
+    format!("{}", SimpleDisplayWrapper(item, weather))
 }

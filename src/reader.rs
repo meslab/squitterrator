@@ -13,7 +13,7 @@ pub fn read_lines<R: BufRead>(
 ) -> Result<()> {
     if args.planes {
         clear_screen();
-        print_legend(args.wide);
+        print_legend(args.weather);
     }
     let mut df_count = HashMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
@@ -52,7 +52,7 @@ pub fn read_lines<R: BufRead>(
                             let now = chrono::Utc::now();
                             if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
-                                print_header(args.wide, true);
+                                print_header(args.weather, true);
                                 planes.retain(|_, plane| {
                                     let elapsed =
                                         now.signed_duration_since(plane.timestamp).num_seconds();
@@ -68,7 +68,7 @@ pub fn read_lines<R: BufRead>(
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
-                                print_header(args.wide, false);
+                                print_header(args.weather, false);
                                 if args.count_df {
                                     let result =
                                         df_count.iter().fold(String::new(), |acc, (df, count)| {
@@ -92,7 +92,7 @@ fn clear_screen() {
     print!("{}[H", 27 as char);
 }
 
-fn print_header(wide: bool, header: bool) {
+fn print_header(weather: bool, header: bool) {
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
@@ -129,7 +129,7 @@ fn print_header(wide: bool, header: bool) {
     let header_line: String = headers
         .iter()
         .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-        .chain(if wide {
+        .chain(if weather {
             extra_headers
                 .iter()
                 .map(|&(header, width)| format!("{:>width$} ", header, width = width))
@@ -143,7 +143,7 @@ fn print_header(wide: bool, header: bool) {
     let separator_line: String = headers
         .iter()
         .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-        .chain(if wide {
+        .chain(if weather {
             extra_headers
                 .iter()
                 .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
@@ -161,7 +161,7 @@ fn print_header(wide: bool, header: bool) {
     }
 }
 
-fn print_legend(wide: bool) {
+fn print_legend(weather: bool) {
     let legend = [
         ("ICAO", "ICAO Address"),
         ("RG", "Registraton Country Code"),
@@ -177,7 +177,7 @@ fn print_legend(wide: bool) {
         ("W", "Wake Turbulence Category"),
     ];
 
-    let legend_wide = [
+    let legend_weather = [
         ("AGNSS", "Altitude (GNSS)"),
         ("TEMP", "Static temperature"),
         ("WND", "Wind Speed"),
@@ -205,8 +205,8 @@ fn print_legend(wide: bool) {
                 w1 = width.1
             )
         })
-        .chain(if wide {
-            legend_wide
+        .chain(if weather {
+            legend_weather
                 .iter()
                 .map(|&(header, description)| {
                     format!(
@@ -282,7 +282,7 @@ fn print_planes(planes: &mut HashMap<u32, Plane>, args: &Args) {
     print!(
         "{}",
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
-            acc + &format!("{}\n", format_simple_display(*plane, args.wide))
+            acc + &format!("{}\n", format_simple_display(*plane, args.weather))
         })
     );
 }
