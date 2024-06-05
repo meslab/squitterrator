@@ -2,10 +2,9 @@ use crate::adsb::flag_and_range_value;
 
 pub fn temperature_4_4(message: &[u32]) -> Option<f64> {
     if let Some((sign, temp)) = flag_and_range_value(message, 56, 57, 66) {
-        let (t, _t) = (temp >> 2, temp >> 3);
         match sign {
-            0 => Some(t as f64),
-            _ => Some(-(t as f64)),
+            0 => Some(temp as f64 * 0.25),
+            _ => Some(-(temp as f64 * 0.25)),
         }
     } else {
         None

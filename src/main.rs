@@ -24,11 +24,8 @@ pub struct Args {
     #[clap(short, long, default_value = None)]
     filter: Option<Vec<u32>>,
 
-    #[clap(short, long)]
-    planes: bool,
-
-    #[clap(short, long)]
-    wide: bool,
+    #[clap(short, long, default_value = "p")]
+    display: Vec<String>,
 
     #[clap(short, long)]
     verbose: bool,

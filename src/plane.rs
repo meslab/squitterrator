@@ -1,7 +1,7 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
-use log::{debug, error, info};
-use std::{fmt, fmt::Display};
+use log::{debug, error};
+use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
@@ -15,6 +15,7 @@ pub struct Plane {
     pub surveillance_status: char,
     pub threat_encounter: Option<char>,
     pub vrate: Option<i32>,
+    pub vrate_source: char,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
     pub cpr_time: [DateTime<Utc>; 2],
@@ -24,6 +25,11 @@ pub struct Plane {
     pub ground_movement: Option<f64>,
     pub turn: u32,
     pub track: Option<u32>,
+    pub track_source: char,
+    pub roll_angle: Option<i32>,
+    pub track_angle_rate: Option<i32>,
+    pub true_airspeed: Option<u32>,
+    pub bds_5_0_timestamp: Option<DateTime<Utc>>,
     pub temperature: Option<f64>,
     pub wind: Option<(u32, u32)>,
     pub turbulence: Option<u32>,
@@ -50,6 +56,7 @@ impl Plane {
             surveillance_status: ' ',
             threat_encounter: None,
             vrate: None,
+            vrate_source: '_',
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
             cpr_time: [Utc::now(), Utc::now()],
@@ -59,6 +66,11 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
+            track_source: ' ',
+            roll_angle: None,
+            track_angle_rate: None,
+            true_airspeed: None,
+            bds_5_0_timestamp: None,
             temperature: None,
             wind: None,
             turbulence: None,
@@ -108,7 +120,7 @@ impl Plane {
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
-            info!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
+            debug!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
@@ -147,6 +159,7 @@ impl Plane {
                         if let Some((lat, lon)) = match message_type {
                             5..=8 => {
                                 self.track = adsb::ground_track(message);
+                                self.track_source = ' ';
                                 adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
                             }
                             9..=18 => adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
@@ -162,6 +175,7 @@ impl Plane {
                 }
                 19 => {
                     self.vrate = adsb::vertical_rate(message);
+                    self.vrate_source = ' ';
                     if let Some(altitude) = self.altitude {
                         if let Some(altitude_delta) = adsb::altitude_delta(message) {
                             self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
@@ -171,13 +185,16 @@ impl Plane {
                         1 => {
                             (self.track, self.grspeed) =
                                 adsb::track_and_groundspeed(message, false);
+                            self.track_source = '\u{2081}';
                         }
                         2 => {
                             // 4 knots units for supersonic
                             (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
+                            self.track_source = '\u{2082}';
                         }
                         3 | 4 => {
                             self.track = adsb::heading(message);
+                            self.track_source = '\u{2083}';
                             self.altitude_source = '"';
                         }
                         _ => {}
@@ -194,13 +211,39 @@ impl Plane {
             }
         }
         if df == 20 || df == 21 {
-            let bds = adsb::bds(message);
-            debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
+            let mut bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
             }
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
+            }
+            if let Some(b50ts) = self.bds_5_0_timestamp {
+                if b50ts.signed_duration_since(self.timestamp).num_seconds() > 10 {
+                    self.roll_angle = None;
+                    self.track_angle_rate = None;
+                    self.true_airspeed = None;
+                    self.bds_5_0_timestamp = None;
+                    self.track_source = ' ';
+                }
+            }
+            if let Some(result) = adsb::is_bds_5_0(message) {
+                self.roll_angle = Some(result.0);
+                self.track = Some(result.1);
+                self.track_angle_rate = Some(result.2);
+                self.grspeed = Some(result.3);
+                self.true_airspeed = Some(result.4);
+                self.bds_5_0_timestamp = Some(self.timestamp);
+                self.track_source = '\u{2085}';
+                bds = (5, 0);
+            }
+            if let Some(result) = adsb::is_bds_6_0(message) {
+                self.track = Some(result.0);
+                self.true_airspeed = Some(result.1);
+                self.vrate = Some(result.3);
+                self.vrate_source = '\u{2086}';
+                self.track_source = '\u{2086}';
+                bds = (6, 0);
             }
             if bds == (4, 4) {
                 if let Some(temp) = adsb::temperature_4_4(message) {
@@ -244,6 +287,7 @@ impl Plane {
                     }
                 }
             }
+            debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
         }
     }
 }
@@ -279,9 +323,9 @@ impl Display for Plane {
             write!(f, " {:15} {:16}", "", "")?;
         }
         if let Some(grspeed) = self.grspeed {
-            write!(f, " GSpd: {:>4.0}", grspeed)?;
+            write!(f, " GSpd: {:>3.0}", grspeed)?;
         } else {
-            write!(f, " {:10}", "")?;
+            write!(f, " {:19}", "")?;
         }
         if let Some(track) = self.track {
             write!(f, " Track: {:>3.0}", track)?;
@@ -293,11 +337,23 @@ impl Display for Plane {
 }
 
 pub trait SimpleDisplay {
-    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result;
+    fn simple_display(
+        &self,
+        f: &mut fmt::Formatter,
+        weather: bool,
+        angles: bool,
+        extra: bool,
+    ) -> fmt::Result;
 }
 
 impl SimpleDisplay for Plane {
-    fn simple_display(&self, f: &mut fmt::Formatter, wide: bool) -> fmt::Result {
+    fn simple_display(
+        &self,
+        f: &mut fmt::Formatter,
+        weather: bool,
+        angles: bool,
+        extra: bool,
+    ) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
         if let Some(altitude) = self.altitude {
@@ -331,31 +387,50 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:9} {:11}", "", "")?;
         }
-        if let Some(grspeed) = self.grspeed {
-            write!(f, " {:>4.0}", grspeed)?;
+        if let Some(vrate) = self.vrate {
+            write!(f, " {:>5}", vrate)?;
+            write!(f, "{:1}", self.vrate_source)?;
         } else {
-            write!(f, " {:4}", "")?;
+            write!(f, " {:6}", "")?;
         }
         if let Some(track) = self.track {
-            write!(f, " {:>3.0}", track)?;
+            write!(f, "{:>3.0}", track)?;
+            write!(f, "{:}", self.track_source)?;
+        } else {
+            write!(f, "{:4}", "")?;
+        }
+        if let Some(grspeed) = self.grspeed {
+            write!(f, " {:>3.0}", grspeed)?;
         } else {
             write!(f, " {:3}", "")?;
         }
-        if let Some(vrate) = self.vrate {
-            write!(f, " {:>5}", vrate)?;
-        } else {
-            write!(f, " {:5}", "")?;
-        }
-        if wide {
+        if angles {
+            if let Some(tas) = self.true_airspeed {
+                write!(f, " {:>3}", tas)?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
+            if let Some(roll_angle) = self.roll_angle {
+                write!(f, " {:>3}", roll_angle)?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
+            if let Some(track_angle_rate) = self.track_angle_rate {
+                write!(f, " {:>3}", track_angle_rate)?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
             if let Some(altitude_gnss) = self.altitude_gnss {
                 write!(f, " {:>5}", altitude_gnss)?;
             } else {
                 write!(f, " {:5}", "")?;
             }
+        }
+        if weather {
             if let Some(temperature) = self.temperature {
-                write!(f, " {:>5.1}", temperature)?;
+                write!(f, " {:>4.1}", temperature)?;
             } else {
-                write!(f, " {:5}", "")?;
+                write!(f, " {:4}", "")?;
             }
             if let Some(wind) = self.wind {
                 write!(f, " {:>3}", wind.0)?;
@@ -378,6 +453,8 @@ impl SimpleDisplay for Plane {
             } else {
                 write!(f, " {:2}", "")?;
             }
+        }
+        if extra {
             write!(f, " {}{}", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, " {:>2}", self.last_df)?;
@@ -417,14 +494,19 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool);
 
 impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.simple_display(f, self.1)
+        self.0.simple_display(f, self.1, self.2, self.3)
     }
 }
 
-pub fn format_simple_display<T: SimpleDisplay>(item: &T, wide: bool) -> String {
-    format!("{}", SimpleDisplayWrapper(item, wide))
+pub fn format_simple_display<T: SimpleDisplay>(
+    item: &T,
+    weather: bool,
+    angles: bool,
+    extra: bool,
+) -> String {
+    format!("{}", SimpleDisplayWrapper(item, weather, angles, extra))
 }

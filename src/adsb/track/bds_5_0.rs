@@ -5,11 +5,12 @@ pub fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 34, 35, 43)
                 {
-                    let angle = ((value * 45) >> 8) as i32;
-                    match sign {
-                        0 => Some(angle),
-                        _ => Some(-angle),
-                    }
+                    let value = ((value * 45) / 256) as i32;
+                    let angle = match sign {
+                        0 => value,
+                        _ => value - 90,
+                    };
+                    Some(angle)
                 } else {
                     None
                 }
@@ -20,17 +21,17 @@ pub fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
     }
 }
 
-pub fn track_angle_5_0(message: &[u32]) -> Option<i32> {
+pub fn track_angle_5_0(message: &[u32]) -> Option<u32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 44, 45, 55) {
         match status {
             0 => None,
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 55)
                 {
-                    let angle = ((value * 90) >> 9) as i32;
+                    let angle = (value * 90) >> 9;
                     match sign {
                         0 => Some(angle),
-                        _ => Some(-angle),
+                        _ => Some(angle + 180),
                     }
                 } else {
                     None
@@ -52,7 +53,7 @@ pub fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
                     let angle = ((value << 3) >> 8) as i32;
                     match sign {
                         0 => Some(angle),
-                        _ => Some(-angle),
+                        _ => Some(angle - 15),
                     }
                 } else {
                     None
