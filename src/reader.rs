@@ -15,7 +15,7 @@ pub fn read_lines<R: BufRead>(
 
     if !args.display.is_empty() {
         clear_screen();
-        print_legend(display_flags.contains(&'w'));
+        print_legend(display_flags.contains(&'w'), display_flags.contains(&'a'));
     }
     let mut df_count = HashMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
@@ -54,7 +54,12 @@ pub fn read_lines<R: BufRead>(
                             let now = chrono::Utc::now();
                             if now.signed_duration_since(timestamp).num_seconds() > args.update {
                                 clear_screen();
-                                print_header(display_flags.contains(&'w'), true);
+                                print_header(
+                                    display_flags.contains(&'w'),
+                                    display_flags.contains(&'a'),
+                                    display_flags.contains(&'e'),
+                                    true,
+                                );
                                 planes.retain(|_, plane| {
                                     let elapsed =
                                         now.signed_duration_since(plane.timestamp).num_seconds();
@@ -70,7 +75,12 @@ pub fn read_lines<R: BufRead>(
                                 debug!("Squirter: {}", squitter);
                                 debug!("{}", planes[&icao]);
                                 timestamp = now;
-                                print_header(display_flags.contains(&'w'), false);
+                                print_header(
+                                    display_flags.contains(&'w'),
+                                    display_flags.contains(&'a'),
+                                    display_flags.contains(&'e'),
+                                    true,
+                                );
                                 if args.count_df {
                                     let result =
                                         df_count.iter().fold(String::new(), |acc, (df, count)| {
@@ -94,7 +104,7 @@ fn clear_screen() {
     print!("{}[H", 27 as char);
 }
 
-fn print_header(weather: bool, header: bool) {
+fn print_header(weather: bool, angles: bool, extra: bool, header: bool) {
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
@@ -109,17 +119,18 @@ fn print_header(weather: bool, header: bool) {
         ("VRATE", 5),
     ];
 
-    let extra_headers = [
-        ("ROLL", 4),
-        ("TAR", 3),
-        ("AGNSS", 5),
-        ("TAS", 4),
+    let headers_angles = [("ROLL", 4), ("TAR", 3), ("AGNSS", 5), ("TAS", 4)];
+
+    let headers_weather = [
         ("TEMP", 4),
         ("WND", 3),
         ("WDR", 3),
         ("HUM", 3),
         ("PRES", 4),
         ("TB", 2),
+    ];
+
+    let extra_headers = [
         ("VX", 2),
         ("DF", 2),
         ("TC", 2),
@@ -131,7 +142,23 @@ fn print_header(weather: bool, header: bool) {
     let header_line: String = headers
         .iter()
         .map(|&(header, width)| format!("{:>width$} ", header, width = width))
+        .chain(if angles {
+            headers_angles
+                .iter()
+                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
         .chain(if weather {
+            headers_weather
+                .iter()
+                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .chain(if extra {
             extra_headers
                 .iter()
                 .map(|&(header, width)| format!("{:>width$} ", header, width = width))
@@ -145,7 +172,23 @@ fn print_header(weather: bool, header: bool) {
     let separator_line: String = headers
         .iter()
         .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+        .chain(if angles {
+            headers_angles
+                .iter()
+                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
         .chain(if weather {
+            headers_weather
+                .iter()
+                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .chain(if extra {
             extra_headers
                 .iter()
                 .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
@@ -163,7 +206,7 @@ fn print_header(weather: bool, header: bool) {
     }
 }
 
-fn print_legend(weather: bool) {
+fn print_legend(weather: bool, angles: bool) {
     let legend = [
         ("ICAO", "ICAO Address"),
         ("RG", "Registraton Country Code"),
@@ -177,6 +220,15 @@ fn print_legend(weather: bool) {
         ("VRATE", "Vertical Rate"),
         ("LC", "Last Contact"),
         ("W", "Wake Turbulence Category"),
+    ];
+
+    let legend_angles = [
+        ("TEMP", "Static temperature"),
+        ("WND", "Wind Speed"),
+        ("WDR", "Wind Direction"),
+        ("HUM", "Humidity"),
+        ("PRES", "Static pressure"),
+        ("TB", "Turbulence"),
     ];
 
     let legend_weather = [
@@ -206,6 +258,22 @@ fn print_legend(weather: bool) {
                 w0 = width.0,
                 w1 = width.1
             )
+        })
+        .chain(if angles {
+            legend_angles
+                .iter()
+                .map(|&(header, description)| {
+                    format!(
+                        "{:w0$}: {:w1$}\n",
+                        header,
+                        description,
+                        w0 = width.0,
+                        w1 = width.1
+                    )
+                })
+                .collect()
+        } else {
+            Vec::new()
         })
         .chain(if weather {
             legend_weather
