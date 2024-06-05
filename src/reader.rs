@@ -128,7 +128,7 @@ fn print_header(weather: bool, angles: bool, extra: bool, header: bool) {
     let headers_angles = [("TAS", 3), ("RLL", 3), ("TAR", 3), ("ALT G", 5)];
 
     let headers_weather = [
-        ("TEMP", 4),
+        ("TEMP", 5),
         ("WND", 3),
         ("WDR", 3),
         ("HUM", 3),

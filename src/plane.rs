@@ -247,7 +247,7 @@ impl Plane {
             }
             if bds == (4, 4) {
                 if let Some(temp) = adsb::temperature_4_4(message) {
-                    if temp > 45.0 {
+                    if !(-80.0..=60.0).contains(&temp) {
                         error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
                     } else {
                         self.temperature = Some(temp);
@@ -428,9 +428,9 @@ impl SimpleDisplay for Plane {
         }
         if weather {
             if let Some(temperature) = self.temperature {
-                write!(f, " {:>4.1}", temperature)?;
+                write!(f, " {:>5.1}", temperature)?;
             } else {
-                write!(f, " {:4}", "")?;
+                write!(f, " {:5}", "")?;
             }
             if let Some(wind) = self.wind {
                 write!(f, " {:>3}", wind.0)?;
