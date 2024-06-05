@@ -5,10 +5,10 @@ pub fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 34, 35, 43)
                 {
-                    let value = ((value * 45) / 256) as i32;
+                    let value = value as i32;
                     let angle = match sign {
-                        0 => value,
-                        _ => value - 90,
+                        0 => (value * 45) / 256,
+                        _ => ((value - 512) * 45) / 256,
                     };
                     Some(angle)
                 } else {
