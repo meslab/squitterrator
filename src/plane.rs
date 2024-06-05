@@ -400,9 +400,9 @@ impl SimpleDisplay for Plane {
             write!(f, "{:4}", "")?;
         }
         if let Some(grspeed) = self.grspeed {
-            write!(f, " {:>3.0}", grspeed)?;
+            write!(f, "{:>3.0}", grspeed)?;
         } else {
-            write!(f, " {:3}", "")?;
+            write!(f, "{:3}", "")?;
         }
         if angles {
             if let Some(tas) = self.true_airspeed {
