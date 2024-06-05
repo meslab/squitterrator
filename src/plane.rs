@@ -116,7 +116,7 @@ impl Plane {
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
-            info!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
+            debug!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
             match message_type {
                 1..=4 => {
                     self.ais = adsb::ais(message);
@@ -202,8 +202,7 @@ impl Plane {
             }
         }
         if df == 20 || df == 21 {
-            let bds = adsb::bds(message);
-            debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
+            let mut bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
             }
@@ -225,6 +224,7 @@ impl Plane {
                 self.grspeed = Some(result.3);
                 self.true_airspeed = Some(result.4);
                 self.bds_5_0_timestamp = Some(self.timestamp);
+                bds = (5, 0);
             }
             if bds == (4, 4) {
                 if let Some(temp) = adsb::temperature_4_4(message) {
@@ -268,6 +268,7 @@ impl Plane {
                     }
                 }
             }
+            info!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
         }
     }
 }

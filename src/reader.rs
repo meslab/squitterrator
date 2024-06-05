@@ -73,7 +73,7 @@ pub fn read_lines<R: BufRead>(
                                     let result =
                                         df_count.iter().fold(String::new(), |acc, (df, count)| {
                                             acc + &format!("DF{}:{} ", df, count)
-                                        }) + "\n";
+                                        });
                                     println!("{}", result);
                                 }
                             }
