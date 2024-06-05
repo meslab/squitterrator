@@ -1,7 +1,7 @@
 use crate::adsb;
 use chrono::{DateTime, Utc};
 use log::{debug, error};
-use std::{fmt, fmt::Display};
+use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
@@ -15,6 +15,7 @@ pub struct Plane {
     pub surveillance_status: char,
     pub threat_encounter: Option<char>,
     pub vrate: Option<i32>,
+    pub vrate_source: char,
     pub cpr_lat: [u32; 2],
     pub cpr_lon: [u32; 2],
     pub cpr_time: [DateTime<Utc>; 2],
@@ -24,6 +25,7 @@ pub struct Plane {
     pub ground_movement: Option<f64>,
     pub turn: u32,
     pub track: Option<u32>,
+    pub track_source: char,
     pub roll_angle: Option<i32>,
     pub track_angle_rate: Option<i32>,
     pub true_airspeed: Option<u32>,
@@ -54,6 +56,7 @@ impl Plane {
             surveillance_status: ' ',
             threat_encounter: None,
             vrate: None,
+            vrate_source: '_',
             cpr_lat: [0, 0],
             cpr_lon: [0, 0],
             cpr_time: [Utc::now(), Utc::now()],
@@ -63,6 +66,7 @@ impl Plane {
             ground_movement: None,
             turn: 0,
             track: None,
+            track_source: ' ',
             roll_angle: None,
             track_angle_rate: None,
             true_airspeed: None,
@@ -155,6 +159,7 @@ impl Plane {
                         if let Some((lat, lon)) = match message_type {
                             5..=8 => {
                                 self.track = adsb::ground_track(message);
+                                self.track_source = ' ';
                                 adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
                             }
                             9..=18 => adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
@@ -170,6 +175,7 @@ impl Plane {
                 }
                 19 => {
                     self.vrate = adsb::vertical_rate(message);
+                    self.vrate_source = ' ';
                     if let Some(altitude) = self.altitude {
                         if let Some(altitude_delta) = adsb::altitude_delta(message) {
                             self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
@@ -179,13 +185,16 @@ impl Plane {
                         1 => {
                             (self.track, self.grspeed) =
                                 adsb::track_and_groundspeed(message, false);
+                            self.track_source = '\u{2081}';
                         }
                         2 => {
                             // 4 knots units for supersonic
                             (self.track, self.grspeed) = adsb::track_and_groundspeed(message, true);
+                            self.track_source = '\u{2082}';
                         }
                         3 | 4 => {
                             self.track = adsb::heading(message);
+                            self.track_source = '\u{2083}';
                             self.altitude_source = '"';
                         }
                         _ => {}
@@ -215,6 +224,7 @@ impl Plane {
                     self.track_angle_rate = None;
                     self.true_airspeed = None;
                     self.bds_5_0_timestamp = None;
+                    self.track_source = ' ';
                 }
             }
             if let Some(result) = adsb::is_bds_5_0(message) {
@@ -224,7 +234,16 @@ impl Plane {
                 self.grspeed = Some(result.3);
                 self.true_airspeed = Some(result.4);
                 self.bds_5_0_timestamp = Some(self.timestamp);
+                self.track_source = '\u{2085}';
                 bds = (5, 0);
+            }
+            if let Some(result) = adsb::is_bds_6_0(message) {
+                self.track = Some(result.0);
+                self.true_airspeed = Some(result.1);
+                self.vrate = Some(result.3);
+                self.vrate_source = '\u{2086}';
+                self.track_source = '\u{2086}';
+                bds = (6, 0);
             }
             if bds == (4, 4) {
                 if let Some(temp) = adsb::temperature_4_4(message) {
@@ -304,9 +323,9 @@ impl Display for Plane {
             write!(f, " {:15} {:16}", "", "")?;
         }
         if let Some(grspeed) = self.grspeed {
-            write!(f, " GSpd: {:>4.0}", grspeed)?;
+            write!(f, " GSpd: {:>3.0}", grspeed)?;
         } else {
-            write!(f, " {:10}", "")?;
+            write!(f, " {:19}", "")?;
         }
         if let Some(track) = self.track {
             write!(f, " Track: {:>3.0}", track)?;
@@ -370,13 +389,15 @@ impl SimpleDisplay for Plane {
         }
         if let Some(vrate) = self.vrate {
             write!(f, " {:>5}", vrate)?;
+            write!(f, "{:1}", self.vrate_source)?;
         } else {
-            write!(f, " {:5}", "")?;
+            write!(f, " {:6}", "")?;
         }
         if let Some(track) = self.track {
-            write!(f, " {:>3.0}", track)?;
+            write!(f, "{:>3.0}", track)?;
+            write!(f, "{:}", self.track_source)?;
         } else {
-            write!(f, " {:3}", "")?;
+            write!(f, "{:4}", "")?;
         }
         if let Some(grspeed) = self.grspeed {
             write!(f, " {:>3.0}", grspeed)?;

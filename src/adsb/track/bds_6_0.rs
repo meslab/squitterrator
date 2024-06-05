@@ -1,14 +1,14 @@
-pub fn magnetic_heading_6_0(message: &[u32]) -> Option<i32> {
+pub fn magnetic_heading_6_0(message: &[u32]) -> Option<u32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 33, 34, 44) {
         match status {
             0 => None,
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 34, 35, 44)
                 {
-                    let heading = ((value * 90) >> 9) as i32;
+                    let heading = (value * 90) >> 9;
                     match sign {
                         0 => Some(heading),
-                        _ => Some(-heading),
+                        _ => Some(heading + 180),
                     }
                 } else {
                     None
@@ -49,10 +49,10 @@ pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 68, 69, 77)
                 {
-                    let rate = (value << 5) as i32;
+                    //let rate = (value * 32) as i32;
                     match sign {
-                        0 => Some(rate),
-                        _ => Some(-rate),
+                        0 => Some((value << 5) as i32),
+                        _ => Some(((value - (1 << 9)) << 5) as i32),
                     }
                 } else {
                     None

@@ -1,11 +1,10 @@
 mod bds_5_0;
+mod bds_6_0;
 
 pub use bds_5_0::*;
+pub use bds_6_0::*;
 
-use super::{
-    barometric_altitude_rate_6_0, flag_and_range_value, indicated_airspeed_6_0,
-    internal_vertical_velocity_6_0, mach_number_6_0, magnetic_heading_6_0,
-};
+use super::flag_and_range_value;
 
 /// Retrieves the BDS values from a message.
 ///
@@ -47,19 +46,6 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         return (4, 0);
     };
 
-    if goodflags(message, 33, 34, 44)
-        && goodflags(message, 45, 46, 55)
-        && goodflags(message, 56, 57, 66)
-        && goodflags(message, 67, 68, 77)
-        && goodflags(message, 78, 79, 88)
-        && magnetic_heading_6_0(message).is_some_and(|x| (-180..=180).contains(&x))
-        && indicated_airspeed_6_0(message).is_some_and(|x| (0..=1023).contains(&x))
-        && mach_number_6_0(message).is_some_and(|x| (0.0..=4.092).contains(&x))
-        && barometric_altitude_rate_6_0(message).is_some_and(|x| (-16384..=16384).contains(&x))
-        && internal_vertical_velocity_6_0(message).is_some_and(|x| (-16384..=16384).contains(&x))
-    {
-        return (6, 0);
-    };
     if let Some((_, fom)) = crate::adsb::flag_and_range_value(message, 33, 33, 36) {
         if fom < 4
             && goodflags(message, 37, 38, 55)
