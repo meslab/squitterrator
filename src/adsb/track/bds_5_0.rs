@@ -46,6 +46,10 @@ pub fn track_angle_5_0(message: &[u32]) -> Option<u32> {
     }
 }
 
+fn track_angle(sign: u32, value: u32) -> u32 {
+    
+}
+
 pub fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 67, 68, 77) {
         match status {
