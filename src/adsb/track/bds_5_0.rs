@@ -5,12 +5,7 @@ pub fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 34, 35, 43)
                 {
-                    let value = ((value * 45) / 256) as i32;
-                    let angle = match sign {
-                        0 => value,
-                        _ => value - 90,
-                    };
-                    Some(angle)
+                    Some(roll_angle(sign, value))
                 } else {
                     None
                 }
@@ -18,6 +13,14 @@ pub fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
         }
     } else {
         None
+    }
+}
+
+fn roll_angle(sign: u32, value: u32) -> i32 {
+    let value = value as i32 * 45 / 256;
+    match sign {
+        0 => value,
+        _ => value - 90,
     }
 }
 
@@ -28,11 +31,7 @@ pub fn track_angle_5_0(message: &[u32]) -> Option<u32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 55)
                 {
-                    let angle = (value * 90) >> 9;
-                    match sign {
-                        0 => Some(angle),
-                        _ => Some(angle + 180),
-                    }
+                    Some(track_angle(sign, value))
                 } else {
                     None
                 }
@@ -43,6 +42,14 @@ pub fn track_angle_5_0(message: &[u32]) -> Option<u32> {
     }
 }
 
+fn track_angle(sign: u32, value: u32) -> u32 {
+    let angle = (value * 90) >> 9;
+    match sign {
+        0 => angle,
+        _ => angle + 180,
+    }
+}
+
 pub fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 67, 68, 77) {
         match status {
@@ -50,11 +57,7 @@ pub fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 68, 69, 77)
                 {
-                    let angle = ((value << 3) >> 8) as i32;
-                    match sign {
-                        0 => Some(angle),
-                        _ => Some(angle - 15),
-                    }
+                    Some(track_angle_rate(sign, value))
                 } else {
                     None
                 }
@@ -62,6 +65,14 @@ pub fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
         }
     } else {
         None
+    }
+}
+
+fn track_angle_rate(sign: u32, value: u32) -> i32 {
+    let angle = ((value << 3) >> 8) as i32;
+    match sign {
+        0 => angle,
+        _ => angle - 16,
     }
 }
 
@@ -84,5 +95,18 @@ pub fn true_airspeed_5_0(message: &[u32]) -> Option<u32> {
         }
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_roll_angle() {
+        assert_eq!(roll_angle(0, 0b111111111), 89);
+        assert_eq!(roll_angle(0, 0b000000001), 0);
+        assert_eq!(roll_angle(1, 0b000000001), -90);
+        assert_eq!(roll_angle(1, 0b111111111), -1);
     }
 }
