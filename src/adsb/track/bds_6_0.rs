@@ -49,11 +49,7 @@ pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 68, 69, 77)
                 {
-                    //let rate = (value * 32) as i32;
-                    match sign {
-                        0 => Some((value << 5) as i32),
-                        _ => Some(((value - (1 << 9)) << 5) as i32),
-                    }
+                    Some(barometric_altitude_rate(sign, value))
                 } else {
                     None
                 }
@@ -61,6 +57,14 @@ pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
         }
     } else {
         None
+    }
+}
+
+fn barometric_altitude_rate(sign: u32, value: u32) -> i32 {
+    let rate = (value as i32) << 5;
+    match sign {
+        0 => rate,
+        _ => rate - 16384,
     }
 }
 
@@ -83,5 +87,18 @@ pub fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
         }
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_barometric_altitude_rate() {
+        assert_eq!(barometric_altitude_rate(0, 0b1111_1111_1), 16352);
+        assert_eq!(barometric_altitude_rate(1, 0b1111_1111_1), -32);
+        assert_eq!(barometric_altitude_rate(0, 0b0000_0000_1), 32);
+        assert_eq!(barometric_altitude_rate(1, 0b0000_0000_1), -16352);
     }
 }
