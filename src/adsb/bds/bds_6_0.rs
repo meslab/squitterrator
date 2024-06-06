@@ -1,6 +1,22 @@
 use super::goodflags;
 use crate::adsb::*;
 
+/// Checks if the given ADS-B message is a BDS 6,0 message and returns the extracted data if it is valid.
+///
+/// # Arguments
+///
+/// * `message` - The ADS-B message as a slice of `u32` values.
+///
+/// # Returns
+///
+/// An `Option` containing a tuple with the extracted data if the message is valid, or `None` otherwise. The tuple contains the following values:
+///
+/// * `magnetic_heading` - The magnetic heading in degrees.
+/// * `indicated_airspeed` - The indicated airspeed in knots.
+/// * `mach_number` - The Mach number.
+/// * `barometric_altitude_rate` - The barometric altitude rate in feet per minute.
+/// * `internal_vertical_velocity` - The internal vertical velocity in feet per minute.
+///
 pub fn is_bds_6_0(message: &[u32]) -> Option<(u32, u32, f64, i32, i32)> {
     if goodflags(message, 33, 34, 44)
         && goodflags(message, 45, 46, 55)

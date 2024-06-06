@@ -1,3 +1,5 @@
+/// Calculates the magnetic heading based on the given ADS-B message.
+/// Returns `None` if the status is 0, otherwise returns the calculated magnetic heading.
 pub fn magnetic_heading_6_0(message: &[u32]) -> Option<u32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 33, 34, 44) {
         match status {
@@ -5,11 +7,7 @@ pub fn magnetic_heading_6_0(message: &[u32]) -> Option<u32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 34, 35, 44)
                 {
-                    let heading = (value * 90) >> 9;
-                    match sign {
-                        0 => Some(heading),
-                        _ => Some(heading + 180),
-                    }
+                    Some(magnetic_heading(sign, value))
                 } else {
                     None
                 }
@@ -20,6 +18,17 @@ pub fn magnetic_heading_6_0(message: &[u32]) -> Option<u32> {
     }
 }
 
+/// Calculates the magnetic heading based on the given sign and value.
+fn magnetic_heading(sign: u32, value: u32) -> u32 {
+    let heading = (value * 90) >> 9;
+    match sign {
+        0 => heading,
+        _ => heading + 180,
+    }
+}
+
+/// Calculates the indicated airspeed based on the given ADS-B message.
+/// Returns `None` if the status is 0, otherwise returns the indicated airspeed.
 pub fn indicated_airspeed_6_0(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 55) {
         match status {
@@ -31,6 +40,8 @@ pub fn indicated_airspeed_6_0(message: &[u32]) -> Option<u32> {
     }
 }
 
+/// Calculates the Mach number based on the given ADS-B message.
+/// Returns `None` if the status is 0, otherwise returns the Mach number.
 pub fn mach_number_6_0(message: &[u32]) -> Option<f64> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 56, 57, 66) {
         match status {
@@ -42,6 +53,8 @@ pub fn mach_number_6_0(message: &[u32]) -> Option<f64> {
     }
 }
 
+/// Calculates the barometric altitude rate based on the given ADS-B message.
+/// Returns `None` if the status is 0, otherwise returns the barometric altitude rate.
 pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 67, 68, 77) {
         match status {
@@ -49,11 +62,7 @@ pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 68, 69, 77)
                 {
-                    //let rate = (value * 32) as i32;
-                    match sign {
-                        0 => Some((value << 5) as i32),
-                        _ => Some(((value - (1 << 9)) << 5) as i32),
-                    }
+                    Some(barometric_altitude_rate(sign, value))
                 } else {
                     None
                 }
@@ -64,6 +73,17 @@ pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
     }
 }
 
+/// Calculates the barometric altitude rate based on the given sign and value.
+fn barometric_altitude_rate(sign: u32, value: u32) -> i32 {
+    let rate = (value as i32) << 5;
+    match sign {
+        0 => rate,
+        _ => rate - 16384,
+    }
+}
+
+/// Calculates the internal vertical velocity based on the given ADS-B message.
+/// Returns `None` if the status is 0, otherwise returns the internal vertical velocity.
 pub fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 78, 79, 88) {
         match status {
@@ -71,11 +91,7 @@ pub fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
             _ => {
                 if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 79, 80, 88)
                 {
-                    let rate = (value << 5) as i32;
-                    match sign {
-                        0 => Some(rate),
-                        _ => Some(-rate),
-                    }
+                    Some(internal_vertical_velocity(sign, value))
                 } else {
                     None
                 }
@@ -83,5 +99,35 @@ pub fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
         }
     } else {
         None
+    }
+}
+
+/// Calculates the internal vertical velocity based on the given sign and value.
+fn internal_vertical_velocity(sign: u32, value: u32) -> i32 {
+    let rate = (value << 5) as i32;
+    match sign {
+        0 => rate,
+        _ => rate - 16384,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_barometric_altitude_rate() {
+        assert_eq!(barometric_altitude_rate(0, 0b1111_1111_1), 16352);
+        assert_eq!(barometric_altitude_rate(1, 0b1111_1111_1), -32);
+        assert_eq!(barometric_altitude_rate(0, 0b0000_0000_1), 32);
+        assert_eq!(barometric_altitude_rate(1, 0b0000_0000_1), -16352);
+    }
+
+    #[test]
+    fn test_internal_vertical_velocity() {
+        assert_eq!(internal_vertical_velocity(0, 0b1111_1111_1), 16352);
+        assert_eq!(internal_vertical_velocity(1, 0b1111_1111_1), -32);
+        assert_eq!(internal_vertical_velocity(0, 0b0000_0000_1), 32);
+        assert_eq!(internal_vertical_velocity(1, 0b0000_0000_1), -16352);
     }
 }
