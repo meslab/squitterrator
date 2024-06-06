@@ -58,16 +58,16 @@ pub fn cpr_location(
 
 fn signed_lon(lon: f64) -> f64 {
     match lon {
-        _ if lon > 180.0 => lon - 360.0,
-        _ if lon < -180.0 => lon + 360.0,
+        180.0.. => lon - 360.0,
+        ..=-180.0 => lon + 360.0,
         _ => lon,
     }
 }
 
 fn fixed_lat(lat: f64) -> f64 {
     match lat {
-        _ if lat > 90.0 => lat - 360.0,
-        _ if lat < -90.0 => lat + 360.0,
+        90.0.. => lat - 360.0,
+        ..=-90.0 => lat + 360.0,
         _ => lat,
     }
 }
