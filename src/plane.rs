@@ -342,6 +342,7 @@ pub trait SimpleDisplay {
         f: &mut fmt::Formatter,
         weather: bool,
         angles: bool,
+        speed: bool,
         extra: bool,
     ) -> fmt::Result;
 }
@@ -352,6 +353,7 @@ impl SimpleDisplay for Plane {
         f: &mut fmt::Formatter,
         weather: bool,
         angles: bool,
+        speed: bool,
         extra: bool,
     ) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
@@ -404,12 +406,14 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, "{:3}", "")?;
         }
-        if angles {
+        if speed {
             if let Some(tas) = self.true_airspeed {
                 write!(f, " {:>3}", tas)?;
             } else {
                 write!(f, " {:3}", "")?;
             }
+        }
+        if angles {
             if let Some(roll_angle) = self.roll_angle {
                 write!(f, " {:>3}", roll_angle)?;
             } else {
@@ -494,11 +498,11 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool, bool);
 
 impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.simple_display(f, self.1, self.2, self.3)
+        self.0.simple_display(f, self.1, self.2, self.3, self.4)
     }
 }
 
@@ -506,7 +510,11 @@ pub fn format_simple_display<T: SimpleDisplay>(
     item: &T,
     weather: bool,
     angles: bool,
+    speed: bool,
     extra: bool,
 ) -> String {
-    format!("{}", SimpleDisplayWrapper(item, weather, angles, extra))
+    format!(
+        "{}",
+        SimpleDisplayWrapper(item, weather, angles, speed, extra)
+    )
 }
