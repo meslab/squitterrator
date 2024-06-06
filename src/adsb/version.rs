@@ -1,3 +1,7 @@
 pub fn version(message: &[u32]) -> Option<u32> {
-    Some((message[18] & 0b1110) >> 1)
+    if let Some(value) = crate::adsb::flag_and_range_value(message, 1, 73, 75) {
+        Some(value.1)
+    } else {
+        None
+    }
 }
