@@ -1,14 +1,18 @@
 use crate::adsb::flag_and_range_value;
 
 pub fn temperature_4_4(message: &[u32]) -> Option<f64> {
-    if let Some((sign, temp)) = flag_and_range_value(message, 56, 57, 66) {
-        let temp = temp as f64;
-        match sign {
-            0 => Some(temp * 0.25),
-            _ => Some(-temp * 0.25),
-        }
+    if let Some((sign, value)) = flag_and_range_value(message, 56, 57, 66) {
+        Some(temp_4_4(sign, value))
     } else {
         None
+    }
+}
+
+fn temp_4_4(sign: u32, value: u32) -> f64 {
+    let temp = value as i32;
+    match sign {
+        0 => temp as f64 * 0.25,
+        _ => (!temp + 1) as f64 * 0.25,
     }
 }
 
@@ -99,6 +103,8 @@ pub fn temperature_4_5(message: &[u32]) -> Option<f64> {
 
 #[cfg(test)]
 mod tests {
+    use crate::adsb::meteo::temp_4_4;
+
     #[test]
     fn test_shift() {
         assert_eq!(2048 / 2, 2048 >> 1);
@@ -120,5 +126,18 @@ mod tests {
             assert_eq!(-x, !x + 1);
         }
         assert_eq!(2_i32.pow(9), 1 << 9);
+    }
+
+    #[test]
+    fn test_humidity_range() {
+        assert_eq!((0b111111 * 100) >> 6, 98);
+        assert_eq!((0b000001 * 100) >> 6, 1);
+        assert_eq!((0b000000 * 100) >> 6, 0);
+    }
+
+    #[test]
+    fn test_temp_4_4() {
+        assert_eq!(temp_4_4(1, 0b1111111111), -255.75);
+        assert_eq!(temp_4_4(0, 0b1111111111), 255.75);
     }
 }
