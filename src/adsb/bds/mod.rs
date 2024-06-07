@@ -21,6 +21,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
             return (1, 0);
         }
     };
+
     if let (2, 0) = (message[8] & 0xF, message[9] & 0xF) {
         return (2, 0);
     };
@@ -33,7 +34,9 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         }
     };
 
-    if message[15..19].iter().all(|&x| x == 0) {
+    if ((message[8] >> 3 & 1) ^ (message[8] >> 2 & 1)) == 1
+        && message[14..21].iter().all(|&x| x == 0)
+    {
         return (1, 7);
     }
 
@@ -57,6 +60,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
             return (4, 4);
         }
     };
+
     if goodflags(message, 33, 34, 35)
         && goodflags(message, 36, 37, 38)
         && goodflags(message, 39, 40, 41)
@@ -69,6 +73,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
     {
         return (4, 5);
     };
+
     (0, 0)
 }
 
