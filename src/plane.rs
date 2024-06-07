@@ -229,15 +229,6 @@ impl Plane {
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
-            //if let Some(b50ts) = self.bds_5_0_timestamp {
-            //    if b50ts.signed_duration_since(self.timestamp).num_seconds() > 30 {
-            //        self.roll_angle = None;
-            //        self.track_angle_rate = None;
-            //        self.true_airspeed = None;
-            //        self.bds_5_0_timestamp = None;
-            //        self.track_source = ' ';
-            //    }
-            //}
             if let Some(result) = adsb::is_bds_5_0(message) {
                 self.roll_angle = Some(result.0);
                 self.track = Some(result.1);
