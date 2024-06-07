@@ -235,7 +235,7 @@ impl Plane {
                 if let Some(result) = adsb::is_bds_1_7(message) {
                     self.capability.1 = result.1;
                     bds = (1, 7);
-                    error!(
+                    debug!(
                         "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
                         df,
                         bds.0,
