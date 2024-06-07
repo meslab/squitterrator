@@ -1,11 +1,11 @@
-use crate::adsb;
+use crate::adsb::{self, is_bds_4_4};
 use chrono::{DateTime, Utc};
 use log::{debug, error};
 use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
-    pub capability: u32,
+    pub capability: (u32, u32),
     pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
@@ -51,7 +51,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
-            capability: 0,
+            capability: (0, 0),
             category: (0, 0),
             reg: "",
             ais: None,
@@ -128,7 +128,7 @@ impl Plane {
         }
 
         if df == 11 || df == 17 {
-            self.capability = adsb::ca(message);
+            self.capability.0 = adsb::ca(message);
         }
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
@@ -223,7 +223,7 @@ impl Plane {
                 _ => {}
             }
         }
-        if (df == 20 || df == 21) && self.capability > 3 {
+        if (df == 20 || df == 21) && self.capability.0 > 3 {
             let mut bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
@@ -231,56 +231,64 @@ impl Plane {
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
-            if let Some(result) = adsb::is_bds_5_0(message) {
-                self.roll_angle = Some(result.0);
-                self.track = Some(result.1);
-                self.track_angle_rate = Some(result.2);
-                self.grspeed = Some(result.3);
-                self.true_airspeed = Some(result.4);
-                self.bds_5_0_timestamp = Some(self.timestamp);
-                self.track_source = '\u{2085}';
-                bds = (5, 0);
+            if bds == (0, 0) {
+                if let Some(result) = adsb::is_bds_1_7(message) {
+                    self.capability.1 = result.1;
+                    bds = (1, 7)
+                }
             }
-            if let Some(result) = adsb::is_bds_6_0(message) {
-                self.heading = Some(result.0);
-                self.indicated_airspeed = Some(result.1);
-                self.mach_number = Some(result.2);
-                self.vrate = Some(result.3);
-                self.vrate_source = '\u{2086}';
-                self.heading_source = '\u{2086}';
-                bds = (6, 0);
+            if bds == (0, 0) {
+                //&& (self.capability.1 >> 8) & 1 == 1 {
+                if let Some(result) = adsb::is_bds_5_0(message) {
+                    self.roll_angle = Some(result.0);
+                    self.track = Some(result.1);
+                    self.track_angle_rate = Some(result.2);
+                    self.grspeed = Some(result.3);
+                    self.true_airspeed = Some(result.4);
+                    self.bds_5_0_timestamp = Some(self.timestamp);
+                    self.track_source = '\u{2085}';
+                    bds = (5, 0);
+                }
             }
-            if bds == (4, 4) {
-                if let Some(temp) = adsb::temperature_4_4(message) {
-                    if (-80.0..=60.0).contains(&temp) {
-                        self.temperature = Some(temp);
-                    } else {
-                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
-                    }
+            if bds == (0, 0) {
+                //&& self.capability.1 & 1 == 1 {
+                if let Some(result) = adsb::is_bds_6_0(message) {
+                    self.heading = Some(result.0);
+                    self.indicated_airspeed = Some(result.1);
+                    self.mach_number = Some(result.2);
+                    self.vrate = Some(result.3);
+                    self.vrate_source = '\u{2086}';
+                    self.heading_source = '\u{2086}';
+                    bds = (6, 0);
                 }
-                if let Some(wind) = adsb::wind_4_4(message) {
-                    if (0..=511).contains(&wind.0) && (0..=360).contains(&wind.1) {
-                        self.wind = Some(wind);
+            }
+            if bds == (0, 0) {
+                if let Some(meteo) = is_bds_4_4(message) {
+                    if (-80.0..=60.0).contains(&meteo.temp) {
+                        self.temperature = Some(meteo.temp);
                     } else {
-                        error!("DF:{} T:{}.{} W:{}.{}", df, bds.0, bds.1, wind.0, wind.1);
+                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, meteo.temp);
                     }
-                }
-                if let Some(humidity) = adsb::humidity_4_4(message) {
-                    if (0..=100).contains(&humidity) {
-                        self.humidity = Some(humidity);
+                    if (0..=511).contains(&meteo.wind.0) && (0..=360).contains(&meteo.wind.1) {
+                        self.wind = Some(meteo.wind);
                     } else {
-                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, humidity);
+                        error!(
+                            "DF:{} T:{}.{} W:{}.{}",
+                            df, bds.0, bds.1, meteo.wind.0, meteo.wind.1
+                        );
                     }
-                }
-                if let Some(turbulence) = adsb::turbulence_4_4(message) {
-                    self.turbulence = Some(turbulence);
-                }
-                if let Some(pressure) = adsb::pressure_4_4(message) {
-                    if (0..=2048).contains(&pressure) {
-                        self.pressure = Some(pressure);
+                    if (0..=100).contains(&meteo.humidity) {
+                        self.humidity = Some(meteo.humidity);
                     } else {
-                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, pressure);
+                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, meteo.humidity);
                     }
+                    self.turbulence = Some(meteo.turbulence);
+                    if (0..=2048).contains(&meteo.pressure) {
+                        self.pressure = Some(meteo.pressure);
+                    } else {
+                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, meteo.pressure);
+                    }
+                    bds = (4, 4);
                 }
             }
             if bds == (4, 5) {
