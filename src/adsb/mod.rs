@@ -19,19 +19,20 @@ mod utils;
 mod version;
 mod vertical_rate;
 
+use calc::*;
+use ma_code::*;
+use me_code::*;
+
 pub use acas::*;
 pub use ais::*;
 pub use altitude::*;
 pub use bds::*;
-pub use calc::*;
 pub use crc::*;
 pub use df::*;
 pub use format::*;
 pub use ground_movement::*;
 pub use icao::*;
 pub use location::*;
-pub use ma_code::*;
-pub use me_code::*;
 pub use meteo::*;
 pub use squawk::*;
 pub use surveillance_status::*;

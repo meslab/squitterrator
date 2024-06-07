@@ -1,4 +1,9 @@
-pub fn flag_and_range_value(message: &[u32], flag: u32, sb: u32, eb: u32) -> Option<(u32, u32)> {
+pub(crate) fn flag_and_range_value(
+    message: &[u32],
+    flag: u32,
+    sb: u32,
+    eb: u32,
+) -> Option<(u32, u32)> {
     let (flag_ibyte, flag_ibit) = bit_location(flag);
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);

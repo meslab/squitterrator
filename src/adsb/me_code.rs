@@ -22,7 +22,7 @@ use log::debug;
 ///     assert_eq!(result, Some(12513));
 /// }
 /// ```
-pub fn me_code(message: &[u32]) -> Option<u16> {
+pub(crate) fn me_code(message: &[u32]) -> Option<u16> {
     let result = (message[10] & 0xF) << 10
         | (message[11] & 0xF) << 6
         | (message[12] & 0xF) << 2

@@ -2,7 +2,7 @@ use std::vec;
 
 use log::debug;
 
-pub fn get_crc(message: &[u32], df: u32) -> u32 {
+pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
     match df {
         0..=15 => crc56(message),
         _ => crc112(message),
