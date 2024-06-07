@@ -363,11 +363,6 @@ impl SimpleDisplay for Plane {
     ) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
-        if let Some(altitude) = self.altitude {
-            write!(f, " {:>5}", altitude)?;
-        } else {
-            write!(f, " {:5}", "")?;
-        }
         write!(f, "{}", self.altitude_source)?;
         if let Some(squawk) = self.squawk {
             write!(f, "{:04}", squawk)?;
@@ -393,6 +388,11 @@ impl SimpleDisplay for Plane {
             write!(f, " {:9.5} {:11.5}", self.lat, self.lon)?;
         } else {
             write!(f, " {:9} {:11}", "", "")?;
+        }
+        if let Some(altitude) = self.altitude {
+            write!(f, " {:>5}", altitude)?;
+        } else {
+            write!(f, " {:5}", "")?;
         }
         if let Some(vrate) = self.vrate {
             write!(f, " {:>5}", vrate)?;

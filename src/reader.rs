@@ -122,12 +122,12 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
-        ("ALT B", 5),
         ("SQWK", 4),
         ("W", 1),
         ("CALLSIGN", 8),
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
+        ("ALT B", 5),
         ("VRATE", 5),
         ("TRK", 3),
         ("HDG", 3),
