@@ -22,7 +22,7 @@ use log::debug;
 ///     assert_eq!(result, Some(1141));
 /// }
 /// ```
-pub(crate) fn ma_code(message: &[u32]) -> Option<u16> {
+pub fn ma_code(message: &[u32]) -> Option<u16> {
     let mut result = 0u16;
 
     let bit_positions = [

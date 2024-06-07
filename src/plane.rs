@@ -5,6 +5,7 @@ use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
+    pub capability: u32,
     pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
@@ -46,6 +47,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
+            capability: 0,
             category: (0, 0),
             reg: "",
             ais: None,
@@ -117,6 +119,9 @@ impl Plane {
             self.squawk = adsb::squawk(message);
         }
 
+        if df == 11 || df == 17 {
+            self.capability = adsb::ca(message);
+        }
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
@@ -210,7 +215,7 @@ impl Plane {
                 _ => {}
             }
         }
-        if df == 20 || df == 21 {
+        if (df == 20 || df == 21) && self.capability > 3 {
             let mut bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
