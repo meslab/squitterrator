@@ -122,18 +122,19 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
     let headers = [
         ("ICAO", 6),
         ("RG", 2),
-        ("ALT B", 5),
         ("SQWK", 4),
         ("W", 1),
         ("CALLSIGN", 8),
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
+        ("ALT B", 5),
         ("VRATE", 5),
         ("TRK", 3),
+        ("HDG", 3),
         ("GSP", 3),
     ];
 
-    let headers_speed = [("TAS", 3)];
+    let headers_speed = [("TAS", 3), ("IAS", 3), ("MACH", 4)];
     let headers_angles = [("RLL", 3), ("TAR", 3), ("ALT G", 5)];
 
     let headers_weather = [
@@ -248,12 +249,17 @@ fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool) {
         ("LONGITUDE", "Longitude"),
         ("GSP", "Ground Speed"),
         ("TRK", "Track"),
+        ("HDG", "Heading"),
         ("VRATE", "Vertical Rate"),
         ("LC", "Last Contact"),
         ("W", "Wake Turbulence Category"),
     ];
 
-    let legend_speed = [("TAS", "True Air Speed")];
+    let legend_speed = [
+        ("TAS", "True Air Speed"),
+        ("IAS", "Indicated Air Speed"),
+        ("MACH", "Mach Number"),
+    ];
     let legend_angles = [("RLL", "Roll Angle")];
     let legend_weather = [
         ("TEMP", "Static temperature"),

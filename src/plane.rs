@@ -1,10 +1,11 @@
-use crate::adsb;
+use crate::adsb::{self, is_bds_4_4};
 use chrono::{DateTime, Utc};
 use log::{debug, error};
 use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
+    pub capability: (u32, u32),
     pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
@@ -22,13 +23,17 @@ pub struct Plane {
     pub lat: f64,
     pub lon: f64,
     pub grspeed: Option<u32>,
+    pub true_airspeed: Option<u32>,
+    pub indicated_airspeed: Option<u32>,
+    pub mach_number: Option<f64>,
     pub ground_movement: Option<f64>,
     pub turn: u32,
     pub track: Option<u32>,
     pub track_source: char,
+    pub heading: Option<u32>,
+    pub heading_source: char,
     pub roll_angle: Option<i32>,
     pub track_angle_rate: Option<i32>,
-    pub true_airspeed: Option<u32>,
     pub bds_5_0_timestamp: Option<DateTime<Utc>>,
     pub temperature: Option<f64>,
     pub wind: Option<(u32, u32)>,
@@ -46,6 +51,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
+            capability: (0, 0),
             category: (0, 0),
             reg: "",
             ais: None,
@@ -63,13 +69,17 @@ impl Plane {
             lat: 0.0,
             lon: 0.0,
             grspeed: None,
+            true_airspeed: None,
+            indicated_airspeed: None,
+            mach_number: None,
             ground_movement: None,
             turn: 0,
             track: None,
             track_source: ' ',
+            heading: None,
+            heading_source: ' ',
             roll_angle: None,
             track_angle_rate: None,
-            true_airspeed: None,
             bds_5_0_timestamp: None,
             temperature: None,
             wind: None,
@@ -117,6 +127,9 @@ impl Plane {
             self.squawk = adsb::squawk(message);
         }
 
+        if df == 11 || df == 17 {
+            self.capability.0 = adsb::ca(message);
+        }
         if df == 17 || df == 18 {
             let (message_type, message_subtype) = adsb::message_type(message);
             self.last_type_code = message_type;
@@ -210,7 +223,7 @@ impl Plane {
                 _ => {}
             }
         }
-        if df == 20 || df == 21 {
+        if (df == 20 || df == 21) && self.capability.0 > 3 {
             let mut bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
@@ -218,64 +231,64 @@ impl Plane {
             if bds == (3, 0) {
                 self.threat_encounter = adsb::threat_encounter(message);
             }
-            if let Some(b50ts) = self.bds_5_0_timestamp {
-                if b50ts.signed_duration_since(self.timestamp).num_seconds() > 10 {
-                    self.roll_angle = None;
-                    self.track_angle_rate = None;
-                    self.true_airspeed = None;
-                    self.bds_5_0_timestamp = None;
-                    self.track_source = ' ';
+            if bds == (0, 0) {
+                if let Some(result) = adsb::is_bds_1_7(message) {
+                    self.capability.1 = result.1;
+                    bds = (1, 7)
                 }
             }
-            if let Some(result) = adsb::is_bds_5_0(message) {
-                self.roll_angle = Some(result.0);
-                self.track = Some(result.1);
-                self.track_angle_rate = Some(result.2);
-                self.grspeed = Some(result.3);
-                self.true_airspeed = Some(result.4);
-                self.bds_5_0_timestamp = Some(self.timestamp);
-                self.track_source = '\u{2085}';
-                bds = (5, 0);
+            if bds == (0, 0) {
+                //&& (self.capability.1 >> 8) & 1 == 1 {
+                if let Some(result) = adsb::is_bds_5_0(message) {
+                    self.roll_angle = result.roll_angle;
+                    self.track = result.track_angle;
+                    self.track_angle_rate = result.track_angle_rate;
+                    self.grspeed = result.ground_speed;
+                    self.true_airspeed = result.true_airspeed;
+                    self.bds_5_0_timestamp = Some(self.timestamp);
+                    self.track_source = '\u{2085}';
+                    bds = (5, 0);
+                }
             }
-            if let Some(result) = adsb::is_bds_6_0(message) {
-                self.track = Some(result.0);
-                self.true_airspeed = Some(result.1);
-                self.vrate = Some(result.3);
-                self.vrate_source = '\u{2086}';
-                self.track_source = '\u{2086}';
-                bds = (6, 0);
+            if bds == (0, 0) {
+                //&& self.capability.1 & 1 == 1 {
+                if let Some(result) = adsb::is_bds_6_0(message) {
+                    self.heading = Some(result.0);
+                    self.indicated_airspeed = Some(result.1);
+                    self.mach_number = Some(result.2);
+                    self.vrate = Some(result.3);
+                    self.vrate_source = '\u{2086}';
+                    self.heading_source = '\u{2086}';
+                    bds = (6, 0);
+                }
             }
-            if bds == (4, 4) {
-                if let Some(temp) = adsb::temperature_4_4(message) {
-                    if !(-80.0..=60.0).contains(&temp) {
-                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
+            if bds == (0, 0) {
+                if let Some(meteo) = is_bds_4_4(message) {
+                    if (-80.0..=60.0).contains(&meteo.temp) {
+                        self.temperature = Some(meteo.temp);
                     } else {
-                        self.temperature = Some(temp);
+                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, meteo.temp);
                     }
-                }
-                if let Some(wind) = adsb::wind_4_4(message) {
-                    if (0..=511).contains(&wind.0) && (0..=360).contains(&wind.1) {
-                        self.wind = Some(wind);
+                    if (0..=511).contains(&meteo.wind.0) && (0..=360).contains(&meteo.wind.1) {
+                        self.wind = Some(meteo.wind);
                     } else {
-                        error!("DF:{} T:{}.{} W:{}.{}", df, bds.0, bds.1, wind.0, wind.1);
+                        error!(
+                            "DF:{} T:{}.{} W:{}.{}",
+                            df, bds.0, bds.1, meteo.wind.0, meteo.wind.1
+                        );
                     }
-                }
-                if let Some(humidity) = adsb::humidity_4_4(message) {
-                    if (0..=100).contains(&humidity) {
-                        self.humidity = Some(humidity);
+                    if (0..=100).contains(&meteo.humidity) {
+                        self.humidity = Some(meteo.humidity);
                     } else {
-                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, humidity);
+                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, meteo.humidity);
                     }
-                }
-                if let Some(turbulence) = adsb::turbulence_4_4(message) {
-                    self.turbulence = Some(turbulence);
-                }
-                if let Some(pressure) = adsb::pressure_4_4(message) {
-                    if (0..=2048).contains(&pressure) {
-                        self.pressure = Some(pressure);
+                    self.turbulence = Some(meteo.turbulence);
+                    if (0..=2048).contains(&meteo.pressure) {
+                        self.pressure = Some(meteo.pressure);
                     } else {
-                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, pressure);
+                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, meteo.pressure);
                     }
+                    bds = (4, 4);
                 }
             }
             if bds == (4, 5) {
@@ -358,11 +371,6 @@ impl SimpleDisplay for Plane {
     ) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
         write!(f, " {:2}", self.reg)?;
-        if let Some(altitude) = self.altitude {
-            write!(f, " {:>5}", altitude)?;
-        } else {
-            write!(f, " {:5}", "")?;
-        }
         write!(f, "{}", self.altitude_source)?;
         if let Some(squawk) = self.squawk {
             write!(f, "{:04}", squawk)?;
@@ -389,6 +397,11 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " {:9} {:11}", "", "")?;
         }
+        if let Some(altitude) = self.altitude {
+            write!(f, " {:>5}", altitude)?;
+        } else {
+            write!(f, " {:5}", "")?;
+        }
         if let Some(vrate) = self.vrate {
             write!(f, " {:>5}", vrate)?;
             write!(f, "{:1}", self.vrate_source)?;
@@ -398,6 +411,12 @@ impl SimpleDisplay for Plane {
         if let Some(track) = self.track {
             write!(f, "{:>3.0}", track)?;
             write!(f, "{:}", self.track_source)?;
+        } else {
+            write!(f, "{:4}", "")?;
+        }
+        if let Some(heading) = self.heading {
+            write!(f, "{:>3.0}", heading)?;
+            write!(f, "{:}", self.heading_source)?;
         } else {
             write!(f, "{:4}", "")?;
         }
@@ -411,6 +430,16 @@ impl SimpleDisplay for Plane {
                 write!(f, " {:>3}", tas)?;
             } else {
                 write!(f, " {:3}", "")?;
+            }
+            if let Some(ias) = self.indicated_airspeed {
+                write!(f, " {:>3}", ias)?;
+            } else {
+                write!(f, " {:3}", "")?;
+            }
+            if let Some(mn) = self.mach_number {
+                write!(f, " {:>4.2}", mn)?;
+            } else {
+                write!(f, " {:4}", "")?;
             }
         }
         if angles {

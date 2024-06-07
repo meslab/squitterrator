@@ -1,3 +1,3 @@
 pub fn version(message: &[u32]) -> Option<u32> {
-    Some((message[18] & 0b1110) >> 1)
+    crate::adsb::flag_and_range_value(message, 1, 73, 75).map(|value| value.1)
 }

@@ -1,6 +1,14 @@
+mod bds_1_7;
+mod bds_4_0;
+mod bds_4_4;
+mod bds_4_5;
 mod bds_5_0;
 mod bds_6_0;
 
+pub use bds_1_7::*;
+pub use bds_4_0::*;
+pub use bds_4_4::*;
+pub use bds_4_5::*;
 pub use bds_5_0::*;
 pub use bds_6_0::*;
 
@@ -21,6 +29,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
             return (1, 0);
         }
     };
+
     if let (2, 0) = (message[8] & 0xF, message[9] & 0xF) {
         return (2, 0);
     };
@@ -33,46 +42,10 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
         }
     };
 
-    if message[15..19].iter().all(|&x| x == 0) {
-        return (1, 7);
-    }
-
-    if goodflags(message, 33, 34, 45)
-        && goodflags(message, 46, 47, 58)
-        && goodflags(message, 59, 60, 71)
-        && !goodflags(message, 33, 72, 79)
-        && !goodflags(message, 33, 84, 85)
-    {
-        return (4, 0);
-    };
-
-    if let Some((_, fom)) = crate::adsb::flag_and_range_value(message, 33, 33, 36) {
-        if fom > 0
-            && goodflags(message, 37, 38, 55)
-            && goodflags(message, 37, 57, 66)
-            && goodflags(message, 67, 68, 78)
-            && goodflags(message, 79, 80, 81)
-            && goodflags(message, 82, 83, 88)
-        {
-            return (4, 4);
-        }
-    };
-    if goodflags(message, 33, 34, 35)
-        && goodflags(message, 36, 37, 38)
-        && goodflags(message, 39, 40, 41)
-        && goodflags(message, 42, 43, 44)
-        && goodflags(message, 45, 46, 47)
-        && goodflags(message, 48, 49, 58)
-        && goodflags(message, 59, 60, 60)
-        && goodflags(message, 71, 72, 83)
-        && !goodflags(message, 33, 84, 88)
-    {
-        return (4, 5);
-    };
     (0, 0)
 }
 
-fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
+pub(crate) fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
     match flag_and_range_value(message, flag, sb, eb) {
         Some((flag, result)) => match flag {
             0 => false,

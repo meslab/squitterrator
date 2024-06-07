@@ -19,11 +19,12 @@ mod utils;
 mod version;
 mod vertical_rate;
 
+use calc::*;
+
 pub use acas::*;
 pub use ais::*;
 pub use altitude::*;
 pub use bds::*;
-pub use calc::*;
 pub use crc::*;
 pub use df::*;
 pub use format::*;
