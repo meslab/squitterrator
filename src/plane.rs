@@ -240,11 +240,11 @@ impl Plane {
             if bds == (0, 0) {
                 //&& (self.capability.1 >> 8) & 1 == 1 {
                 if let Some(result) = adsb::is_bds_5_0(message) {
-                    self.roll_angle = Some(result.0);
-                    self.track = Some(result.1);
-                    self.track_angle_rate = Some(result.2);
-                    self.grspeed = Some(result.3);
-                    self.true_airspeed = Some(result.4);
+                    self.roll_angle = result.roll_angle;
+                    self.track = result.track_angle;
+                    self.track_angle_rate = result.track_angle_rate;
+                    self.grspeed = result.ground_speed;
+                    self.true_airspeed = result.true_airspeed;
                     self.bds_5_0_timestamp = Some(self.timestamp);
                     self.track_source = '\u{2085}';
                     bds = (5, 0);
