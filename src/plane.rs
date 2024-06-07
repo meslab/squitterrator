@@ -25,6 +25,7 @@ pub struct Plane {
     pub grspeed: Option<u32>,
     pub true_airspeed: Option<u32>,
     pub indicated_airspeed: Option<u32>,
+    pub mach_number: Option<f64>,
     pub ground_movement: Option<f64>,
     pub turn: u32,
     pub track: Option<u32>,
@@ -70,6 +71,7 @@ impl Plane {
             grspeed: None,
             true_airspeed: None,
             indicated_airspeed: None,
+            mach_number: None,
             ground_movement: None,
             turn: 0,
             track: None,
@@ -242,6 +244,7 @@ impl Plane {
             if let Some(result) = adsb::is_bds_6_0(message) {
                 self.heading = Some(result.0);
                 self.indicated_airspeed = Some(result.1);
+                self.mach_number = Some(result.2);
                 self.vrate = Some(result.3);
                 self.vrate_source = '\u{2086}';
                 self.heading_source = '\u{2086}';
@@ -424,6 +427,11 @@ impl SimpleDisplay for Plane {
                 write!(f, " {:>3}", ias)?;
             } else {
                 write!(f, " {:3}", "")?;
+            }
+            if let Some(mn) = self.mach_number {
+                write!(f, " {:>4.2}", mn)?;
+            } else {
+                write!(f, " {:4}", "")?;
             }
         }
         if angles {
