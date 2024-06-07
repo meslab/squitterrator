@@ -94,15 +94,15 @@ impl Plane {
         }
     }
 
-    pub fn from_message(message: &[u32], df: u32, icao: u32) -> Self {
+    pub fn from_message(message: &[u32], df: u32, icao: u32, strict: bool) -> Self {
         let mut plane = Plane::new();
         plane.icao = icao;
         (_, plane.reg) = crate::country::icao_to_country(icao);
-        plane.update(message, df);
+        plane.update(message, df, strict);
         plane
     }
 
-    pub fn update(&mut self, message: &[u32], df: u32) {
+    pub fn update(&mut self, message: &[u32], df: u32, strict: bool) {
         self.timestamp = Utc::now();
         self.last_df = df;
 
@@ -223,7 +223,7 @@ impl Plane {
                 _ => {}
             }
         }
-        if (df == 20 || df == 21) && self.capability.0 > 3 {
+        if (!strict || (self.capability.0 > 3)) && (df == 20 || df == 21) {
             let mut bds = adsb::bds(message);
             if bds == (2, 0) {
                 self.ais = adsb::ais(message);
@@ -234,11 +234,21 @@ impl Plane {
             if bds == (0, 0) {
                 if let Some(result) = adsb::is_bds_1_7(message) {
                     self.capability.1 = result.1;
-                    bds = (1, 7)
+                    bds = (1, 7);
+                    error!(
+                        "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
+                        df,
+                        bds.0,
+                        bds.1,
+                        self.capability.1,
+                        (self.capability.1 >> 15) & 1,
+                        (self.capability.1 >> 11) & 1,
+                        (self.capability.1 >> 8) & 1,
+                        self.capability.1 & 1
+                    );
                 }
             }
-            if bds == (0, 0) {
-                //&& (self.capability.1 >> 8) & 1 == 1 {
+            if bds == (0, 0) && (!strict || (self.capability.1 >> 8) & 1 == 1) {
                 if let Some(result) = adsb::is_bds_5_0(message) {
                     self.roll_angle = result.roll_angle;
                     self.track = result.track_angle;
@@ -248,10 +258,10 @@ impl Plane {
                     self.bds_5_0_timestamp = Some(self.timestamp);
                     self.track_source = '\u{2085}';
                     bds = (5, 0);
+                    debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
             }
-            if bds == (0, 0) {
-                //&& self.capability.1 & 1 == 1 {
+            if bds == (0, 0) && (!strict || self.capability.1 & 1 == 1) {
                 if let Some(result) = adsb::is_bds_6_0(message) {
                     self.heading = Some(result.0);
                     self.indicated_airspeed = Some(result.1);
@@ -260,6 +270,7 @@ impl Plane {
                     self.vrate_source = '\u{2086}';
                     self.heading_source = '\u{2086}';
                     bds = (6, 0);
+                    debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
             }
             if bds == (0, 0) {
