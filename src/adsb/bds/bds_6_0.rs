@@ -36,6 +36,12 @@ impl HeadingAndSpeed {
     }
 }
 
+impl Default for HeadingAndSpeed {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub fn is_bds_6_0(message: &[u32]) -> Option<HeadingAndSpeed> {
     if goodflags(message, 33, 34, 44)
         && goodflags(message, 45, 46, 55)
