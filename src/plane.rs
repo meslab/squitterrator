@@ -300,7 +300,7 @@ impl Plane {
                     self.turbulence = meteo.turbulence;
                     self.pressure = meteo.pressure;
                     bds = (4, 4);
-                    error!("DF:{} B:4.4 FOM:{:b}", df, message[8] & 0xF);
+                    debug!("DF:{} B:4.4 FOM:{:b}", df, message[8] & 0xF);
                 }
             }
             if bds == (4, 5) {
