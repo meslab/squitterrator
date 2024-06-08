@@ -53,9 +53,9 @@ pub fn is_bds_4_4(message: &[u32]) -> Option<Meteo> {
         {
             let meteo = Meteo::from_data(
                 adsb::temperature_4_4(message).filter(|x| (-80.0..=60.0).contains(x)),
-                adsb::wind_4_4(message).filter(|x| (0..=511).contains(&x.0)),
+                adsb::wind_4_4(message).filter(|x| (0..=250).contains(&x.0)),
                 adsb::humidity_4_4(message).filter(|x| (0..=100).contains(x)),
-                adsb::turbulence_4_4(message).filter(|x| (0..=10).contains(x)),
+                adsb::turbulence_4_4(message).filter(|x| (0..=15).contains(x)),
                 adsb::pressure_4_4(message).filter(|x| (0..=2048).contains(x)),
             );
             if meteo.temp.is_some()

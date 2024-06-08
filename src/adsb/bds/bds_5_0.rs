@@ -51,11 +51,11 @@ pub fn is_bds_5_0(message: &[u32]) -> Option<TrackAndTurn> {
         && goodflags(message, 78, 79, 88)
     {
         let track = TrackAndTurn::from_data(
-            roll_angle_5_0(message).filter(|x| (-90..=90).contains(x)),
+            roll_angle_5_0(message).filter(|x| (-50..=50).contains(x)),
             track_angle_5_0(message).filter(|x| (0..=360).contains(x)),
             track_angle_rate_5_0(message).filter(|x| (0..=2046).contains(x)),
-            ground_speed_5_0(message).filter(|x| (0..=2046).contains(x)),
-            true_airspeed_5_0(message).filter(|x| (0..=2046).contains(x)),
+            ground_speed_5_0(message).filter(|x| (0..=600).contains(x)),
+            true_airspeed_5_0(message).filter(|x| (0..=500).contains(x)),
         );
         if track.ground_speed.is_some()
             && track.true_airspeed.is_some()

@@ -16,7 +16,7 @@ use std::time::Duration;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.2.0",
+    version = "v0.2.1",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
@@ -65,8 +65,8 @@ pub struct Args {
     #[clap(short, long)]
     reverse: bool,
 
-    #[clap(short = 'S', long)]
-    strict: bool,
+    #[clap(short = 'R', long)]
+    relaxed: bool,
 
     #[clap(short, long)]
     count_df: bool,
