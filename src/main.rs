@@ -21,10 +21,10 @@ use std::time::Duration;
     about = "ADS-B squitter decoder"
 )]
 pub struct Args {
-    #[clap(short, long, default_value = None)]
+    #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 - only DF21\n -f 21 -f 4 - DF4 and DF21")]
     filter: Option<Vec<u32>>,
 
-    #[clap(short, long, default_value = "p")]
+    #[clap(short, long, default_value = "aAews", help = "Display plane patameters\na - angles, A - altitude\ns - speed, e - extra info")]
     display: Vec<String>,
 
     #[clap(short, long)]
@@ -59,13 +59,15 @@ pub struct Args {
     #[clap(short, long, default_value = "3")]
     update: i64,
 
-    #[clap(short, long, default_value = "A")]
+    #[clap(
+        short,
+        long,
+        default_value = "sA",
+        help = "s - squawk, a,A - altitude,\nc,C - category, N, S, E, W - location,\nv,V - vertical rate"
+    )]
     order_by: Vec<String>,
 
-    #[clap(short, long)]
-    reverse: bool,
-
-    #[clap(short = 'R', long)]
+    #[clap(short = 'R', long, help = "Relaxed Capabilities check EHS")]
     relaxed: bool,
 
     #[clap(short, long)]

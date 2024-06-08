@@ -29,13 +29,7 @@ pub(crate) fn flag_and_range_value(
     };
 
     let flag = (message[flag_ibyte] >> (3 - flag_ibit)) & 1;
-    match flag {
-        0 => Some((flag, result)),
-        _ => match result {
-            0 => Some((flag, result)),
-            _ => Some((flag, result)),
-        },
-    }
+    Some((flag, result))
 }
 
 fn bit_location(position: u32) -> (usize, usize) {

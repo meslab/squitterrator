@@ -447,10 +447,6 @@ fn print_planes(
         }
     }
 
-    if args.reverse {
-        planes_vector.reverse();
-    }
-
     print!(
         "{}",
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
