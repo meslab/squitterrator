@@ -252,6 +252,18 @@ impl Plane {
                     );
                 }
             }
+            if bds == (0, 0) && (!strict || self.capability.1.bds40) {
+                if let Some(result) = adsb::is_bds_4_0(message) {
+                    bds = (4, 0);
+                    debug!(
+                        "DF:{}, BDS:{}.{} S:{}",
+                        df,
+                        bds.0,
+                        bds.1,
+                        result.target_altitude_source.unwrap_or(0)
+                    );
+                }
+            }
             if bds == (0, 0) && (!strict || self.capability.1.bds50) {
                 if let Some(result) = adsb::is_bds_5_0(message) {
                     self.roll_angle = result.roll_angle;
@@ -354,6 +366,7 @@ pub trait SimpleDisplay {
         weather: bool,
         angles: bool,
         speed: bool,
+        altitude: bool,
         extra: bool,
     ) -> fmt::Result;
 }
@@ -365,6 +378,7 @@ impl SimpleDisplay for Plane {
         weather: bool,
         angles: bool,
         speed: bool,
+        altitude: bool,
         extra: bool,
     ) -> fmt::Result {
         write!(f, "{:06X}", self.icao)?;
@@ -399,6 +413,13 @@ impl SimpleDisplay for Plane {
             write!(f, " {:>5}", altitude)?;
         } else {
             write!(f, " {:5}", "")?;
+        }
+        if altitude {
+            if let Some(altitude_gnss) = self.altitude_gnss {
+                write!(f, " {:>5}", altitude_gnss)?;
+            } else {
+                write!(f, " {:5}", "")?;
+            }
         }
         if let Some(vrate) = self.vrate {
             write!(f, " {:>5}", vrate)?;
@@ -450,11 +471,6 @@ impl SimpleDisplay for Plane {
                 write!(f, " {:>3}", track_angle_rate)?;
             } else {
                 write!(f, " {:3}", "")?;
-            }
-            if let Some(altitude_gnss) = self.altitude_gnss {
-                write!(f, " {:>5}", altitude_gnss)?;
-            } else {
-                write!(f, " {:5}", "")?;
             }
         }
         if weather {
@@ -553,11 +569,12 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool, bool);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool, bool, bool);
 
 impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.simple_display(f, self.1, self.2, self.3, self.4)
+        self.0
+            .simple_display(f, self.1, self.2, self.3, self.4, self.5)
     }
 }
 
@@ -566,10 +583,11 @@ pub fn format_simple_display<T: SimpleDisplay>(
     weather: bool,
     angles: bool,
     speed: bool,
+    altitude: bool,
     extra: bool,
 ) -> String {
     format!(
         "{}",
-        SimpleDisplayWrapper(item, weather, angles, speed, extra)
+        SimpleDisplayWrapper(item, weather, angles, speed, altitude, extra)
     )
 }

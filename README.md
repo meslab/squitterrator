@@ -25,8 +25,6 @@ squitterator -h
 
 ## References
 
-For more information on ADS-B Mode S decoding and related documentation, you may find the following resources helpful:
-
 - [The 1090 Megahertz Riddle: A Guide to Decoding Mode S and ADS-B Signals](https://mode-s.org/decode/index.html)
 - [FAA ADS-B Resources](https://www.faa.gov/air_traffic/technology/adsb/documents)
 - DOI: [10.1109/TIT.1964.1053665](https://ieeexplore.ieee.org/document/1053665)
@@ -34,4 +32,3 @@ For more information on ADS-B Mode S decoding and related documentation, you may
 - Working Paper 1090-WP30-18 as DRAFT Version 4.2 of DO-282B
 - Guidelines for ICAO 24 Bits Adresses Assignment.pdf
 
-Feel free to explore these references to deepen your understanding of ADS-B Mode S and its decoding principles. Happy decoding!

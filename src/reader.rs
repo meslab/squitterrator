@@ -63,6 +63,7 @@ pub fn read_lines<R: BufRead>(
                                     display_flags.contains(&'w'),
                                     display_flags.contains(&'a'),
                                     display_flags.contains(&'s'),
+                                    display_flags.contains(&'A'),
                                     display_flags.contains(&'e'),
                                     true,
                                 );
@@ -83,6 +84,7 @@ pub fn read_lines<R: BufRead>(
                                     display_flags.contains(&'w'),
                                     display_flags.contains(&'a'),
                                     display_flags.contains(&'s'),
+                                    display_flags.contains(&'A'),
                                     display_flags.contains(&'e'),
                                 );
                                 debug!("Squirter: {}", squitter);
@@ -92,6 +94,7 @@ pub fn read_lines<R: BufRead>(
                                     display_flags.contains(&'w'),
                                     display_flags.contains(&'a'),
                                     display_flags.contains(&'s'),
+                                    display_flags.contains(&'A'),
                                     display_flags.contains(&'e'),
                                     false,
                                 );
@@ -117,8 +120,15 @@ fn clear_screen() {
     print!("{0}[2J{0}[H{0}[3J", 27 as char);
 }
 
-fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: bool) {
-    let headers = [
+fn print_header(
+    weather: bool,
+    angles: bool,
+    speed: bool,
+    altitude: bool,
+    extra: bool,
+    header: bool,
+) {
+    let headers_1 = [
         ("ICAO", 6),
         ("RG", 2),
         ("SQWK", 4),
@@ -127,15 +137,12 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
         ("ALT B", 5),
-        ("VRATE", 5),
-        ("TRK", 3),
-        ("HDG", 3),
-        ("GSP", 3),
     ];
+    let headers_2 = [("VRATE", 5), ("TRK", 3), ("HDG", 3), ("GSP", 3)];
 
     let headers_speed = [("TAS", 3), ("IAS", 3), ("MACH", 4)];
-    let headers_angles = [("RLL", 3), ("TAR", 3), ("ALT G", 5)];
-
+    let headers_angles = [("RLL", 3), ("TAR", 3)];
+    let headers_altitude = [("ALT G", 5)];
     let headers_weather = [
         ("TEMP", 5),
         ("WND", 3),
@@ -154,9 +161,22 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
         ("PTH", 3),
     ];
 
-    let header_line: String = headers
+    let header_line: String = headers_1
         .iter()
         .map(|&(header, width)| format!("{:>width$} ", header, width = width))
+        .chain(if altitude {
+            headers_altitude
+                .iter()
+                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .chain(
+            headers_2
+                .iter()
+                .map(|&(header, width)| format!("{:>width$} ", header, width = width)),
+        )
         .chain(if speed {
             headers_speed
                 .iter()
@@ -192,9 +212,22 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
         .collect::<String>()
         + "LC\n";
 
-    let separator_line: String = headers
+    let separator_line: String = headers_1
         .iter()
         .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+        .chain(if altitude {
+            headers_altitude
+                .iter()
+                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
+                .collect()
+        } else {
+            Vec::new()
+        })
+        .chain(
+            headers_2
+                .iter()
+                .map(|&(_, width)| format!("{:-<width$} ", "", width = width)),
+        )
         .chain(if speed {
             headers_speed
                 .iter()
@@ -270,7 +303,6 @@ fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool) {
     ];
 
     let legend_extra = [
-        ("ALT G", "Altitude (GNSS)"),
         ("VX", "Wake Vortex ADS-B Category"),
         ("DF", "Downlink Format"),
         ("TC", "Type Code"),
@@ -366,6 +398,7 @@ fn print_planes(
     weather: bool,
     angles: bool,
     speed: bool,
+    altitude: bool,
     extra: bool,
 ) {
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
@@ -423,7 +456,7 @@ fn print_planes(
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
             acc + &format!(
                 "{}\n",
-                format_simple_display(*plane, weather, angles, speed, extra)
+                format_simple_display(*plane, weather, angles, speed, altitude, extra)
             )
         })
     );
