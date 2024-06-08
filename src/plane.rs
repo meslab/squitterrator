@@ -275,30 +275,11 @@ impl Plane {
             }
             if bds == (0, 0) {
                 if let Some(meteo) = is_bds_4_4(message) {
-                    if (-80.0..=60.0).contains(&meteo.temp) {
-                        self.temperature = Some(meteo.temp);
-                    } else {
-                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, meteo.temp);
-                    }
-                    if (0..=511).contains(&meteo.wind.0) && (0..=360).contains(&meteo.wind.1) {
-                        self.wind = Some(meteo.wind);
-                    } else {
-                        error!(
-                            "DF:{} T:{}.{} W:{}.{}",
-                            df, bds.0, bds.1, meteo.wind.0, meteo.wind.1
-                        );
-                    }
-                    if (0..=100).contains(&meteo.humidity) {
-                        self.humidity = Some(meteo.humidity);
-                    } else {
-                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, meteo.humidity);
-                    }
-                    self.turbulence = Some(meteo.turbulence);
-                    if (0..=2048).contains(&meteo.pressure) {
-                        self.pressure = Some(meteo.pressure);
-                    } else {
-                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, meteo.pressure);
-                    }
+                    self.temperature = meteo.temp;
+                    self.wind = meteo.wind;
+                    self.humidity = meteo.humidity;
+                    self.turbulence = meteo.turbulence;
+                    self.pressure = meteo.pressure;
                     bds = (4, 4);
                 }
             }
