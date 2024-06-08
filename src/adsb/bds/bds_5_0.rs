@@ -1,7 +1,7 @@
 use super::goodflags;
 use crate::adsb::*;
 
-pub struct Track {
+pub struct TrackAndTurn {
     pub roll_angle: Option<i32>,
     pub track_angle: Option<u32>,
     pub track_angle_rate: Option<i32>,
@@ -9,9 +9,9 @@ pub struct Track {
     pub true_airspeed: Option<u32>,
 }
 
-impl Track {
+impl TrackAndTurn {
     pub fn new() -> Self {
-        Track {
+        TrackAndTurn {
             roll_angle: None,
             track_angle: None,
             track_angle_rate: None,
@@ -27,7 +27,7 @@ impl Track {
         ground_speed: Option<u32>,
         true_airspeed: Option<u32>,
     ) -> Self {
-        Track {
+        TrackAndTurn {
             roll_angle,
             track_angle,
             track_angle_rate,
@@ -37,20 +37,20 @@ impl Track {
     }
 }
 
-impl Default for Track {
+impl Default for TrackAndTurn {
     fn default() -> Self {
         Self::new()
     }
 }
 
-pub fn is_bds_5_0(message: &[u32]) -> Option<Track> {
+pub fn is_bds_5_0(message: &[u32]) -> Option<TrackAndTurn> {
     if goodflags(message, 33, 34, 43)
         && goodflags(message, 44, 45, 55)
         && goodflags(message, 56, 57, 66)
         && goodflags(message, 67, 68, 77)
         && goodflags(message, 78, 79, 88)
     {
-        let track = Track::from_data(
+        let track = TrackAndTurn::from_data(
             roll_angle_5_0(message).filter(|x| (-90..=90).contains(x)),
             track_angle_5_0(message).filter(|x| (0..=360).contains(x)),
             track_angle_rate_5_0(message).filter(|x| (0..=2046).contains(x)),
