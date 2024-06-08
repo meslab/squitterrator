@@ -51,7 +51,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
-            capability: (0, Capability::new()),
+            capability: (0, Capability::default()),
             category: (0, 0),
             reg: "",
             ais: None,
