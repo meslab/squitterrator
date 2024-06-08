@@ -506,7 +506,7 @@ impl SimpleDisplay for Plane {
             if let Some(position_timestamp) = self.position_timestamp {
                 write!(
                     f,
-                    " {:x}",
+                    " {:X}",
                     Utc::now()
                         .signed_duration_since(position_timestamp)
                         .num_seconds()
@@ -519,7 +519,7 @@ impl SimpleDisplay for Plane {
             if let Some(track_timestamp) = self.track_timestamp {
                 write!(
                     f,
-                    "{:x}",
+                    "{:X}",
                     Utc::now()
                         .signed_duration_since(track_timestamp)
                         .num_seconds()
@@ -532,7 +532,7 @@ impl SimpleDisplay for Plane {
             if let Some(heading_timestamp) = self.heading_timestamp {
                 write!(
                     f,
-                    "{:x}",
+                    "{:X}",
                     Utc::now()
                         .signed_duration_since(heading_timestamp)
                         .num_seconds()
