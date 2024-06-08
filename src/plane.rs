@@ -252,6 +252,18 @@ impl Plane {
                     );
                 }
             }
+            if bds == (0, 0) && (!strict || self.capability.1.bds40) {
+                if let Some(result) = adsb::is_bds_4_0(message) {
+                    bds = (4, 0);
+                    debug!(
+                        "DF:{}, BDS:{}.{} S:{}",
+                        df,
+                        bds.0,
+                        bds.1,
+                        result.target_altitude_source.unwrap_or(0)
+                    );
+                }
+            }
             if bds == (0, 0) && (!strict || self.capability.1.bds50) {
                 if let Some(result) = adsb::is_bds_5_0(message) {
                     self.roll_angle = result.roll_angle;
