@@ -114,8 +114,7 @@ pub fn read_lines<R: BufRead>(
 }
 
 fn clear_screen() {
-    print!("{}[2J", 27 as char);
-    print!("{}[H", 27 as char);
+    print!("{0}[2J{0}[H{0}[3J", 27 as char);
 }
 
 fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: bool) {
