@@ -42,6 +42,8 @@ pub struct Plane {
     pub pressure: Option<u32>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
+    pub track_timestamp: Option<DateTime<Utc>>,
+    pub heading_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
     pub last_df: u32,
     pub adsb_version: Option<u32>,
@@ -88,6 +90,8 @@ impl Plane {
             pressure: None,
             timestamp: Utc::now(),
             position_timestamp: None,
+            track_timestamp: None,
+            heading_timestamp: None,
             last_type_code: 0,
             last_df: 0,
             adsb_version: None,
@@ -257,6 +261,7 @@ impl Plane {
                     self.true_airspeed = result.true_airspeed;
                     self.bds_5_0_timestamp = Some(self.timestamp);
                     self.track_source = '\u{2085}';
+                    self.track_timestamp = Some(Utc::now());
                     bds = (5, 0);
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
@@ -269,6 +274,7 @@ impl Plane {
                     self.vrate = result.internal_vertical_velocity;
                     self.vrate_source = '\u{2086}';
                     self.heading_source = '\u{2086}';
+                    self.heading_timestamp = Some(Utc::now());
                     bds = (6, 0);
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
@@ -500,13 +506,41 @@ impl SimpleDisplay for Plane {
             if let Some(position_timestamp) = self.position_timestamp {
                 write!(
                     f,
-                    " {:>3}",
+                    " {:x}",
                     Utc::now()
                         .signed_duration_since(position_timestamp)
                         .num_seconds()
+                        / 10
+                        % 16
                 )?;
             } else {
-                write!(f, " {:3}", "")?;
+                write!(f, "  ")?;
+            }
+            if let Some(track_timestamp) = self.track_timestamp {
+                write!(
+                    f,
+                    "{:x}",
+                    Utc::now()
+                        .signed_duration_since(track_timestamp)
+                        .num_seconds()
+                        / 10
+                        % 16
+                )?;
+            } else {
+                write!(f, " ")?;
+            }
+            if let Some(heading_timestamp) = self.heading_timestamp {
+                write!(
+                    f,
+                    "{:x}",
+                    Utc::now()
+                        .signed_duration_since(heading_timestamp)
+                        .num_seconds()
+                        / 10
+                        % 16
+                )?;
+            } else {
+                write!(f, " ")?;
             }
         }
         write!(

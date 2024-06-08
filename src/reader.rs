@@ -151,7 +151,7 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
         ("TC", 2),
         ("V", 1),
         ("S", 1),
-        ("LPC", 3),
+        ("PTH", 3),
     ];
 
     let header_line: String = headers
@@ -276,7 +276,7 @@ fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool) {
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
         ("S", "Surveillance Status"),
-        ("LPC", "Last Position Contact"),
+        ("PTH", "Position, Track, Heaging age"),
     ];
 
     let width = (10, 28);
