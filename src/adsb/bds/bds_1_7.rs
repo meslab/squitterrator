@@ -30,6 +30,12 @@ impl Capability {
     }
 }
 
+impl Default for Capability {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub fn is_bds_1_7(message: &[u32]) -> Option<Capability> {
     if let Some((bds20, reserved)) = adsb::flag_and_range_value(message, 39, 61, 88) {
         if bds20 == 1 && reserved == 0 {
