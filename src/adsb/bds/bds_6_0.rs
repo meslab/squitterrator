@@ -1,22 +1,41 @@
 use super::goodflags;
 use crate::adsb::*;
+pub struct HeadingAndSpeed {
+    pub magnetic_heading: Option<u32>,
+    pub indicated_airspeed: Option<u32>,
+    pub mach_number: Option<f64>,
+    pub barometric_altitude_rate: Option<i32>,
+    pub internal_vertical_velocity: Option<i32>,
+}
 
-/// Checks if the given ADS-B message is a BDS 6,0 message and returns the extracted data if it is valid.
-///
-/// # Arguments
-///
-/// * `message` - The ADS-B message as a slice of `u32` values.
-///
-/// # Returns
-///
-/// An `Option` containing a tuple with the extracted data if the message is valid, or `None` otherwise. The tuple contains the following values:
-///
-/// * `magnetic_heading` - The magnetic heading in degrees.
-/// * `indicated_airspeed` - The indicated airspeed in knots.
-/// * `mach_number` - The Mach number.
-/// * `barometric_altitude_rate` - The barometric altitude rate in feet per minute.
-/// * `internal_vertical_velocity` - The internal vertical velocity in feet per minute.
-///
+impl HeadingAndSpeed {
+    pub fn new() -> Self {
+        HeadingAndSpeed {
+            magnetic_heading: None,
+            indicated_airspeed: None,
+            mach_number: None,
+            barometric_altitude_rate: None,
+            internal_vertical_velocity: None,
+        }
+    }
+
+    pub fn from_data(
+        magnetic_heading: Option<u32>,
+        indicated_airspeed: Option<u32>,
+        mach_number: Option<f64>,
+        barometric_altitude_rate: Option<i32>,
+        internal_vertical_velocity: Option<i32>,
+    ) -> Self {
+        HeadingAndSpeed {
+            magnetic_heading,
+            indicated_airspeed,
+            mach_number,
+            barometric_altitude_rate,
+            internal_vertical_velocity,
+        }
+    }
+}
+
 pub fn is_bds_6_0(message: &[u32]) -> Option<(u32, u32, f64, i32, i32)> {
     if goodflags(message, 33, 34, 44)
         && goodflags(message, 45, 46, 55)
