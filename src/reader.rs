@@ -114,8 +114,7 @@ pub fn read_lines<R: BufRead>(
 }
 
 fn clear_screen() {
-    print!("{}[2J", 27 as char);
-    print!("{}[H", 27 as char);
+    print!("{0}[2J{0}[H{0}[3J", 27 as char);
 }
 
 fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: bool) {
@@ -152,7 +151,7 @@ fn print_header(weather: bool, angles: bool, speed: bool, extra: bool, header: b
         ("TC", 2),
         ("V", 1),
         ("S", 1),
-        ("LPC", 3),
+        ("PTH", 3),
     ];
 
     let header_line: String = headers
@@ -277,7 +276,7 @@ fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool) {
         ("TC", "Type Code"),
         ("V", "ASD-B Version"),
         ("S", "Surveillance Status"),
-        ("LPC", "Last Position Contact"),
+        ("PTH", "Position, Track, Heaging age"),
     ];
 
     let width = (10, 28);

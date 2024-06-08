@@ -16,7 +16,7 @@ use std::time::Duration;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.1.6",
+    version = "v0.2.0",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
@@ -59,7 +59,7 @@ pub struct Args {
     #[clap(short, long, default_value = "3")]
     update: i64,
 
-    #[clap(short, long, default_value = "")]
+    #[clap(short, long, default_value = "A")]
     order_by: Vec<String>,
 
     #[clap(short, long)]

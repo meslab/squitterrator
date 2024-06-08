@@ -1,11 +1,11 @@
-use crate::adsb::{self, is_bds_4_4};
+use crate::adsb::{self, is_bds_4_4, Capability};
 use chrono::{DateTime, Utc};
 use log::{debug, error};
 use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
-    pub capability: (u32, u32),
+    pub capability: (u32, Capability),
     pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
@@ -42,6 +42,8 @@ pub struct Plane {
     pub pressure: Option<u32>,
     pub timestamp: DateTime<Utc>,
     pub position_timestamp: Option<DateTime<Utc>>,
+    pub track_timestamp: Option<DateTime<Utc>>,
+    pub heading_timestamp: Option<DateTime<Utc>>,
     pub last_type_code: u32,
     pub last_df: u32,
     pub adsb_version: Option<u32>,
@@ -51,7 +53,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
-            capability: (0, 0),
+            capability: (0, Capability::default()),
             category: (0, 0),
             reg: "",
             ais: None,
@@ -88,6 +90,8 @@ impl Plane {
             pressure: None,
             timestamp: Utc::now(),
             position_timestamp: None,
+            track_timestamp: None,
+            heading_timestamp: None,
             last_type_code: 0,
             last_df: 0,
             adsb_version: None,
@@ -233,22 +237,22 @@ impl Plane {
             }
             if bds == (0, 0) {
                 if let Some(result) = adsb::is_bds_1_7(message) {
-                    self.capability.1 = result.1;
+                    self.capability.1 = result;
                     bds = (1, 7);
                     debug!(
                         "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
                         df,
                         bds.0,
                         bds.1,
-                        self.capability.1,
-                        (self.capability.1 >> 15) & 1,
-                        (self.capability.1 >> 11) & 1,
-                        (self.capability.1 >> 8) & 1,
-                        self.capability.1 & 1
+                        self.capability.1.flags,
+                        self.capability.1.bds40,
+                        self.capability.1.bds40,
+                        self.capability.1.bds50,
+                        self.capability.1.bds60
                     );
                 }
             }
-            if bds == (0, 0) && (!strict || (self.capability.1 >> 8) & 1 == 1) {
+            if bds == (0, 0) && (!strict || self.capability.1.bds50) {
                 if let Some(result) = adsb::is_bds_5_0(message) {
                     self.roll_angle = result.roll_angle;
                     self.track = result.track_angle;
@@ -257,48 +261,31 @@ impl Plane {
                     self.true_airspeed = result.true_airspeed;
                     self.bds_5_0_timestamp = Some(self.timestamp);
                     self.track_source = '\u{2085}';
+                    self.track_timestamp = Some(Utc::now());
                     bds = (5, 0);
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
             }
-            if bds == (0, 0) && (!strict || self.capability.1 & 1 == 1) {
+            if bds == (0, 0) && (!strict || self.capability.1.bds60) {
                 if let Some(result) = adsb::is_bds_6_0(message) {
-                    self.heading = Some(result.0);
-                    self.indicated_airspeed = Some(result.1);
-                    self.mach_number = Some(result.2);
-                    self.vrate = Some(result.3);
+                    self.heading = result.magnetic_heading;
+                    self.indicated_airspeed = result.indicated_airspeed;
+                    self.mach_number = result.mach_number;
+                    self.vrate = result.internal_vertical_velocity;
                     self.vrate_source = '\u{2086}';
                     self.heading_source = '\u{2086}';
+                    self.heading_timestamp = Some(Utc::now());
                     bds = (6, 0);
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
             }
             if bds == (0, 0) {
                 if let Some(meteo) = is_bds_4_4(message) {
-                    if (-80.0..=60.0).contains(&meteo.temp) {
-                        self.temperature = Some(meteo.temp);
-                    } else {
-                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, meteo.temp);
-                    }
-                    if (0..=511).contains(&meteo.wind.0) && (0..=360).contains(&meteo.wind.1) {
-                        self.wind = Some(meteo.wind);
-                    } else {
-                        error!(
-                            "DF:{} T:{}.{} W:{}.{}",
-                            df, bds.0, bds.1, meteo.wind.0, meteo.wind.1
-                        );
-                    }
-                    if (0..=100).contains(&meteo.humidity) {
-                        self.humidity = Some(meteo.humidity);
-                    } else {
-                        error!("DF:{} T:{}.{} H:{}", df, bds.0, bds.1, meteo.humidity);
-                    }
-                    self.turbulence = Some(meteo.turbulence);
-                    if (0..=2048).contains(&meteo.pressure) {
-                        self.pressure = Some(meteo.pressure);
-                    } else {
-                        error!("DF:{} T:{}.{} P:{}", df, bds.0, bds.1, meteo.pressure);
-                    }
+                    self.temperature = meteo.temp;
+                    self.wind = meteo.wind;
+                    self.humidity = meteo.humidity;
+                    self.turbulence = meteo.turbulence;
+                    self.pressure = meteo.pressure;
                     bds = (4, 4);
                 }
             }
@@ -519,13 +506,41 @@ impl SimpleDisplay for Plane {
             if let Some(position_timestamp) = self.position_timestamp {
                 write!(
                     f,
-                    " {:>3}",
+                    " {:x}",
                     Utc::now()
                         .signed_duration_since(position_timestamp)
                         .num_seconds()
+                        / 10
+                        % 16
                 )?;
             } else {
-                write!(f, " {:3}", "")?;
+                write!(f, "  ")?;
+            }
+            if let Some(track_timestamp) = self.track_timestamp {
+                write!(
+                    f,
+                    "{:x}",
+                    Utc::now()
+                        .signed_duration_since(track_timestamp)
+                        .num_seconds()
+                        / 10
+                        % 16
+                )?;
+            } else {
+                write!(f, " ")?;
+            }
+            if let Some(heading_timestamp) = self.heading_timestamp {
+                write!(
+                    f,
+                    "{:x}",
+                    Utc::now()
+                        .signed_duration_since(heading_timestamp)
+                        .num_seconds()
+                        / 10
+                        % 16
+                )?;
+            } else {
+                write!(f, " ")?;
             }
         }
         write!(

@@ -1,30 +1,30 @@
 use crate::adsb;
 
 pub struct Meteo {
-    pub temp: f64,
-    pub wind: (u32, u32),
-    pub humidity: u32,
-    pub turbulence: u32,
-    pub pressure: u32,
+    pub temp: Option<f64>,
+    pub wind: Option<(u32, u32)>,
+    pub humidity: Option<u32>,
+    pub turbulence: Option<u32>,
+    pub pressure: Option<u32>,
 }
 
 impl Meteo {
     pub fn new() -> Self {
         Meteo {
-            temp: 0.0,
-            wind: (0, 0),
-            humidity: 0,
-            turbulence: 0,
-            pressure: 0,
+            temp: None,
+            wind: None,
+            humidity: None,
+            turbulence: None,
+            pressure: None,
         }
     }
 
     pub fn from_data(
-        temp: f64,
-        wind: (u32, u32),
-        humidity: u32,
-        turbulence: u32,
-        pressure: u32,
+        temp: Option<f64>,
+        wind: Option<(u32, u32)>,
+        humidity: Option<u32>,
+        turbulence: Option<u32>,
+        pressure: Option<u32>,
     ) -> Self {
         Meteo {
             temp,
@@ -51,18 +51,22 @@ pub fn is_bds_4_4(message: &[u32]) -> Option<Meteo> {
             && adsb::goodflags(message, 79, 80, 81)
             && adsb::goodflags(message, 82, 83, 88)
         {
-            let (temp, wind, humidity, turbulence, pressure) = (
-                adsb::temperature_4_4(message),
-                adsb::wind_4_4(message),
-                adsb::humidity_4_4(message),
-                adsb::turbulence_4_4(message),
-                adsb::pressure_4_4(message),
+            let meteo = Meteo::from_data(
+                adsb::temperature_4_4(message).filter(|x| (-80.0..=60.0).contains(x)),
+                adsb::wind_4_4(message).filter(|x| (0..=511).contains(&x.0)),
+                adsb::humidity_4_4(message).filter(|x| (0..=100).contains(x)),
+                adsb::turbulence_4_4(message).filter(|x| (0..=10).contains(x)),
+                adsb::pressure_4_4(message).filter(|x| (0..=2048).contains(x)),
             );
-            match (temp, wind, humidity, turbulence, pressure) {
-                (Some(temp), Some(wind), Some(humidity), Some(turbulence), Some(pressure)) => {
-                    Some(Meteo::from_data(temp, wind, humidity, turbulence, pressure))
-                }
-                _ => None,
+            if meteo.temp.is_some()
+                && meteo.wind.is_some()
+                && meteo.humidity.is_some()
+                && meteo.turbulence.is_some()
+                && meteo.pressure.is_some()
+            {
+                Some(meteo)
+            } else {
+                None
             }
         } else {
             None
