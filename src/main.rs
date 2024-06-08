@@ -65,8 +65,8 @@ pub struct Args {
     #[clap(short, long)]
     reverse: bool,
 
-    #[clap(short = 'S', long)]
-    strict: bool,
+    #[clap(short = 'R', long)]
+    relaxed: bool,
 
     #[clap(short, long)]
     count_df: bool,

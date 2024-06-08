@@ -3,7 +3,7 @@ use log::{debug, error, warn};
 use squitterator::adsb::message;
 use squitterator::adsb::{df, icao};
 use squitterator::plane::{format_simple_display, Plane};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::{BufRead, Result};
 
 pub fn read_lines<R: BufRead>(
@@ -22,7 +22,7 @@ pub fn read_lines<R: BufRead>(
             display_flags.contains(&'e'),
         );
     }
-    let mut df_count = HashMap::new();
+    let mut df_count = BTreeMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
     for line in reader.lines() {
         match line {
@@ -53,8 +53,8 @@ pub fn read_lines<R: BufRead>(
                         if let Some(icao) = icao(&message, df) {
                             planes
                                 .entry(icao)
-                                .and_modify(|p| p.update(&message, df, args.strict))
-                                .or_insert(Plane::from_message(&message, df, icao, args.strict));
+                                .and_modify(|p| p.update(&message, df, args.relaxed))
+                                .or_insert(Plane::from_message(&message, df, icao, args.relaxed));
 
                             let now = chrono::Utc::now();
                             if now.signed_duration_since(timestamp).num_seconds() > args.update {
