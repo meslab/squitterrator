@@ -240,7 +240,7 @@ impl Plane {
                     self.capability.1 = result;
                     bds = (1, 7);
                     debug!("Relaxed:{}", relaxed);
-                    error!(
+                    debug!(
                         "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
                         df,
                         bds.0,
@@ -300,6 +300,7 @@ impl Plane {
                     self.turbulence = meteo.turbulence;
                     self.pressure = meteo.pressure;
                     bds = (4, 4);
+                    error!("DF:{} B:4.4 FOM:{:b}", df, message[8] & 0xF);
                 }
             }
             if bds == (4, 5) {

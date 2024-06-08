@@ -64,13 +64,13 @@ pub fn is_bds_6_0(message: &[u32]) -> Option<HeadingAndSpeed> {
                 .is_some_and(|x| (0..=1023).contains(&x))
             && heading
                 .mach_number
-                .is_some_and(|x| (0.0..=4.092).contains(&x))
+                .is_some_and(|x| (0.0..=1.0).contains(&x))
             && heading
                 .barometric_altitude_rate
-                .is_some_and(|x| (-16384..=16384).contains(&x))
+                .is_some_and(|x| (-6000..=6000).contains(&x))
             && heading
                 .internal_vertical_velocity
-                .is_some_and(|x| (-16384..=16384).contains(&x))
+                .is_some_and(|x| (-6000..=6000).contains(&x))
         {
             Some(heading)
         } else {
