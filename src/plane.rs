@@ -1,11 +1,11 @@
-use crate::adsb::{self, is_bds_4_4};
+use crate::adsb::{self, is_bds_4_4, Capability};
 use chrono::{DateTime, Utc};
 use log::{debug, error};
 use std::fmt::{self, Display};
 
 pub struct Plane {
     pub icao: u32,
-    pub capability: (u32, u32),
+    pub capability: (u32, Capability),
     pub category: (u32, u32),
     pub reg: &'static str,
     pub ais: Option<String>,
@@ -51,7 +51,7 @@ impl Plane {
     pub fn new() -> Self {
         Plane {
             icao: 0,
-            capability: (0, 0),
+            capability: (0, Capability::new()),
             category: (0, 0),
             reg: "",
             ais: None,
@@ -233,22 +233,22 @@ impl Plane {
             }
             if bds == (0, 0) {
                 if let Some(result) = adsb::is_bds_1_7(message) {
-                    self.capability.1 = result.1;
+                    self.capability.1 = result;
                     bds = (1, 7);
                     debug!(
                         "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
                         df,
                         bds.0,
                         bds.1,
-                        self.capability.1,
-                        (self.capability.1 >> 15) & 1,
-                        (self.capability.1 >> 11) & 1,
-                        (self.capability.1 >> 8) & 1,
-                        self.capability.1 & 1
+                        self.capability.1.flags,
+                        self.capability.1.bds40,
+                        self.capability.1.bds40,
+                        self.capability.1.bds50,
+                        self.capability.1.bds60
                     );
                 }
             }
-            if bds == (0, 0) && (!strict || (self.capability.1 >> 8) & 1 == 1) {
+            if bds == (0, 0) && (!strict || self.capability.1.bds50) {
                 if let Some(result) = adsb::is_bds_5_0(message) {
                     self.roll_angle = result.roll_angle;
                     self.track = result.track_angle;
@@ -261,7 +261,7 @@ impl Plane {
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
             }
-            if bds == (0, 0) && (!strict || self.capability.1 & 1 == 1) {
+            if bds == (0, 0) && (!strict || self.capability.1.bds60) {
                 if let Some(result) = adsb::is_bds_6_0(message) {
                     self.heading = result.magnetic_heading;
                     self.indicated_airspeed = result.indicated_airspeed;
