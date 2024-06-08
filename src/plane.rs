@@ -263,10 +263,10 @@ impl Plane {
             }
             if bds == (0, 0) && (!strict || self.capability.1 & 1 == 1) {
                 if let Some(result) = adsb::is_bds_6_0(message) {
-                    self.heading = Some(result.0);
-                    self.indicated_airspeed = Some(result.1);
-                    self.mach_number = Some(result.2);
-                    self.vrate = Some(result.3);
+                    self.heading = result.magnetic_heading;
+                    self.indicated_airspeed = result.indicated_airspeed;
+                    self.mach_number = result.mach_number;
+                    self.vrate = result.internal_vertical_velocity;
                     self.vrate_source = '\u{2086}';
                     self.heading_source = '\u{2086}';
                     bds = (6, 0);
