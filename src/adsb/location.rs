@@ -1,14 +1,14 @@
 use crate::adsb::pmod;
 
-pub fn cpr(message: &[u32]) -> (u32, u32, u32) {
+pub fn cpr(message: &[u32]) -> Option<(u32, u32, u32)> {
     if let Some((cpr_form, cpr_lat)) = crate::adsb::flag_and_range_value(message, 54, 55, 71) {
         if let Some((_, cpr_long)) = crate::adsb::flag_and_range_value(message, 54, 72, 88) {
-            (cpr_form, cpr_lat, cpr_long)
+            Some((cpr_form, cpr_lat, cpr_long))
         } else {
-            (0, 0, 0)
+            None
         }
     } else {
-        (0, 0, 0)
+        None
     }
 }
 

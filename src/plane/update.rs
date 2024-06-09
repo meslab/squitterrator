@@ -42,48 +42,52 @@ impl Plane {
                     self.category = (message_type, message_subtype);
                 }
                 5..=18 => {
-                    let (cpr_form, cpr_lat, cpr_lon) = adsb::cpr(message);
-                    match cpr_form {
-                        0 | 1 => {
-                            self.cpr_lat[cpr_form as usize] = cpr_lat;
-                            self.cpr_lon[cpr_form as usize] = cpr_lon;
-                            self.cpr_time[cpr_form as usize] = Utc::now();
-                        }
-                        _ => {}
-                    }
-                    if let 5..=8 = message_type {
-                        self.ground_movement = adsb::ground_movement(message);
-                        self.altitude = None;
-                        self.altitude_source = '\u{2070}';
-                    }
-                    if let 9..=18 = message_type {
-                        self.altitude = adsb::altitude(message, df);
-                        self.altitude_source = ' ';
-                        self.surveillance_status = adsb::surveillance_status(message);
-                    }
-                    if self.cpr_lat[0] != 0
-                        && self.cpr_lat[1] != 0
-                        && self.cpr_lon[0] != 0
-                        && self.cpr_lon[1] != 0
-                        && self.cpr_time[0]
-                            .signed_duration_since(self.cpr_time[1])
-                            .num_seconds()
-                            .abs()
-                            < 10
-                    {
-                        if let Some((lat, lon)) = match message_type {
-                            5..=8 => {
-                                self.track = adsb::ground_track(message);
-                                self.track_source = ' ';
-                                adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
+                    if let Some((cpr_form, cpr_lat, cpr_lon)) = adsb::cpr(message) {
+                        match cpr_form {
+                            0 | 1 => {
+                                self.cpr_lat[cpr_form as usize] = cpr_lat;
+                                self.cpr_lon[cpr_form as usize] = cpr_lon;
+                                self.cpr_time[cpr_form as usize] = Utc::now();
                             }
-                            9..=18 => adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
-                            _ => None,
-                        } {
-                            if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) {
-                                self.lat = lat;
-                                self.lon = lon;
-                                self.position_timestamp = Some(Utc::now());
+                            _ => {}
+                        }
+                        if let 5..=8 = message_type {
+                            self.ground_movement = adsb::ground_movement(message);
+                            self.altitude = None;
+                            self.altitude_source = '\u{2070}';
+                        }
+                        if let 9..=18 = message_type {
+                            self.altitude = adsb::altitude(message, df);
+                            self.altitude_source = ' ';
+                            self.surveillance_status = adsb::surveillance_status(message);
+                        }
+                        if self.cpr_lat[0] != 0
+                            && self.cpr_lat[1] != 0
+                            && self.cpr_lon[0] != 0
+                            && self.cpr_lon[1] != 0
+                            && self.cpr_time[0]
+                                .signed_duration_since(self.cpr_time[1])
+                                .num_seconds()
+                                .abs()
+                                < 10
+                        {
+                            if let Some((lat, lon)) = match message_type {
+                                5..=8 => {
+                                    self.track = adsb::ground_track(message);
+                                    self.track_source = ' ';
+                                    adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
+                                }
+                                9..=18 => {
+                                    adsb::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1)
+                                }
+                                _ => None,
+                            } {
+                                if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon)
+                                {
+                                    self.lat = lat;
+                                    self.lon = lon;
+                                    self.position_timestamp = Some(Utc::now());
+                                }
                             }
                         }
                     }
