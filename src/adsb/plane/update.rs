@@ -1,7 +1,7 @@
 use super::Plane;
 use crate::adsb;
 use chrono::Utc;
-use log::{debug, error};
+use log::debug;
 
 impl Plane {
     pub fn update(&mut self, message: &[u32], df: u32, relaxed: bool) {
@@ -193,13 +193,7 @@ impl Plane {
                 }
             }
             if bds == (4, 5) {
-                if let Some(temp) = adsb::temperature_4_5(message) {
-                    if temp > 45.0 {
-                        error!("DF:{}, BDS:{}.{}, T:{}", df, bds.0, bds.1, temp);
-                    } else {
-                        self.temperature = Some(temp);
-                    }
-                }
+                self.temperature = adsb::is_bds_4_5(message);
             }
             debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
         }

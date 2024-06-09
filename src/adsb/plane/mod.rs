@@ -105,7 +105,7 @@ impl Plane {
     pub fn from_message(message: &[u32], df: u32, icao: u32, relaxed: bool) -> Self {
         let mut plane = Plane::new();
         plane.icao = icao;
-        (_, plane.reg) = crate::country::icao_to_country(icao);
+        (_, plane.reg) = super::icao_to_country(icao);
         plane.update(message, df, relaxed);
         plane
     }

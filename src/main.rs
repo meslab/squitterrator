@@ -4,7 +4,7 @@ use crate::reader::read_lines;
 use clap::Parser;
 use env_logger::{Builder, Env};
 use log::{error, info};
-use squitterator::plane::Plane;
+use squitterator::adsb::Plane;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Write};

@@ -8,7 +8,7 @@ mod bds_6_0;
 pub use bds_1_7::*;
 pub use bds_4_0::*;
 pub use bds_4_4::*;
-pub use bds_4_5::*;
+pub(crate) use bds_4_5::*;
 pub use bds_5_0::*;
 pub use bds_6_0::*;
 

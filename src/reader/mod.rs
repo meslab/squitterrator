@@ -8,9 +8,8 @@ use planes::print_planes;
 
 use crate::Args;
 use log::{debug, error, warn};
-use squitterator::adsb::message;
 use squitterator::adsb::{df, icao};
-use squitterator::plane::Plane;
+use squitterator::adsb::{message, Plane};
 use std::collections::{BTreeMap, HashMap};
 use std::io::{BufRead, Result};
 
