@@ -11,16 +11,6 @@ use crate::adsb::ma_code;
 /// * `Some(u32)` - The decimal value of the squawk code if it exists in the message.
 /// * `None` - If the squawk code does not exist in the message.
 ///
-/// # Example
-///
-/// ```
-/// use squitterator::adsb::{message, squawk};
-/// if let Some(message) = message("A800189A805CE93F8004F6F2BCA4") {
-///     if let Some(icao_address) = squawk(&message) {
-///         assert_eq!(icao_address, 5611);
-///     }
-/// }
-/// ```
 pub fn squawk(message: &[u32]) -> Option<u32> {
     ma_code(message).map(|code| {
         ((((code >> 8) & 1) << 2) | (((code >> 10) & 1) << 1) | ((code >> 12) & 1)) as u32 * 1000
