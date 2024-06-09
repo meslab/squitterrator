@@ -11,18 +11,7 @@ use log::debug;
 ///
 /// * `message` - The ADS-B message as a slice of `u32` values.
 ///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::message;
-/// use squitterator::adsb::ma_code;
-/// let squitter = "8D40621D58C382D690C8AC2863A7";
-/// if let Some(message) = message(squitter) {
-///     let result = ma_code(&message);
-///     assert_eq!(result, Some(1141));
-/// }
-/// ```
-pub fn ma_code(message: &[u32]) -> Option<u16> {
+pub(crate) fn ma_code(message: &[u32]) -> Option<u16> {
     let mut result = 0u16;
 
     let bit_positions = [

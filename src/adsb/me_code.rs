@@ -10,19 +10,7 @@ use crate::adsb;
 ///
 /// An `Option<u16>` representing the calculated ME code. Returns `Some(code)` if the calculation is successful,
 /// or `None` if the message is invalid.
-///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::message;
-/// use squitterator::adsb::me_code;
-/// let squitter = "8D40621D58C382D690C8AC2863A7";
-/// if let Some(message) = message(squitter)  {
-///     let result = me_code(&message);
-///     assert_eq!(result, Some(12513));
-/// }
-/// ```
-pub fn me_code(message: &[u32]) -> Option<u16> {
+pub(crate) fn me_code(message: &[u32]) -> Option<u16> {
     adsb::flag_and_range_value(message, 48, 41, 52)
         .map(|(flag, value)| ((value << 2) | flag) as u16)
 }

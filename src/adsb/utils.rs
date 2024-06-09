@@ -95,17 +95,7 @@ pub fn ca(message: &[u32]) -> u32 {
 /// # Returns
 ///
 /// The positive modulo of the two values.
-///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::pmod;
-/// let x = -5;
-/// let y = 3;
-/// let result = pmod(x, y);
-/// assert_eq!(result, 1);
-/// ```
-pub fn pmod(x: i32, y: i32) -> i32 {
+pub(crate) fn pmod(x: i32, y: i32) -> i32 {
     let mut res = x % y;
     if res < 0 {
         res += y;
@@ -113,7 +103,7 @@ pub fn pmod(x: i32, y: i32) -> i32 {
     res
 }
 
-pub fn graytobin(message: &[u32]) -> (u32, u32) {
+pub(crate) fn graytobin(message: &[u32]) -> (u32, u32) {
     if let Some(code) = adsb::ma_code(message) {
         let n = ((code >> 4) & 1) << 10
             | ((code >> 2) & 1) << 9
