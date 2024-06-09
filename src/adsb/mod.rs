@@ -20,14 +20,15 @@ mod version;
 mod vertical_rate;
 
 use calc::*;
+use crc::*;
+
+pub(crate) use ehs::*;
 
 pub use acas::*;
 pub use ais::*;
 pub use altitude::*;
 pub use bds::*;
-pub use crc::*;
 pub use df::*;
-pub use ehs::*;
 pub use format::*;
 pub use ground_movement::*;
 pub use icao::*;

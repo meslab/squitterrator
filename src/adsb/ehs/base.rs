@@ -1,4 +1,4 @@
-pub fn ground_track(message: &[u32]) -> Option<u32> {
+pub(crate) fn ground_track(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 52) {
         match status {
             1 => Some((value * 360) >> 7),
@@ -9,7 +9,10 @@ pub fn ground_track(message: &[u32]) -> Option<u32> {
     }
 }
 
-pub fn track_and_groundspeed(message: &[u32], is_supersonic: bool) -> (Option<u32>, Option<u32>) {
+pub(crate) fn track_and_groundspeed(
+    message: &[u32],
+    is_supersonic: bool,
+) -> (Option<u32>, Option<u32>) {
     let sp_west = match crate::adsb::flag_and_range_value(message, 46, 47, 56) {
         Some((dir_west, speed_west)) => match dir_west {
             1 => -(speed_west as f64 - 1.0),
@@ -32,7 +35,7 @@ pub fn track_and_groundspeed(message: &[u32], is_supersonic: bool) -> (Option<u3
     (Some(track), Some(groundspeed))
 }
 
-pub fn heading(message: &[u32]) -> Option<u32> {
+pub(crate) fn heading(message: &[u32]) -> Option<u32> {
     if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 1, 47, 56) {
         Some((value * 360) >> 10)
     } else {

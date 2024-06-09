@@ -87,17 +87,7 @@ fn crc56(message: &[u32]) -> u32 {
 ///
 /// The reminder of the message
 ///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::{message, reminder};
-/// let squitter = "A828162A200464B3D7182070E336";
-/// if let Some(message) = message(squitter) {
-///     let result = reminder(&message);
-///     assert_eq!(result, 0);
-/// }
-/// ```
-pub fn reminder(message: &[u32]) -> u32 {
+pub(crate) fn reminder(message: &[u32]) -> u32 {
     let generator = [0b11111111u16, 0b11111010u16, 0b00000100u16, 0b10000000u16];
 
     let mut bytes = message[0..message.len() - 6]

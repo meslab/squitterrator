@@ -1,6 +1,6 @@
 /// Calculates the magnetic heading based on the given ADS-B message.
 /// Returns `None` if the status is 0, otherwise returns the calculated magnetic heading.
-pub fn magnetic_heading_6_0(message: &[u32]) -> Option<u32> {
+pub(crate) fn magnetic_heading_6_0(message: &[u32]) -> Option<u32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 33, 34, 44) {
         match status {
             0 => None,
@@ -29,7 +29,7 @@ fn magnetic_heading(sign: u32, value: u32) -> u32 {
 
 /// Calculates the indicated airspeed based on the given ADS-B message.
 /// Returns `None` if the status is 0, otherwise returns the indicated airspeed.
-pub fn indicated_airspeed_6_0(message: &[u32]) -> Option<u32> {
+pub(crate) fn indicated_airspeed_6_0(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 55) {
         match status {
             0 => None,
@@ -42,7 +42,7 @@ pub fn indicated_airspeed_6_0(message: &[u32]) -> Option<u32> {
 
 /// Calculates the Mach number based on the given ADS-B message.
 /// Returns `None` if the status is 0, otherwise returns the Mach number.
-pub fn mach_number_6_0(message: &[u32]) -> Option<f64> {
+pub(crate) fn mach_number_6_0(message: &[u32]) -> Option<f64> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 56, 57, 66) {
         match status {
             0 => None,
@@ -55,7 +55,7 @@ pub fn mach_number_6_0(message: &[u32]) -> Option<f64> {
 
 /// Calculates the barometric altitude rate based on the given ADS-B message.
 /// Returns `None` if the status is 0, otherwise returns the barometric altitude rate.
-pub fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
+pub(crate) fn barometric_altitude_rate_6_0(message: &[u32]) -> Option<i32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 67, 68, 77) {
         match status {
             0 => None,
@@ -84,7 +84,7 @@ fn barometric_altitude_rate(sign: u32, value: u32) -> i32 {
 
 /// Calculates the internal vertical velocity based on the given ADS-B message.
 /// Returns `None` if the status is 0, otherwise returns the internal vertical velocity.
-pub fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
+pub(crate) fn internal_vertical_velocity_6_0(message: &[u32]) -> Option<i32> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 78, 79, 88) {
         match status {
             0 => None,
