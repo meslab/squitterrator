@@ -85,24 +85,6 @@ pub fn ca(message: &[u32]) -> u32 {
     message[1] & 0b0111
 }
 
-/// Calculates the positive modulo of two values.
-///
-/// # Arguments
-///
-/// * `x` - The dividend.
-/// * `y` - The divisor.
-///
-/// # Returns
-///
-/// The positive modulo of the two values.
-pub(crate) fn pmod(x: i32, y: i32) -> i32 {
-    let mut res = x % y;
-    if res < 0 {
-        res += y;
-    }
-    res
-}
-
 pub(crate) fn graytobin(message: &[u32]) -> (u32, u32) {
     if let Some(code) = adsb::ma_code(message) {
         let n = ((code >> 4) & 1) << 10
@@ -195,14 +177,6 @@ mod tests {
         if let Some(message) = message(squitter) {
             assert_eq!(ca(&message), 5);
         }
-    }
-
-    #[test]
-    fn test_pmod() {
-        let x = -5;
-        let y = 3;
-        let result = pmod(x, y);
-        assert_eq!(result, 1);
     }
 
     #[test]
