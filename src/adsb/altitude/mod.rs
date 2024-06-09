@@ -3,6 +3,7 @@ mod gnss;
 
 pub use delta::*;
 pub use gnss::*;
+use log::error;
 
 use crate::adsb::{graytobin, ma_code, me_code};
 
@@ -12,6 +13,17 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
         _ => ma_code(message),
     };
 
+    altitude_value(message, code).and_then(|a| {
+        if a < 100000 {
+            Some(a)
+        } else {
+            error!("DF:{} C:{:b} ALT:{}", df, code.unwrap(), a);
+            None
+        }
+    })
+}
+
+fn altitude_value(message: &[u32], code: Option<u16>) -> Option<u32> {
     match code {
         Some(code) => match code & 0b10 {
             0 => match code & 1 {

@@ -9,20 +9,7 @@ impl Plane {
         self.last_df = df;
 
         if df == 4 || df == 20 {
-            if let Some(altitude) = adsb::altitude(message, df) {
-                if altitude > 1000000 {
-                    error!(
-                        "DF:{} ALT:{} ERR: {} ICAO:{}, M:{:?}",
-                        df,
-                        self.altitude.unwrap_or(0),
-                        altitude,
-                        self.icao,
-                        message
-                    );
-                } else {
-                    self.altitude = Some(altitude);
-                }
-            }
+            self.altitude = adsb::altitude(message, df);
             self.altitude_source = ' ';
         }
         if df == 5 || df == 21 {
