@@ -8,7 +8,7 @@ impl Plane {
         self.timestamp = Utc::now();
         self.last_df = df;
 
-        if df == 4 {
+        if df == 4 || df == 20 {
             if let Some(altitude) = adsb::altitude(message, df) {
                 if altitude > 1000000 {
                     error!(

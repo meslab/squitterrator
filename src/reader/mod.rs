@@ -43,9 +43,6 @@ pub fn read_lines<R: BufRead>(
                             continue;
                         }
                     };
-                    if args.count_df {
-                        *df_count.entry(df).or_insert(1) += 1;
-                    }
                     if let Some(m) = &args.log_messages {
                         if m.contains(&df) {
                             error!("DF:{}, L:{}", df, squitter);
@@ -55,6 +52,9 @@ pub fn read_lines<R: BufRead>(
                         if only.iter().all(|&x| x != df) {
                             continue;
                         }
+                    }
+                    if args.count_df {
+                        *df_count.entry(df).or_insert(1) += 1;
                     }
 
                     if !args.display.is_empty() {
