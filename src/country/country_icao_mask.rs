@@ -1,4 +1,4 @@
-pub fn icao_to_country(icao: u32) -> (&'static str, &'static str) {
+pub(crate) fn icao_to_country(icao: u32) -> (&'static str, &'static str) {
     let (country, cshrt) = match icao >> 20 {
         0b0001 => ("Russian Federation", "RU"),
         0b1010 => ("United States", "US"),
@@ -670,5 +670,6 @@ mod tests {
         assert_eq!(icao_to_country(0x502CE5), ("Latvia", "LV"));
         assert_eq!(icao_to_country(0x5100FA), ("Belarus", "BY"));
         assert_eq!(icao_to_country(0x151D83), ("Russian Federation", "RU"));
+        assert_eq!(icao_to_country(0x4C0000), ("Yugoslavia", "YU"));
     }
 }
