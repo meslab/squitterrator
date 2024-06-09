@@ -24,7 +24,12 @@ pub struct Args {
     #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 - only DF21\n -f 21 -f 4 - DF4 and DF21")]
     filter: Option<Vec<u32>>,
 
-    #[clap(short, long, default_value = "aAews", help = "Display plane patameters\na - angles, A - altitude\ns - speed, e - extra info")]
+    #[clap(
+        short,
+        long,
+        default_value = "aAews",
+        help = "Display plane patameters\na - angles, A - altitude\ns - speed, e - extra info"
+    )]
     display: Vec<String>,
 
     #[clap(short, long)]
