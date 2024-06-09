@@ -1,11 +1,13 @@
 mod delta;
 mod gnss;
+mod graytobin;
 
 pub use delta::*;
 pub use gnss::*;
+use graytobin::graytobin;
 use log::error;
 
-use crate::adsb::{graytobin, ma_code, me_code};
+use crate::adsb::{ma_code, me_code};
 
 pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
     let code = match df {
