@@ -25,30 +25,13 @@ use crate::adsb::get_crc;
 /// ```
 
 pub fn icao(message: &[u32], df: u32) -> Option<u32> {
-    let crc = get_crc(message, df);
-    let icao = match df {
+    match df {
         0 | 4 | 5 | 16 | 20 | 21 => {
-            let len = message.len();
-            (((message[len - 6]) << 20)
-                | ((message[len - 5]) << 16)
-                | ((message[len - 4]) << 12)
-                | ((message[len - 3]) << 8)
-                | ((message[len - 2]) << 4)
-                | message[len - 1])
-                ^ crc
+            let len = (message.len() * 4) as u32;
+            crate::adsb::flag_and_range_value(message, 0, len - 23, len)
+                .map(|result| result.1 ^ get_crc(message, df))
         }
-        _ => {
-            message[2] << 20
-                | message[3] << 16
-                | message[4] << 12
-                | message[5] << 8
-                | message[6] << 4
-                | message[7]
-        }
-    };
-    match icao {
-        0 => None,
-        _ => Some(icao),
+        _ => crate::adsb::flag_and_range_value(message, 0, 9, 32).map(|result| result.1),
     }
 }
 
@@ -90,6 +73,8 @@ mod tests {
             ("8D71BC0060C386EC2FFDEEEBCE0C", 7453696),
             ("8DA7F6429B053D0000000060D7AE", 11007554),
             ("8D4B18FE68BF033F523BF5BAAAEB", 4921598),
+            ("28001A1B1F0706", 5023854),
+            ("8D4CA86E58B15398DA1B2834CF37", 5023854),
         ];
 
         for (squitter, value) in squitters.iter() {

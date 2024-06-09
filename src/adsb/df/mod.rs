@@ -24,7 +24,6 @@ pub fn df(message: &[u32]) -> Option<u32> {
     } else {
         None
     }
-    //(message[0] << 1) | (message[1] >> 3)
 }
 
 #[cfg(test)]

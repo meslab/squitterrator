@@ -1,4 +1,4 @@
-use log::debug;
+use crate::adsb;
 
 /// Calculates the Mode E (ME) code from the given ADS-B message.
 ///
@@ -10,27 +10,9 @@ use log::debug;
 ///
 /// An `Option<u16>` representing the calculated ME code. Returns `Some(code)` if the calculation is successful,
 /// or `None` if the message is invalid.
-///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::message;
-/// use squitterator::adsb::me_code;
-/// let squitter = "8D40621D58C382D690C8AC2863A7";
-/// if let Some(message) = message(squitter)  {
-///     let result = me_code(&message);
-///     assert_eq!(result, Some(12513));
-/// }
-/// ```
-pub fn me_code(message: &[u32]) -> Option<u16> {
-    let result = (message[10] & 0xF) << 10
-        | (message[11] & 0xF) << 6
-        | (message[12] & 0xF) << 2
-        | message[11] & 1;
-
-    debug!("MA code: {:016b}", result as u16);
-
-    Some(result as u16)
+pub(crate) fn me_code(message: &[u32]) -> Option<u16> {
+    adsb::flag_and_range_value(message, 48, 41, 52)
+        .map(|(flag, value)| ((value << 2) | flag) as u16)
 }
 
 #[cfg(test)]

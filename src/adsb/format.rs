@@ -10,24 +10,7 @@ use log::{debug, warn};
 ///
 /// * `Option<String>` - A cleaned squitter
 ///
-/// # Example
-///
-/// ```
-/// use squitterator::adsb::clean_squitter;
-/// let line = "8D40621D58C382D690C8AC2863A7";
-/// if let Some(result) = clean_squitter(line) {
-///    assert_eq!(result, "8D40621D58C382D690C8AC2863A7");
-/// }
-/// ```
-///
-/// ```
-/// use squitterator::adsb::clean_squitter;
-/// let line = "@05FFD0CF94E28D49329099115719707811B06CF5;";
-/// if let Some(result) = clean_squitter(line) {
-///   assert_eq!(result, "8D49329099115719707811B06CF5");
-/// }
-/// ```
-pub fn clean_squitter(line: &str) -> Option<String> {
+pub(crate) fn clean_squitter(line: &str) -> Option<String> {
     let ascii_line = line
         .as_bytes()
         .iter()

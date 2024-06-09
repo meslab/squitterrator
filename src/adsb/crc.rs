@@ -2,6 +2,8 @@ use std::vec;
 
 use log::debug;
 
+use crate::adsb;
+
 pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
     match df {
         0..=15 => crc56(message),
@@ -11,30 +13,10 @@ pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
 
 fn crc112(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480u32;
-    let mut data = (message[0] << 28)
-        | (message[1] << 24)
-        | (message[2] << 20)
-        | (message[3] << 16)
-        | (message[4] << 12)
-        | (message[5] << 8)
-        | (message[6] << 4)
-        | message[7];
-
-    let mut data1 = (message[8] << 28)
-        | (message[9] << 24)
-        | (message[10] << 20)
-        | (message[11] << 16)
-        | (message[12] << 12)
-        | (message[13] << 8)
-        | (message[14] << 4)
-        | message[15];
-
-    let mut data2 = (message[16] << 28)
-        | (message[17] << 24)
-        | (message[18] << 20)
-        | (message[19] << 16)
-        | (message[20] << 12)
-        | (message[21] << 8);
+    let (_, mut data) = adsb::flag_and_range_value(message, 0, 1, 32).unwrap();
+    let (_, mut data1) = adsb::flag_and_range_value(message, 0, 33, 64).unwrap();
+    let (_, mut data2) = adsb::flag_and_range_value(message, 0, 65, 88).unwrap();
+    data2 <<= 8;
 
     for _ in 1..=88 {
         if data & 0x80000000 != 0 {
@@ -57,14 +39,7 @@ fn crc112(message: &[u32]) -> u32 {
 
 fn crc56(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480;
-    let mut data = message[0] << 28
-        | (message[1] << 24)
-        | (message[2] << 20)
-        | (message[3] << 16)
-        | (message[4] << 12)
-        | (message[5] << 8)
-        | (message[6] << 4)
-        | message[7];
+    let (_, mut data) = adsb::flag_and_range_value(message, 0, 1, 32).unwrap();
 
     for _ in 0..32 {
         if (data & 0x80000000) != 0 {
@@ -87,17 +62,7 @@ fn crc56(message: &[u32]) -> u32 {
 ///
 /// The reminder of the message
 ///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::{message, reminder};
-/// let squitter = "A828162A200464B3D7182070E336";
-/// if let Some(message) = message(squitter) {
-///     let result = reminder(&message);
-///     assert_eq!(result, 0);
-/// }
-/// ```
-pub fn reminder(message: &[u32]) -> u32 {
+pub(crate) fn reminder(message: &[u32]) -> u32 {
     let generator = [0b11111111u16, 0b11111010u16, 0b00000100u16, 0b10000000u16];
 
     let mut bytes = message[0..message.len() - 6]

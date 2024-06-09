@@ -1,4 +1,13 @@
-use crate::adsb::{graytobin, ma_code, me_code};
+mod delta;
+mod gnss;
+mod graytobin;
+
+pub use delta::*;
+pub use gnss::*;
+use graytobin::graytobin;
+use log::error;
+
+use crate::adsb::{ma_code, me_code};
 
 pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
     let code = match df {
@@ -6,6 +15,17 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
         _ => ma_code(message),
     };
 
+    altitude_value(message, code).and_then(|a| {
+        if a < 100000 {
+            Some(a)
+        } else {
+            error!("DF:{} C:{:b} ALT:{}", df, code.unwrap(), a);
+            None
+        }
+    })
+}
+
+fn altitude_value(message: &[u32], code: Option<u16>) -> Option<u32> {
     match code {
         Some(code) => match code & 0b10 {
             0 => match code & 1 {
@@ -20,30 +40,6 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
             ),
         },
         None => None,
-    }
-}
-
-pub fn altitude_gnss(message: &[u32]) -> Option<u32> {
-    if let Some((_, altitude)) = crate::adsb::flag_and_range_value(message, 1, 49, 60) {
-        Some(altitude)
-    } else {
-        None
-    }
-}
-
-pub fn altitude_delta(message: &[u32]) -> Option<i32> {
-    if let Some((is_negative, absolute_delta)) =
-        crate::adsb::flag_and_range_value(message, 81, 82, 88)
-    {
-        match absolute_delta {
-            0 => None,
-            _ => match is_negative {
-                1 => Some(-(absolute_delta as i32) * 25),
-                _ => Some(absolute_delta as i32 * 25),
-            },
-        }
-    } else {
-        None
     }
 }
 

@@ -1,14 +1,12 @@
-use crate::adsb::pmod;
-
-pub fn cpr(message: &[u32]) -> (u32, u32, u32) {
+pub fn cpr(message: &[u32]) -> Option<(u32, u32, u32)> {
     if let Some((cpr_form, cpr_lat)) = crate::adsb::flag_and_range_value(message, 54, 55, 71) {
         if let Some((_, cpr_long)) = crate::adsb::flag_and_range_value(message, 54, 72, 88) {
-            (cpr_form, cpr_lat, cpr_long)
+            Some((cpr_form, cpr_lat, cpr_long))
         } else {
-            (0, 0, 0)
+            None
         }
     } else {
-        (0, 0, 0)
+        None
     }
 }
 
@@ -70,6 +68,24 @@ fn fixed_lat(lat: f64) -> f64 {
         ..=-90.0 => lat + 360.0,
         _ => lat,
     }
+}
+
+/// Calculates the positive modulo of two values.
+///
+/// # Arguments
+///
+/// * `x` - The dividend.
+/// * `y` - The divisor.
+///
+/// # Returns
+///
+/// The positive modulo of the two values.
+fn pmod(x: i32, y: i32) -> i32 {
+    let mut res = x % y;
+    if res < 0 {
+        res += y;
+    }
+    res
 }
 
 /// Calculate the latitude .
@@ -142,4 +158,17 @@ fn nl(lat: f64) -> i32 {
         }
     }
     1
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pmod() {
+        let x = -5;
+        let y = 3;
+        let result = pmod(x, y);
+        assert_eq!(result, 1);
+    }
 }

@@ -4,7 +4,6 @@ pub(crate) fn flag_and_range_value(
     sb: u32,
     eb: u32,
 ) -> Option<(u32, u32)> {
-    let (flag_ibyte, flag_ibit) = bit_location(flag);
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);
 
@@ -28,7 +27,13 @@ pub(crate) fn flag_and_range_value(
         }
     };
 
-    let flag = (message[flag_ibyte] >> (3 - flag_ibit)) & 1;
+    let flag = match flag {
+        0 => 0,
+        _ => {
+            let (flag_ibyte, flag_ibit) = bit_location(flag);
+            (message[flag_ibyte] >> (3 - flag_ibit)) & 1
+        }
+    };
     Some((flag, result))
 }
 

@@ -1,6 +1,6 @@
 use crate::adsb::flag_and_range_value;
 
-pub fn temperature_4_4(message: &[u32]) -> Option<f64> {
+pub(crate) fn temperature_4_4(message: &[u32]) -> Option<f64> {
     if let Some((sign, value)) = flag_and_range_value(message, 56, 57, 66) {
         Some(temp_4_4(sign, value))
     } else {
@@ -39,7 +39,7 @@ fn wind_direction(message: &[u32]) -> Option<u32> {
     }
 }
 
-pub fn wind_4_4(message: &[u32]) -> Option<(u32, u32)> {
+pub(crate) fn wind_4_4(message: &[u32]) -> Option<(u32, u32)> {
     if let Some(wind_speed) = wind_speed(message) {
         wind_direction(message).map(|wind_direction| (wind_speed, wind_direction))
     } else {
@@ -47,7 +47,7 @@ pub fn wind_4_4(message: &[u32]) -> Option<(u32, u32)> {
     }
 }
 
-pub fn turbulence_4_4(message: &[u32]) -> Option<u32> {
+pub(crate) fn turbulence_4_4(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 79, 80, 81) {
         match status {
             1 => Some(value),
@@ -58,7 +58,7 @@ pub fn turbulence_4_4(message: &[u32]) -> Option<u32> {
     }
 }
 
-pub fn humidity_4_4(message: &[u32]) -> Option<u32> {
+pub(crate) fn humidity_4_4(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 82, 83, 88) {
         match status {
             1 => Some((value * 100) >> 6),
@@ -69,7 +69,7 @@ pub fn humidity_4_4(message: &[u32]) -> Option<u32> {
     }
 }
 
-pub fn pressure_4_4(message: &[u32]) -> Option<u32> {
+pub(crate) fn pressure_4_4(message: &[u32]) -> Option<u32> {
     if let Some((status, pressure)) = crate::adsb::flag_and_range_value(message, 67, 68, 78) {
         match status {
             1 => Some(pressure),
@@ -80,7 +80,7 @@ pub fn pressure_4_4(message: &[u32]) -> Option<u32> {
     }
 }
 
-pub fn temperature_4_5(message: &[u32]) -> Option<f64> {
+pub(crate) fn temperature_4_5(message: &[u32]) -> Option<f64> {
     if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 48, 49, 58) {
         match status {
             1 => {
