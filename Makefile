@@ -8,11 +8,13 @@ rust-version:
 format:
 	cargo fmt
 
-lint: format
+lint: format 
 	cargo clippy
 
 test:
 	cargo test
+
+prep: test lint
 
 run:
 	cargo run -r
@@ -36,4 +38,4 @@ install: release
 uninstall:
 	rm -f ~/.local/bin/squitterator
 
-.PHONY: format lint test run build release clean install uninstall
+.PHONY: format lint test run build release clean install uninstall prep
