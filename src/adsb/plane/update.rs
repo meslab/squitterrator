@@ -173,8 +173,16 @@ impl Plane {
                     self.heading = result.magnetic_heading;
                     self.indicated_airspeed = result.indicated_airspeed;
                     self.mach_number = result.mach_number;
-                    self.vrate = result.internal_vertical_velocity;
-                    self.vrate_source = '\u{2086}';
+                    self.vrate = match result.barometric_altitude_rate.is_some() {
+                        true => {
+                            self.vrate_source = '\u{2086}';
+                            result.barometric_altitude_rate
+                        }
+                        _ => {
+                            self.vrate_source = '\u{2071}';
+                            result.internal_vertical_velocity
+                        }
+                    };
                     self.heading_source = '\u{2086}';
                     self.heading_timestamp = Some(Utc::now());
                     bds = (6, 0);
