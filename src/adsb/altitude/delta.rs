@@ -1,6 +1,6 @@
 pub fn altitude_delta(message: &[u32]) -> Option<i32> {
     crate::adsb::flag_and_range_value(message, 81, 82, 88)
-        .filter(|&f| f.0 == 1 && f.1 != 0)
+        .filter(|&f| f.1 != 0)
         .map(|(sign, value)| delta(sign, value))
 }
 
