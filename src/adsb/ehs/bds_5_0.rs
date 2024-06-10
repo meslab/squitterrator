@@ -1,19 +1,7 @@
 pub(crate) fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
-    if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 33, 34, 43) {
-        match status {
-            0 => None,
-            _ => {
-                if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 34, 35, 43)
-                {
-                    Some(roll_angle(sign, value))
-                } else {
-                    None
-                }
-            }
-        }
-    } else {
-        None
-    }
+    crate::adsb::status_flag_and_range_value(message, 33, 34, 35, 43)
+        .filter(|&f| f.0 == 1)
+        .map(|(_, sign, value)| roll_angle(sign, value))
 }
 
 fn roll_angle(sign: u32, value: u32) -> i32 {
@@ -25,21 +13,9 @@ fn roll_angle(sign: u32, value: u32) -> i32 {
 }
 
 pub(crate) fn track_angle_5_0(message: &[u32]) -> Option<u32> {
-    if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 44, 45, 55) {
-        match status {
-            0 => None,
-            _ => {
-                if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 55)
-                {
-                    Some(track_angle(sign, value))
-                } else {
-                    None
-                }
-            }
-        }
-    } else {
-        None
-    }
+    crate::adsb::status_flag_and_range_value(message, 44, 45, 46, 55)
+        .filter(|&f| f.0 == 1)
+        .map(|(_, sign, value)| track_angle(sign, value))
 }
 
 fn track_angle(sign: u32, value: u32) -> u32 {
@@ -51,21 +27,9 @@ fn track_angle(sign: u32, value: u32) -> u32 {
 }
 
 pub(crate) fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
-    if let Some((status, _)) = crate::adsb::flag_and_range_value(message, 67, 68, 77) {
-        match status {
-            0 => None,
-            _ => {
-                if let Some((sign, value)) = crate::adsb::flag_and_range_value(message, 68, 69, 77)
-                {
-                    Some(track_angle_rate(sign, value))
-                } else {
-                    None
-                }
-            }
-        }
-    } else {
-        None
-    }
+    crate::adsb::status_flag_and_range_value(message, 67, 68, 69, 77)
+        .filter(|&f| f.0 == 1)
+        .map(|(_, sign, value)| track_angle_rate(sign, value))
 }
 
 fn track_angle_rate(sign: u32, value: u32) -> i32 {

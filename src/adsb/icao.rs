@@ -31,7 +31,7 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
             crate::adsb::range_value(message, len - 23, len)
                 .map(|result| result ^ get_crc(message, df))
         }
-        _ => crate::adsb::range_value(message, 9, 32).map(|result| result),
+        _ => crate::adsb::range_value(message, 9, 32),
     }
 }
 
