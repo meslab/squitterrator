@@ -1,10 +1,11 @@
 mod reader;
 
-use crate::reader::read_lines;
+use reader::read_lines;
+use squitterator::adsb::Plane;
+
 use clap::Parser;
 use env_logger::{Builder, Env};
 use log::{error, info};
-use squitterator::adsb::Plane;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Write};

@@ -62,4 +62,13 @@ mod tests {
             assert_eq!(low, 0);
         }
     }
+
+    #[test]
+    fn test_graytobin_e() {
+        if let Some(message) = adsb::message("A020100A10020A80F000004F24AF") {
+            let (high, low) = graytobin(&message);
+            assert_eq!(high, 2);
+            assert_eq!(low, 0);
+        }
+    }
 }

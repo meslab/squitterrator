@@ -7,9 +7,10 @@ use legend::print_legend;
 use planes::print_planes;
 
 use crate::Args;
-use log::{debug, error, warn};
 use squitterator::adsb::{df, icao};
 use squitterator::adsb::{message, Plane};
+
+use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
 use std::io::{BufRead, Result};
 

@@ -75,13 +75,15 @@ mod tests {
             ("8D4B18FE68BF033F523BF5BAAAEB", 4921598),
             ("28001A1B1F0706", 5023854),
             ("8D4CA86E58B15398DA1B2834CF37", 5023854),
+            ("A425B00A580840092F81204A5821", 11188242),
+            ("A020100A10020A80F000004F24AF", 12612818),
         ];
 
         for (squitter, value) in squitters.iter() {
             if let Some(message) = message(squitter) {
                 let df = df(&message).unwrap();
                 if let Some(result) = icao(&message, df) {
-                    assert_eq!(result, *value, "Squitter: {}", squitter);
+                    assert_eq!(result, *value, "Squitter: {} ICAO:{:X}", squitter, result);
                 }
             }
         }

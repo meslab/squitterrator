@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub(super) enum FOM {
     NoData,
     Wind,
