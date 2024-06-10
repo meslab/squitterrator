@@ -1,9 +1,4 @@
-pub(crate) fn flag_and_range_value(
-    message: &[u32],
-    flag: u32,
-    sb: u32,
-    eb: u32,
-) -> Option<(u32, u32)> {
+pub(crate) fn range_value(message: &[u32], sb: u32, eb: u32) -> Option<u32> {
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);
 
@@ -26,7 +21,15 @@ pub(crate) fn flag_and_range_value(
                 | (message[eb_ibyte] >> (3 - eb_ibit))
         }
     };
+    Some(result)
+}
 
+pub(crate) fn flag_and_range_value(
+    message: &[u32],
+    flag: u32,
+    sb: u32,
+    eb: u32,
+) -> Option<(u32, u32)> {
     let flag = match flag {
         0 => 0,
         _ => {
@@ -34,7 +37,26 @@ pub(crate) fn flag_and_range_value(
             (message[flag_ibyte] >> (3 - flag_ibit)) & 1
         }
     };
-    Some((flag, result))
+
+    range_value(message, sb, eb).map(|value| (flag, value))
+}
+
+pub(crate) fn status_flag_and_range_value(
+    message: &[u32],
+    status: u32,
+    flag: u32,
+    sb: u32,
+    eb: u32,
+) -> Option<(u32, u32, u32)> {
+    let status = match status {
+        0 => 0,
+        _ => {
+            let (status_ibyte, status_ibit) = bit_location(status);
+            (message[status_ibyte] >> (3 - status_ibit)) & 1
+        }
+    };
+
+    flag_and_range_value(message, flag, sb, eb).map(|(f, v)| (status, f, v))
 }
 
 fn bit_location(position: u32) -> (usize, usize) {

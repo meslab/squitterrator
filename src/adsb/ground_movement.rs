@@ -1,5 +1,5 @@
 pub fn ground_movement(message: &[u32]) -> Option<f64> {
-    if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 1, 38, 44) {
+    if let Some(value) = crate::adsb::range_value(message, 38, 44) {
         let value = value as f64;
         match value {
             1.0 => Some(0.0),
