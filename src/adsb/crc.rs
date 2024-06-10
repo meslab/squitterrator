@@ -15,8 +15,7 @@ fn crc112(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480u32;
     let mut data = adsb::range_value(message, 1, 32).unwrap();
     let mut data1 = adsb::range_value(message, 33, 64).unwrap();
-    let mut data2 = adsb::range_value(message, 65, 88).unwrap();
-    data2 <<= 8;
+    let mut data2 = adsb::range_value(message, 65, 88).map(|x| x << 8).unwrap();
 
     for _ in 1..=88 {
         if data & 0x80000000 != 0 {
