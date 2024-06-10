@@ -1,12 +1,7 @@
 pub(crate) fn ground_track(message: &[u32]) -> Option<u32> {
-    if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 45, 46, 52) {
-        match status {
-            1 => Some((value * 360) >> 7),
-            _ => None,
-        }
-    } else {
-        None
-    }
+    crate::adsb::flag_and_range_value(message, 45, 46, 52)
+        .filter(|&f| f.0 == 1)
+        .map(|v| (v.1 * 360) >> 7)
 }
 
 pub(crate) fn track_and_groundspeed(
@@ -36,11 +31,7 @@ pub(crate) fn track_and_groundspeed(
 }
 
 pub(crate) fn heading(message: &[u32]) -> Option<u32> {
-    if let Some((_, value)) = crate::adsb::flag_and_range_value(message, 1, 47, 56) {
-        Some((value * 360) >> 10)
-    } else {
-        None
-    }
+    crate::adsb::range_value(message, 47, 56)
 }
 
 #[cfg(test)]

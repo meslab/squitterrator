@@ -41,25 +41,15 @@ fn track_angle_rate(sign: u32, value: u32) -> i32 {
 }
 
 pub(crate) fn ground_speed_5_0(message: &[u32]) -> Option<u32> {
-    if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 56, 57, 66) {
-        match status {
-            0 => None,
-            _ => Some(value << 1),
-        }
-    } else {
-        None
-    }
+    crate::adsb::flag_and_range_value(message, 56, 57, 66)
+        .filter(|&f| f.0 == 1)
+        .map(|v| v.1 << 1)
 }
 
 pub(crate) fn true_airspeed_5_0(message: &[u32]) -> Option<u32> {
-    if let Some((status, value)) = crate::adsb::flag_and_range_value(message, 78, 79, 88) {
-        match status {
-            0 => None,
-            _ => Some(value << 1),
-        }
-    } else {
-        None
-    }
+    crate::adsb::flag_and_range_value(message, 78, 79, 88)
+        .filter(|&f| f.0 == 1)
+        .map(|v| v.1 << 1)
 }
 
 #[cfg(test)]

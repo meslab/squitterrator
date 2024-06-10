@@ -19,11 +19,7 @@
 /// }
 /// ```
 pub fn df(message: &[u32]) -> Option<u32> {
-    if let Some((_, df)) = crate::adsb::flag_and_range_value(message, 1, 1, 5) {
-        Some(df)
-    } else {
-        None
-    }
+    crate::adsb::range_value(message, 1, 5)
 }
 
 #[cfg(test)]
