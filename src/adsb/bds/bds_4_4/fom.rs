@@ -18,7 +18,7 @@ pub(super) enum FOM {
 }
 
 pub(super) fn fom(message: &[u32]) -> Option<FOM> {
-    crate::adsb::flag_and_range_value(message, 0, 33, 36).map(|x| match x.1 {
+    crate::adsb::range_value(message, 33, 36).map(|x| match x {
         1 => FOM::Wind,
         2 => FOM::Temp,
         3 => FOM::Turb,

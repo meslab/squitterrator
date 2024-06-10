@@ -13,9 +13,9 @@ pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
 
 fn crc112(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480u32;
-    let (_, mut data) = adsb::flag_and_range_value(message, 0, 1, 32).unwrap();
-    let (_, mut data1) = adsb::flag_and_range_value(message, 0, 33, 64).unwrap();
-    let (_, mut data2) = adsb::flag_and_range_value(message, 0, 65, 88).unwrap();
+    let mut data = adsb::range_value(message, 1, 32).unwrap();
+    let mut data1 = adsb::range_value(message, 33, 64).unwrap();
+    let mut data2 = adsb::range_value(message, 65, 88).unwrap();
     data2 <<= 8;
 
     for _ in 1..=88 {
@@ -39,7 +39,7 @@ fn crc112(message: &[u32]) -> u32 {
 
 fn crc56(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480;
-    let (_, mut data) = adsb::flag_and_range_value(message, 0, 1, 32).unwrap();
+    let mut data = adsb::range_value(message, 1, 32).unwrap();
 
     for _ in 0..32 {
         if (data & 0x80000000) != 0 {

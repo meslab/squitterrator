@@ -28,10 +28,10 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
     match df {
         0 | 4 | 5 | 16 | 20 | 21 => {
             let len = (message.len() * 4) as u32;
-            crate::adsb::flag_and_range_value(message, 0, len - 23, len)
-                .map(|result| result.1 ^ get_crc(message, df))
+            crate::adsb::range_value(message, len - 23, len)
+                .map(|result| result ^ get_crc(message, df))
         }
-        _ => crate::adsb::flag_and_range_value(message, 0, 9, 32).map(|result| result.1),
+        _ => crate::adsb::range_value(message, 9, 32).map(|result| result),
     }
 }
 
