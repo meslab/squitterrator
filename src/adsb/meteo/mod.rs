@@ -1,4 +1,4 @@
-use crate::adsb::flag_and_range_value;
+use crate::adsb::{flag_and_range_value, status_flag_and_range_value};
 
 pub(crate) fn temperature_4_4(message: &[u32]) -> Option<f64> {
     flag_and_range_value(message, 56, 57, 66).map(|(sign, value)| temp_4_4(sign, value))
@@ -33,25 +33,25 @@ pub(crate) fn wind_4_4(message: &[u32]) -> Option<(u32, u32)> {
 }
 
 pub(crate) fn turbulence_4_4(message: &[u32]) -> Option<u32> {
-    crate::adsb::flag_and_range_value(message, 79, 80, 81)
+    flag_and_range_value(message, 79, 80, 81)
         .filter(|&(status, _)| status == 1)
         .map(|(_, value)| value)
 }
 
 pub(crate) fn humidity_4_4(message: &[u32]) -> Option<u32> {
-    crate::adsb::flag_and_range_value(message, 82, 83, 88)
+    flag_and_range_value(message, 82, 83, 88)
         .filter(|&(status, _)| status == 1)
         .map(|(_, value)| (value * 100) >> 6)
 }
 
 pub(crate) fn pressure_4_4(message: &[u32]) -> Option<u32> {
-    crate::adsb::flag_and_range_value(message, 67, 68, 78)
+    flag_and_range_value(message, 67, 68, 78)
         .filter(|&(status, _)| status == 1)
         .map(|(_, value)| value)
 }
 
 pub(crate) fn temperature_4_5(message: &[u32]) -> Option<f64> {
-    crate::adsb::status_flag_and_range_value(message, 48, 49, 50, 58)
+    status_flag_and_range_value(message, 48, 49, 50, 58)
         .filter(|&(status, _, _)| status == 1)
         .map(|(_, sign, value)| temp_4_5(sign, value))
 }
@@ -65,7 +65,7 @@ fn temp_4_5(sign: u32, value: u32) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::adsb::meteo::temp_4_4;
+    use super::temp_4_4;
 
     #[test]
     fn test_shift() {
