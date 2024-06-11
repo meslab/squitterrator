@@ -44,4 +44,13 @@ mod tests {
             assert_eq!(result, 21);
         }
     }
+
+    #[test]
+    fn test_df_22() {
+        let squitter = "A020100A10020A80F000004F24AF";
+        if let Some(message) = message(squitter) {
+            let result = df(&message).unwrap_or(0);
+            assert_eq!(result, 20);
+        }
+    }
 }

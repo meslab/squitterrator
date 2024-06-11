@@ -192,7 +192,9 @@ impl Plane {
             if bds == (0, 0) {
                 if let Some(meteo) = adsb::is_bds_4_4(message) {
                     self.temperature = meteo.temp;
-                    self.wind = meteo.wind;
+                    if meteo.wind.is_some() {
+                        self.wind = meteo.wind;
+                    }
                     self.humidity = meteo.humidity;
                     self.turbulence = meteo.turbulence;
                     self.pressure = meteo.pressure;

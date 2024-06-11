@@ -42,7 +42,11 @@ fn altitude_value(message: &[u32], code: Option<u16>) -> Option<u32> {
             0 => match code & 1 {
                 0 => {
                     let (high, low) = graytobin(message);
-                    Some(high * 500 + low * 100 - 1200)
+                    let value = high * 500 + low * 100;
+                    match value {
+                        1200.. => Some(high * 500 + low * 100 - 1200),
+                        _ => None,
+                    }
                 }
                 _ => Some((((code >> 7) << 4) | ((code >> 2) & 0b1111)) as u32 * 25 - 1000),
             },
@@ -65,6 +69,15 @@ mod tests {
             let df = adsb::df(&message).unwrap();
             let result = altitude(&message, df);
             assert_eq!(result, Some(14300));
+        }
+    }
+
+    #[test]
+    fn test_alt_e() {
+        if let Some(message) = adsb::message("A020100A10020A80F000004F24AF") {
+            let df = adsb::df(&message).unwrap();
+            let result = altitude(&message, df);
+            assert_eq!(result, None);
         }
     }
 }
