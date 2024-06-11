@@ -34,6 +34,14 @@ pub fn message(squitter: &str) -> Option<Vec<u32>> {
     }
 }
 
+pub(crate) fn hex_message(message: &[u32]) -> String {
+    message
+        .iter()
+        .map(|x| format!("{:X}", x))
+        .collect::<Vec<String>>()
+        .join("")
+}
+
 /// Retrieves the message type and subtype from a message.
 ///
 /// # Arguments
