@@ -1,4 +1,4 @@
-pub fn threat_encounter(message: &[u32]) -> Option<char> {
+pub(crate) fn threat_encounter(message: &[u32]) -> Option<char> {
     let multiple_threats = message[14] & 1 == 1;
     let single_threat = (message[10] >> 3) & 1 == 1;
     if multiple_threats {

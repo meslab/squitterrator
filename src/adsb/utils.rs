@@ -34,6 +34,14 @@ pub fn message(squitter: &str) -> Option<Vec<u32>> {
     }
 }
 
+pub(crate) fn hex_message(message: &[u32]) -> String {
+    message
+        .iter()
+        .map(|x| format!("{:X}", x))
+        .collect::<Vec<String>>()
+        .join("")
+}
+
 /// Retrieves the message type and subtype from a message.
 ///
 /// # Arguments
@@ -44,18 +52,7 @@ pub fn message(squitter: &str) -> Option<Vec<u32>> {
 ///
 /// A tuple containing the message type and subtype.
 ///
-/// # Examples
-///
-/// ```
-/// use squitterator::adsb::{message, message_type};
-/// let squitter = "8D40621D58C382D690C8AC2863A7";
-/// if let Some(message) = message(squitter) {
-///    let (message_type, message_subtype) = message_type(&message);
-///    assert_eq!(message_type, 11);
-///    assert_eq!(message_subtype, 0);
-/// }
-/// ```
-pub fn message_type(message: &[u32]) -> (u32, u32) {
+pub(crate) fn message_type(message: &[u32]) -> (u32, u32) {
     ((message[8] << 1) | (message[9] >> 3), message[9] & 7)
 }
 
@@ -68,9 +65,9 @@ pub fn message_type(message: &[u32]) -> (u32, u32) {
 /// # Returns
 ///
 /// The IC value.
-pub fn ic(message: &[u32]) -> u32 {
-    (message[2] << 1) | (message[3] >> 3) & 0b11111
-}
+//pub(crate) fn ic(message: &[u32]) -> u32 {
+//    (message[2] << 1) | (message[3] >> 3) & 0b11111
+//}
 
 /// Retrieves the CA (Capability) value from a message.
 ///
@@ -81,7 +78,7 @@ pub fn ic(message: &[u32]) -> u32 {
 /// # Returns
 ///     
 /// The CA value.
-pub fn ca(message: &[u32]) -> u32 {
+pub(crate) fn ca(message: &[u32]) -> u32 {
     message[1] & 0b0111
 }
 
@@ -113,13 +110,13 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_ic() {
-        let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = message(squitter) {
-            assert_eq!(ic(&message), 8);
-        }
-    }
+    //#[test]
+    //fn test_ic() {
+    //    let squitter = "8D40621D58C382D690C8AC2863A7";
+    //    if let Some(message) = message(squitter) {
+    //        assert_eq!(ic(&message), 8);
+    //    }
+    //}
 
     #[test]
     fn test_ca() {

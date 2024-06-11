@@ -1,4 +1,4 @@
-pub fn vertical_rate(message: &[u32]) -> Option<i32> {
+pub(crate) fn vertical_rate(message: &[u32]) -> Option<i32> {
     crate::adsb::flag_and_range_value(message, 69, 70, 78)
         .filter(|&f| f.1 != 1)
         .map(|(sign, value)| vertical_rate_value(sign, value))

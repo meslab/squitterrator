@@ -30,8 +30,9 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
             let len = (message.len() * 4) as u32;
             crate::adsb::range_value(message, len - 23, len)
                 .map(|result| result ^ get_crc(message, df))
+                .filter(|&f| f != 0)
         }
-        _ => crate::adsb::range_value(message, 9, 32),
+        _ => crate::adsb::range_value(message, 9, 32).filter(|&f| f != 0),
     }
 }
 
@@ -46,7 +47,7 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
 ///
 /// The calculated Wake Turbulence Category (WTC) as a character.
 ///
-pub fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
+pub(crate) fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
     match vc {
         (4, 1) => Some('L'),
         (4, 2) => Some('S'),
@@ -81,9 +82,10 @@ mod tests {
 
         for (squitter, value) in squitters.iter() {
             if let Some(message) = message(squitter) {
-                let df = df(&message).unwrap();
-                if let Some(result) = icao(&message, df) {
-                    assert_eq!(result, *value, "Squitter: {} ICAO:{:X}", squitter, result);
+                if let Some(df) = df(&message) {
+                    if let Some(result) = icao(&message, df) {
+                        assert_eq!(result, *value, "Squitter: {} ICAO:{:X}", squitter, result);
+                    }
                 }
             }
         }

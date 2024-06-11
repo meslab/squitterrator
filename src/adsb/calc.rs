@@ -83,4 +83,13 @@ mod tests {
         assert_eq!(bit_location(57), (14, 0));
         assert_eq!(bit_location(88), (21, 3));
     }
+
+    #[test]
+    fn swap() {
+        let (mut a, mut b) = (18, 654);
+        a ^= b;
+        b ^= a;
+        a ^= b;
+        assert_eq!((a, b), (654, 18));
+    }
 }

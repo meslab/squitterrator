@@ -1,4 +1,4 @@
-pub fn cpr(message: &[u32]) -> Option<(u32, u32, u32)> {
+pub(crate) fn cpr(message: &[u32]) -> Option<(u32, u32, u32)> {
     if let Some((cpr_form, cpr_lat)) = crate::adsb::flag_and_range_value(message, 54, 55, 71) {
         crate::adsb::range_value(message, 72, 88).map(|cpr_long| (cpr_form, cpr_lat, cpr_long))
     } else {
@@ -6,7 +6,7 @@ pub fn cpr(message: &[u32]) -> Option<(u32, u32, u32)> {
     }
 }
 
-pub fn cpr_location(
+pub(crate) fn cpr_location(
     cpr_lat: &[u32; 2],
     cpr_lon: &[u32; 2],
     cpr_form: u32,

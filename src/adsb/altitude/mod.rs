@@ -2,8 +2,9 @@ mod delta;
 mod gnss;
 mod graytobin;
 
-pub use delta::*;
-pub use gnss::*;
+pub(crate) use delta::*;
+pub(crate) use gnss::*;
+
 use graytobin::graytobin;
 use log::error;
 
@@ -19,16 +20,11 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
         if a < 100000 {
             Some(a)
         } else {
-            let hex_message = message
-                .iter()
-                .map(|x| format!("{:X}", x))
-                .collect::<Vec<String>>()
-                .join("");
             error!(
                 "DF:{} C:{:b} M:{} ALT:{}",
                 df,
                 code.unwrap(),
-                hex_message,
+                crate::adsb::hex_message(message),
                 a
             );
             None
