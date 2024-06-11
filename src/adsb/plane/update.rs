@@ -143,14 +143,25 @@ impl Plane {
                 }
             }
             if bds == (0, 0) && (relaxed || self.capability.1.bds40) {
-                if let Some(result) = adsb::is_bds_4_0(message) {
+                if let Some(value) = adsb::is_bds_4_0(message) {
+                    self.selected_altitude =
+                        value.mcp_selected_altitude.or(value.fms_selected_altitude);
+                    self.target_altitude_source = match value.target_altitude_source {
+                        Some(v) => match v {
+                            1 => '\u{2081}',
+                            2 => '\u{2082}',
+                            3 => '\u{2083}',
+                            _ => ' ',
+                        },
+                        _ => ' ',
+                    };
                     bds = (4, 0);
                     debug!(
                         "DF:{}, BDS:{}.{} S:{}",
                         df,
                         bds.0,
                         bds.1,
-                        result.target_altitude_source.unwrap_or(0)
+                        value.target_altitude_source.unwrap_or(0)
                     );
                 }
             }
