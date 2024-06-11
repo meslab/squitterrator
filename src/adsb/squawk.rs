@@ -11,7 +11,7 @@ use crate::adsb::ma_code;
 /// * `Some(u32)` - The decimal value of the squawk code if it exists in the message.
 /// * `None` - If the squawk code does not exist in the message.
 ///
-pub fn squawk(message: &[u32]) -> Option<u32> {
+pub(crate) fn squawk(message: &[u32]) -> Option<u32> {
     ma_code(message).map(|code| {
         ((((code >> 8) & 1) << 2) | (((code >> 10) & 1) << 1) | ((code >> 12) & 1)) as u32 * 1000
             + ((((code >> 3) & 1) << 2) | (((code >> 5) & 1) << 1) | ((code >> 7) & 1)) as u32 * 100

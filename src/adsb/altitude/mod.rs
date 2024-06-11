@@ -2,8 +2,9 @@ mod delta;
 mod gnss;
 mod graytobin;
 
-pub use delta::*;
-pub use gnss::*;
+pub(crate) use delta::*;
+pub(crate) use gnss::*;
+
 use graytobin::graytobin;
 use log::error;
 

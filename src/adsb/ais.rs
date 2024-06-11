@@ -24,7 +24,7 @@ fn ia5(ch: u32) -> char {
 /// # Returns
 ///
 /// An `Option` containing the AIS data as a `String`, or `None` if the message does not contain AIS data.
-pub fn ais(message: &[u32]) -> Option<String> {
+pub(crate) fn ais(message: &[u32]) -> Option<String> {
     Some(
         [
             ((message[10] << 2) | (message[11] >> 2)),

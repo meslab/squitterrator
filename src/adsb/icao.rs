@@ -47,7 +47,7 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
 ///
 /// The calculated Wake Turbulence Category (WTC) as a character.
 ///
-pub fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
+pub(crate) fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
     match vc {
         (4, 1) => Some('L'),
         (4, 2) => Some('S'),

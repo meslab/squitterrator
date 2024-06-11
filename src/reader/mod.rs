@@ -14,7 +14,7 @@ use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
 use std::io::{BufRead, Result};
 
-pub fn read_lines<R: BufRead>(
+pub(super) fn read_lines<R: BufRead>(
     reader: R,
     args: &Args,
     planes: &mut HashMap<u32, Plane>,

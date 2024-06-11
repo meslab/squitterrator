@@ -21,7 +21,7 @@ use std::time::Duration;
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
-pub struct Args {
+struct Args {
     #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 -f 4 - DF4 and DF21,\n -f 21 - only DF21, etc")]
     filter: Option<Vec<u32>>,
 
