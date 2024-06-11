@@ -1,5 +1,8 @@
+use log::debug;
+
 use crate::adsb;
 
+#[derive(Debug)]
 pub struct SelectedVerticalIntention {
     pub mcp_selected_altitude: Option<u32>,
     pub fms_selected_altitude: Option<u32>,
@@ -51,14 +54,8 @@ pub fn is_bds_4_0(message: &[u32]) -> Option<SelectedVerticalIntention> {
             adsb::barometric_pressure_setting(message).filter(|x| (0..=410).contains(x)),
             adsb::target_altitude_source(message).filter(|x| (0..=3).contains(x)),
         );
-        if intent.target_altitude_source.is_some()
-            && match intent.target_altitude_source.unwrap() {
-                3 => intent.fms_selected_altitude.is_some(),
-                2 => intent.mcp_selected_altitude.is_some(),
-                1 => true,
-                _ => false,
-            }
-        {
+        debug!("BDS:4.0 {:?}", intent);
+        if intent.mcp_selected_altitude.is_some() || intent.fms_selected_altitude.is_some() {
             Some(intent)
         } else {
             None
