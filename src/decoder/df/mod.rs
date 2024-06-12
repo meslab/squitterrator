@@ -1,3 +1,19 @@
+mod df11;
+mod df17;
+mod df20;
+mod df21;
+mod df4;
+mod df5;
+mod dfs;
+
+pub use df11::*;
+pub use df17::*;
+pub use df20::*;
+pub use df21::*;
+pub use df4::*;
+pub use df5::*;
+pub use dfs::*;
+
 use crate::decoder::range_value;
 
 /// Retrieves the Downlink Format (DF) from a message.
