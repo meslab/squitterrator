@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn test_humidity_range() {
         assert_eq!((0b111111 * 100) >> 6, 98);
-        assert_eq!((0b000001 * 100) >> 6, 1);
+        assert_eq!(100 >> 6, 1);
         assert_eq!((0b000000 * 100) >> 6, 0);
     }
 

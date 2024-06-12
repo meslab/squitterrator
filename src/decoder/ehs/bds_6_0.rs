@@ -73,17 +73,17 @@ mod tests {
 
     #[test]
     fn test_barometric_altitude_rate() {
-        assert_eq!(barometric_altitude_rate(0, 0b1111_1111_1), 16352);
-        assert_eq!(barometric_altitude_rate(1, 0b1111_1111_1), -32);
-        assert_eq!(barometric_altitude_rate(0, 0b0000_0000_1), 32);
-        assert_eq!(barometric_altitude_rate(1, 0b0000_0000_1), -16352);
+        assert_eq!(barometric_altitude_rate(0, 0b1_1111_1111), 16352);
+        assert_eq!(barometric_altitude_rate(1, 0b1_1111_1111), -32);
+        assert_eq!(barometric_altitude_rate(0, 0b0_0000_0001), 32);
+        assert_eq!(barometric_altitude_rate(1, 0b0_0000_0001), -16352);
     }
 
     #[test]
     fn test_internal_vertical_velocity() {
-        assert_eq!(internal_vertical_velocity(0, 0b1111_1111_1), 16352);
-        assert_eq!(internal_vertical_velocity(1, 0b1111_1111_1), -32);
-        assert_eq!(internal_vertical_velocity(0, 0b0000_0000_1), 32);
-        assert_eq!(internal_vertical_velocity(1, 0b0000_0000_1), -16352);
+        assert_eq!(internal_vertical_velocity(0, 0b1_1111_1111), 16352);
+        assert_eq!(internal_vertical_velocity(1, 0b1_1111_1111), -32);
+        assert_eq!(internal_vertical_velocity(0, 0b0_0000_0001), 32);
+        assert_eq!(internal_vertical_velocity(1, 0b0_0000_0001), -16352);
     }
 }

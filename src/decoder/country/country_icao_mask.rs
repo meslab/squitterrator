@@ -554,85 +554,91 @@ mod tests {
             ("Malta", "MT")
         );
         assert_eq!(
-            icao_to_country(0b10010000000000_0000000000),
+            icao_to_country(0b1001_0000_0000_0000_0000_0000),
             ("Marshall Islands", "MH")
         );
         assert_eq!(
-            icao_to_country(0b00000101111000_0000000000),
+            icao_to_country(0b0000_0101_1110_0000_0000_0000),
             ("Mauritania", "MR")
         );
         assert_eq!(
-            icao_to_country(0b00000110000000_0000000000),
+            icao_to_country(0b0000_0110_0000_0000_0000_0000),
             ("Mauritius", "MU")
         );
         assert_eq!(
-            icao_to_country(0b01101000000100_0000000000),
+            icao_to_country(0b0110_1000_0001_0000_0000_0000),
             ("Micronesia, Federated States of", "FM")
         );
         assert_eq!(
-            icao_to_country(0b01001101010000_0000000000),
+            icao_to_country(0b0100_1101_0100_0000_0000_0000),
             ("Monaco", "MC")
         );
         assert_eq!(
-            icao_to_country(0b01101000001000_0000000000),
+            icao_to_country(0b0110_1000_0010_0000_0000_0000),
             ("Mongolia", "MN")
         );
         assert_eq!(
-            icao_to_country(0b00100000000100_0000000000),
+            icao_to_country(0b0010_0000_0001_0000_0000_0000),
             ("Namibia", "NA")
         );
         assert_eq!(
-            icao_to_country(0b11001000101000_0000000000),
+            icao_to_country(0b1100_1000_1010_0000_0000_0000),
             ("Nauru", "NR")
         );
-        assert_eq!(icao_to_country(0b01110000110000_0000000000), ("Oman", "OM"));
         assert_eq!(
-            icao_to_country(0b01101000010000_0000000000),
+            icao_to_country(0b0111_0000_1100_0000_0000_0000),
+            ("Oman", "OM")
+        );
+        assert_eq!(
+            icao_to_country(0b0110_1000_0100_0000_0000_0000),
             ("Palau", "PW")
         );
         assert_eq!(
-            icao_to_country(0b00000110101000_0000000000),
+            icao_to_country(0b0000_0110_1010_0000_0000_0000),
             ("Qatar", "QA")
         );
         assert_eq!(
-            icao_to_country(0b01010000010011_0000000000),
+            icao_to_country(0b0101_0000_0100_1100_0000_0000),
             ("Republic of Moldova", "MD")
         );
         assert_eq!(
-            icao_to_country(0b11001000110100_0000000000),
+            icao_to_country(0b1100_1000_1101_0000_0000_0000),
             ("Tonga", "TO")
         );
         assert_eq!(
-            icao_to_country(0b01100000000110_0000000000),
+            icao_to_country(0b0110_0000_0001_1000_0000_0000),
             ("Turkmenistan", "TM")
         );
         assert_eq!(
-            icao_to_country(0b01010000011111_0000000000),
+            icao_to_country(0b0101_0000_0111_1100_0000_0000),
             ("Uzbekistan", "UZ")
         );
         assert_eq!(
-            icao_to_country(0b11001001000000_0000000000),
+            icao_to_country(0b1100_1001_0000_0000_0000_0000),
             ("Vanuatu", "VU")
         );
         assert_eq!(
-            icao_to_country(0b00000000010000_0000000000),
+            icao_to_country(0b0000_0000_0100_0000_0000_0000),
             ("Zimbabwe", "ZW")
         );
         assert_eq!(
-            icao_to_country(0b10001001100100_0000000000),
+            icao_to_country(0b1000_1001_1001_0000_0000_0000),
             ("ICAO2", "ICAO2")
         );
     }
 
     #[test]
     fn test_icao_to_country_ufo() {
-        assert_eq!(icao_to_country(0b11010000100100_0000000000), ("UFO", "??"));
+        assert_eq!(
+            icao_to_country(0b1101_0000_1001_0000_0000_0000),
+            ("UFO", "??")
+        );
     }
 
     #[test]
     fn test_icao_to_country_icao1() {
         assert_eq!(
-            icao_to_country(0b11110000000000_0000000000),
+            icao_to_country(0b1111_0000_0000_0000_0000_0000),
             ("ICAO1", "ICAO1")
         );
     }
@@ -640,11 +646,11 @@ mod tests {
     #[test]
     fn test_icao_to_country_icao2() {
         assert_eq!(
-            icao_to_country(0b10001001100100_0000000000),
+            icao_to_country(0b1000_1001_1001_0000_0000_0000),
             ("ICAO2", "ICAO2")
         );
         assert_eq!(
-            icao_to_country(0b11110000100100_0000000000),
+            icao_to_country(0b1111_0000_1001_0000_0000_0000),
             ("ICAO2", "ICAO2")
         );
     }
@@ -663,7 +669,7 @@ mod tests {
         assert_eq!(icao_to_country(0x395D6D), ("France", "FR"));
         assert_eq!(
             icao_to_country(0x485344),
-            (("Netherlands, Kingdom of the", "NL"))
+            ("Netherlands, Kingdom of the", "NL")
         );
         assert_eq!(icao_to_country(0x4CA4A4), ("Ireland", "IE"));
         assert_eq!(icao_to_country(0xE48DF5), ("Brazil", "BR"));

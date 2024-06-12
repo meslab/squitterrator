@@ -4,6 +4,12 @@ pub struct Df17 {
     pub icao: Option<u32>,
 }
 
+impl Default for Df17 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Df17 {
     pub fn new() -> Self {
         Df17 { icao: None }

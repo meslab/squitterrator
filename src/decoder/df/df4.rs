@@ -5,6 +5,12 @@ pub struct Df4 {
     pub altitude: Option<u32>,
 }
 
+impl Default for Df4 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Df4 {
     pub fn new() -> Self {
         Df4 {

@@ -1,6 +1,5 @@
 use log::error;
 
-use crate::decoder::icao;
 
 use super::*;
 
