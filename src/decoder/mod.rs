@@ -1,5 +1,4 @@
 mod adsb;
-mod altitude;
 mod bds;
 mod country;
 mod df;
@@ -13,7 +12,6 @@ pub use df::*;
 pub use plane::*;
 pub use utils::*;
 
-use altitude::*;
 use bds::*;
 use country::*;
 use ehs::*;
