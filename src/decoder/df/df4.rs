@@ -25,7 +25,7 @@ impl Df4 {
         if let Some(df) = super::df(message) {
             Df4 {
                 icao: decoder::icao(message, df),
-                altitude: None,
+                altitude: decoder::altitude(message, df),
             }
         } else {
             Df4::new()
@@ -46,6 +46,6 @@ impl Display for Df4 {
         } else {
             write!(f, ",")?
         }
-        write!(f, "")
+        writeln!(f, "")
     }
 }

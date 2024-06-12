@@ -36,6 +36,6 @@ impl Display for Df11 {
         } else {
             write!(f, ",")?
         }
-        write!(f, "")
+        writeln!(f, "")
     }
 }

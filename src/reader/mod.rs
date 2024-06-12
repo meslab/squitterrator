@@ -67,7 +67,7 @@ pub(super) fn read_lines<R: BufRead>(
                     if let Some(ref dlf) = downlink_log_file {
                         if let Some(downlink) = decoder::get_downlink(&message) {
                             let mut dlf = dlf.lock().unwrap();
-                            writeln!(dlf, "{}", downlink)?;
+                            write!(dlf, "{}", downlink)?;
                         }
                         debug!("Writing to {:?}", &dlf);
                     }

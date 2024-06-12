@@ -1,6 +1,6 @@
-use core::fmt;
+use std::fmt;
 
-use log::error;
+use log::debug;
 
 use super::*;
 
@@ -24,7 +24,7 @@ pub fn get_downlink(message: &[u32]) -> Option<DF> {
         20 => DF::DF20(Df20::from_message(message)),
         21 => DF::DF21(Df21::from_message(message)),
         _ => {
-            error!("Cannot create DF:{}", df);
+            debug!("Cannot create DF:{}", df);
             DF::DF0(Df0::new())
         }
     })

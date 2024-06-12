@@ -46,6 +46,6 @@ impl Display for Df5 {
         } else {
             write!(f, ",")?
         }
-        write!(f, "")
+        writeln!(f, "")
     }
 }
