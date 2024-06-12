@@ -22,7 +22,7 @@ pub fn get_downlink(message: &[u32]) -> Option<DF> {
         21 => DF::DF21(Df21::from_message(message)),
         _ => {
             error!("Cannot create DF:{}", df);
-            DF::DF0(Df0::from_message(message))
+            DF::DF0(Df0::new())
         }
     })
 }
