@@ -1,10 +1,12 @@
 mod calc;
 mod crc;
+mod format;
 mod ma_code;
 mod me_code;
 
 pub(crate) use calc::*;
 pub(crate) use crc::*;
+pub(crate) use format::*;
 pub(crate) use ma_code::*;
 pub(crate) use me_code::*;
 
