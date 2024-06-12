@@ -1,3 +1,5 @@
+use crate::decoder::range_value;
+
 /// Retrieves the Downlink Format (DF) from a message.
 ///
 /// # Arguments
@@ -19,7 +21,7 @@
 /// }
 /// ```
 pub fn df(message: &[u32]) -> Option<u32> {
-    crate::decoder::range_value(message, 1, 5)
+    range_value(message, 1, 5)
 }
 
 #[cfg(test)]

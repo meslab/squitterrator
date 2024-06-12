@@ -1,5 +1,7 @@
+use crate::decoder::{flag_and_range_value, status_flag_and_range_value};
+
 pub(crate) fn roll_angle_5_0(message: &[u32]) -> Option<i32> {
-    crate::decoder::status_flag_and_range_value(message, 33, 34, 35, 43)
+    status_flag_and_range_value(message, 33, 34, 35, 43)
         .filter(|&f| f.0 == 1)
         .map(|(_, sign, value)| roll_angle(sign, value))
 }
@@ -13,7 +15,7 @@ fn roll_angle(sign: u32, value: u32) -> i32 {
 }
 
 pub(crate) fn track_angle_5_0(message: &[u32]) -> Option<u32> {
-    crate::decoder::status_flag_and_range_value(message, 44, 45, 46, 55)
+    status_flag_and_range_value(message, 44, 45, 46, 55)
         .filter(|&f| f.0 == 1)
         .map(|(_, sign, value)| track_angle(sign, value))
 }
@@ -27,7 +29,7 @@ fn track_angle(sign: u32, value: u32) -> u32 {
 }
 
 pub(crate) fn track_angle_rate_5_0(message: &[u32]) -> Option<i32> {
-    crate::decoder::status_flag_and_range_value(message, 67, 68, 69, 77)
+    status_flag_and_range_value(message, 67, 68, 69, 77)
         .filter(|&f| f.0 == 1)
         .map(|(_, sign, value)| track_angle_rate(sign, value))
 }
@@ -41,13 +43,13 @@ fn track_angle_rate(sign: u32, value: u32) -> i32 {
 }
 
 pub(crate) fn ground_speed_5_0(message: &[u32]) -> Option<u32> {
-    crate::decoder::flag_and_range_value(message, 56, 57, 66)
+    flag_and_range_value(message, 56, 57, 66)
         .filter(|&f| f.0 == 1)
         .map(|v| v.1 << 1)
 }
 
 pub(crate) fn true_airspeed_5_0(message: &[u32]) -> Option<u32> {
-    crate::decoder::flag_and_range_value(message, 78, 79, 88)
+    flag_and_range_value(message, 78, 79, 88)
         .filter(|&f| f.0 == 1)
         .map(|v| v.1 << 1)
 }
