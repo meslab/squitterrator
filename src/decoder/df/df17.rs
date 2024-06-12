@@ -30,9 +30,9 @@ impl Df17 {
 impl Display for Df17 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(v) = self.icao {
-            write!(f, "{:X},", v)?
+            write!(f, "{:X}", v)?
         } else {
-            write!(f, ",")?
+            write!(f, "")?
         }
         write!(f, "")
     }

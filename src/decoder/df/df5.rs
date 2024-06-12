@@ -36,12 +36,12 @@ impl Df5 {
 impl Display for Df5 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(v) = self.icao {
-            write!(f, "{:X},", v)?
+            write!(f, "{:X}", v)?
         } else {
-            write!(f, ",")?
+            write!(f, "")?
         }
         if let Some(v) = self.squawk {
-            write!(f, "{},", v)?
+            write!(f, ",{}", v)?
         } else {
             write!(f, ",")?
         }
