@@ -1,3 +1,5 @@
+use std::fmt::{self, Display};
+
 use crate::decoder;
 
 pub struct Df20 {
@@ -28,5 +30,21 @@ impl Df20 {
         } else {
             Df20::new()
         }
+    }
+}
+
+impl Display for Df20 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(v) = self.icao {
+            write!(f, "{:X},", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = self.altitude {
+            write!(f, "{},", v)?
+        } else {
+            write!(f, ",")?
+        }
+        write!(f, "")
     }
 }
