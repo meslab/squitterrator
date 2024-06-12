@@ -14,19 +14,17 @@ pub enum DF {
     DF21(Df21),
 }
 
-pub fn new_df(message: &[u32]) -> Option<DF> {
-    df(message)
-        .map(|df| (icao(message, df).unwrap(), df))
-        .map(|(icao, df)| match df {
-            4 => DF::DF4(Df4::new(icao)),
-            5 => DF::DF5(Df5::new(icao)),
-            11 => DF::DF11(Df11::new(icao)),
-            17 => DF::DF17(Df17::new(icao)),
-            20 => DF::DF20(Df20::new(icao)),
-            21 => DF::DF21(Df21::new(icao)),
-            _ => {
-                error!("Cannot create DF:{}", df);
-                DF::DF0(Df0::new(icao))
-            }
-        })
+pub fn get_downlink(message: &[u32]) -> Option<DF> {
+    df(message).map(|df| match df {
+        4 => DF::DF4(Df4::from_message(message)),
+        5 => DF::DF5(Df5::from_message(message)),
+        11 => DF::DF11(Df11::from_message(message)),
+        17 => DF::DF17(Df17::from_message(message)),
+        20 => DF::DF20(Df20::from_message(message)),
+        21 => DF::DF21(Df21::from_message(message)),
+        _ => {
+            error!("Cannot create DF:{}", df);
+            DF::DF0(Df0::from_message(message))
+        }
+    })
 }
