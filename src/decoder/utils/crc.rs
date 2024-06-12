@@ -2,7 +2,7 @@ use std::vec;
 
 use log::debug;
 
-use crate::decoder;
+use crate::decoder::range_value;
 
 pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
     match df {
@@ -13,11 +13,9 @@ pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
 
 fn crc112(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480u32;
-    let mut data = decoder::range_value(message, 1, 32).unwrap();
-    let mut data1 = decoder::range_value(message, 33, 64).unwrap();
-    let mut data2 = decoder::range_value(message, 65, 88)
-        .map(|x| x << 8)
-        .unwrap();
+    let mut data = range_value(message, 1, 32).unwrap();
+    let mut data1 = range_value(message, 33, 64).unwrap();
+    let mut data2 = range_value(message, 65, 88).map(|x| x << 8).unwrap();
 
     for _ in 1..=88 {
         if data & 0x80000000 != 0 {
@@ -40,7 +38,7 @@ fn crc112(message: &[u32]) -> u32 {
 
 fn crc56(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480;
-    let mut data = decoder::range_value(message, 1, 32).unwrap();
+    let mut data = range_value(message, 1, 32).unwrap();
 
     for _ in 0..32 {
         if (data & 0x80000000) != 0 {

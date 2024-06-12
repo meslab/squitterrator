@@ -50,7 +50,6 @@ mod tests {
     #[test]
     fn test_sbs_squitter() {
         let line = "@05FFD0CF94E28D49329099115719707811B06CF5;";
-        // let format = None;
         if let Some(result) = clean_squitter(line) {
             assert_eq!(result, "8D49329099115719707811B06CF5");
         }

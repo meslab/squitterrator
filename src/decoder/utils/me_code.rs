@@ -1,4 +1,4 @@
-use crate::decoder;
+use crate::decoder::flag_and_range_value;
 
 /// Calculates the Mode E (ME) code from the given ADS-B message.
 ///
@@ -11,8 +11,7 @@ use crate::decoder;
 /// An `Option<u16>` representing the calculated ME code. Returns `Some(code)` if the calculation is successful,
 /// or `None` if the message is invalid.
 pub(crate) fn me_code(message: &[u32]) -> Option<u16> {
-    decoder::flag_and_range_value(message, 48, 41, 52)
-        .map(|(flag, value)| ((value << 2) | flag) as u16)
+    flag_and_range_value(message, 48, 41, 52).map(|(flag, value)| ((value << 2) | flag) as u16)
 }
 
 #[cfg(test)]
