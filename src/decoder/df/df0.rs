@@ -1,5 +1,7 @@
 use crate::decoder;
+use std::fmt::{self, Display};
 
+#[derive(Debug)]
 pub struct Df0 {
     pub icao: Option<u32>,
 }
@@ -23,5 +25,16 @@ impl Df0 {
         } else {
             Df0::new()
         }
+    }
+}
+
+impl Display for Df0 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(v) = self.icao {
+            write!(f, "{:X},", v)?
+        } else {
+            write!(f, ",")?
+        }
+        write!(f, "")
     }
 }

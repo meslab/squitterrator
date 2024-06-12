@@ -1,7 +1,7 @@
+use crate::decoder;
 use std::fmt::{self, Display};
 
-use crate::decoder;
-
+#[derive(Debug)]
 pub struct Df20 {
     pub icao: Option<u32>,
     pub altitude: Option<u32>,
