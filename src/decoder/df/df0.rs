@@ -29,12 +29,7 @@ impl Df0 {
 }
 
 impl Display for Df0 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some(v) = self.icao {
-            write!(f, "{:X}", v)?
-        } else {
-            write!(f, "")?
-        }
-        write!(f, "")
+    fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result {
+        Ok(())
     }
 }

@@ -35,10 +35,11 @@ impl Df21 {
 
 impl Display for Df21 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "DF21")?;
         if let Some(v) = self.icao {
-            write!(f, "{:X}", v)?
+            write!(f, ",{:X}", v)?
         } else {
-            write!(f, "")?
+            write!(f, ",")?
         }
         if let Some(v) = self.squawk {
             write!(f, ",{}", v)?
