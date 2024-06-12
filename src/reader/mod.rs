@@ -7,18 +7,25 @@ use legend::print_legend;
 use planes::print_planes;
 
 use crate::Args;
-use squitterator::decoder::{df, icao};
+use squitterator::decoder::{self, df, icao};
 use squitterator::decoder::{message, Plane};
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
-use std::io::{BufRead, Result};
+use std::fs::File;
+use std::io::{BufRead, Result, Write};
+use std::sync::Mutex;
 
 pub(super) fn read_lines<R: BufRead>(
     reader: R,
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
+    let downlink_log_file = args
+        .log_downlink
+        .as_ref()
+        .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
+
     let display_flags = args.display.concat().chars().collect::<Vec<char>>();
 
     if !args.display.is_empty() {
@@ -55,6 +62,14 @@ pub(super) fn read_lines<R: BufRead>(
                     }
                     if args.count_df {
                         *df_count.entry(df).or_insert(1) += 1;
+                    }
+
+                    if let Some(ref dlf) = downlink_log_file {
+                        if let Some(downlink) = decoder::get_downlink(&message) {
+                            let mut dlf = dlf.lock().unwrap();
+                            writeln!(dlf, "{}", downlink)?;
+                        }
+                        debug!("Writing to {:?}", &dlf);
                     }
 
                     if !args.display.is_empty() {

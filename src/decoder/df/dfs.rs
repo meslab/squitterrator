@@ -1,7 +1,10 @@
+use core::fmt;
+
 use log::error;
 
 use super::*;
 
+#[derive(Debug)]
 pub enum DF {
     DF0(Df0),
     DF4(Df4),
@@ -25,4 +28,18 @@ pub fn get_downlink(message: &[u32]) -> Option<DF> {
             DF::DF0(Df0::new())
         }
     })
+}
+
+impl fmt::Display for DF {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            DF::DF4(v) => write!(f, "{}", v),
+            DF::DF5(v) => write!(f, "{}", v),
+            DF::DF11(v) => write!(f, "{}", v),
+            DF::DF17(v) => write!(f, "{}", v),
+            DF::DF20(v) => write!(f, "{}", v),
+            DF::DF21(v) => write!(f, "{}", v),
+            _ => Ok(()),
+        }
+    }
 }
