@@ -1,5 +1,5 @@
 use crate::Args;
-use squitterator::adsb::{format_simple_display, Plane};
+use squitterator::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;
 
 pub(super) fn print_planes(

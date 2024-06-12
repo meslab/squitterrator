@@ -1,7 +1,7 @@
 mod reader;
 
 use reader::read_lines;
-use squitterator::adsb::Plane;
+use squitterator::decoder::Plane;
 
 use clap::Parser;
 use env_logger::{Builder, Env};
