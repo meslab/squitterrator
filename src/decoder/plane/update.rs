@@ -29,6 +29,18 @@ impl Plane {
                     self.category = (message_type, message_subtype);
                 }
                 5..=18 => {
+                    if let 5..=8 = message_type {
+                        self.ground_movement = decoder::ground_movement(message);
+                        self.altitude = None;
+                        self.altitude_source = '\u{2070}';
+                        self.track = decoder::ground_track(message);
+                        self.track_source = ' ';
+                    }
+                    if let 9..=18 = message_type {
+                        self.altitude = decoder::altitude(message, df);
+                        self.altitude_source = ' ';
+                        self.surveillance_status = decoder::surveillance_status(message);
+                    }
                     if let Some((cpr_form, cpr_lat, cpr_lon)) = decoder::cpr(message) {
                         match cpr_form {
                             0 | 1 => {
@@ -37,16 +49,6 @@ impl Plane {
                                 self.cpr_time[cpr_form as usize] = Utc::now();
                             }
                             _ => {}
-                        }
-                        if let 5..=8 = message_type {
-                            self.ground_movement = decoder::ground_movement(message);
-                            self.altitude = None;
-                            self.altitude_source = '\u{2070}';
-                        }
-                        if let 9..=18 = message_type {
-                            self.altitude = decoder::altitude(message, df);
-                            self.altitude_source = ' ';
-                            self.surveillance_status = decoder::surveillance_status(message);
                         }
                         if self.cpr_lat[0] != 0
                             && self.cpr_lat[1] != 0
@@ -60,8 +62,6 @@ impl Plane {
                         {
                             if let Some((lat, lon)) = match message_type {
                                 5..=8 => {
-                                    self.track = decoder::ground_track(message);
-                                    self.track_source = ' ';
                                     decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
                                 }
                                 9..=18 => {
@@ -100,8 +100,8 @@ impl Plane {
                             self.track_source = '\u{2082}';
                         }
                         3 | 4 => {
-                            self.track = decoder::heading(message);
-                            self.track_source = '\u{2083}';
+                            self.heading = decoder::heading(message);
+                            self.heading_source = '\u{2083}';
                             self.altitude_source = '"';
                         }
                         _ => {}

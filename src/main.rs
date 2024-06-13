@@ -33,8 +33,8 @@ struct Args {
     )]
     display: Vec<String>,
 
-    #[clap(short, long)]
-    verbose: bool,
+    #[clap(short = 'D', long, default_value = None)]
+    log_downlink: Option<String>,
 
     #[clap(short, long, default_value = "log.log")]
     log: String,
@@ -85,15 +85,13 @@ fn main() -> io::Result<()> {
 
     let log_file = File::create(&args.log).expect("Unable to create log file");
     let log_file = Mutex::new(log_file);
+
     let mut planes: HashMap<u32, Plane> = HashMap::new();
 
     // Initialize the logger
     Builder::from_env(Env::default().default_filter_or("error"))
-        .format(move |buf, record| {
+        .format(move |_, record| {
             let mut log_file = log_file.lock().unwrap();
-            if args.verbose {
-                writeln!(buf, "{} - {}", record.level(), record.args()).unwrap();
-            }
             writeln!(log_file, "{} - {}", record.level(), record.args())
         })
         .init();

@@ -87,9 +87,7 @@ mod tests {
     #[test]
     fn swap() {
         let (mut a, mut b) = (18, 654);
-        a ^= b;
-        b ^= a;
-        a ^= b;
+        std::mem::swap(&mut a, &mut b);
         assert_eq!((a, b), (654, 18));
     }
 }
