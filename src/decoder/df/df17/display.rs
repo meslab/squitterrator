@@ -1,5 +1,5 @@
-use std::fmt::{self, Display};
 use super::Df17;
+use std::fmt::{self, Display};
 
 impl Display for Df17 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -25,6 +25,31 @@ impl Display for Df17 {
             write!(f, ",{},{},{}", v.0, v.1, v.2)?
         } else {
             write!(f, ",,,")?
+        }
+        if let Some(v) = &self.ground_movement {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.track {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.track_source {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.altitude {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.altitude_source {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
         }
         if let Some(v) = &self.surveillance_status {
             write!(f, ",{}", v)?

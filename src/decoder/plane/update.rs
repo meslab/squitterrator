@@ -33,6 +33,8 @@ impl Plane {
                         self.ground_movement = decoder::ground_movement(message);
                         self.altitude = None;
                         self.altitude_source = '\u{2070}';
+                        self.track = decoder::ground_track(message);
+                        self.track_source = ' ';
                     }
                     if let 9..=18 = message_type {
                         self.altitude = decoder::altitude(message, df);
@@ -60,8 +62,6 @@ impl Plane {
                         {
                             if let Some((lat, lon)) = match message_type {
                                 5..=8 => {
-                                    self.track = decoder::ground_track(message);
-                                    self.track_source = ' ';
                                     decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
                                 }
                                 9..=18 => {

@@ -19,6 +19,8 @@ impl Df17 {
                     match dl.message_type.0 {
                         5..=8 => {
                             dl.ground_movement = decoder::ground_movement(message);
+                            dl.track = decoder::ground_track(message);
+                            dl.track_source = Some('\u{2070}');
                             dl.altitude_source = Some('\u{2070}');
                         }
                         9..=18 => {
