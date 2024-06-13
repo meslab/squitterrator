@@ -1,9 +1,9 @@
-use super::Df17;
+use super::Ext;
 use std::fmt::{self, Display};
 
-impl Display for Df17 {
+impl Display for Ext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "DF17")?;
+        write!(f, "EXT")?;
         if let Some(v) = self.icao {
             write!(f, ",{:X}", v)?
         } else {

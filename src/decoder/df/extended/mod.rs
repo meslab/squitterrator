@@ -2,7 +2,7 @@ mod display;
 mod update;
 
 #[derive(Debug)]
-pub struct Df17 {
+pub struct Ext {
     pub icao: Option<u32>,
     pub capability: u32,
     pub message_type: (u32, u32),
@@ -25,15 +25,15 @@ pub struct Df17 {
     pub adsb_version: Option<u32>,
 }
 
-impl Default for Df17 {
+impl Default for Ext {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Df17 {
+impl Ext {
     pub fn new() -> Self {
-        Df17 {
+        Ext {
             icao: None,
             capability: 0,
             message_type: (0, 0),

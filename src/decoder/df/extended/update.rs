@@ -1,9 +1,9 @@
-use super::Df17;
+use super::Ext;
 use crate::decoder;
 
-impl Df17 {
+impl Ext {
     pub fn from_message(message: &[u32]) -> Self {
-        let mut dl = Df17::new();
+        let mut dl = Ext::new();
         if let Some(df) = decoder::df(message) {
             dl.icao = decoder::icao(message, df);
             dl.capability = decoder::ca(message);

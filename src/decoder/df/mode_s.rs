@@ -2,20 +2,20 @@ use crate::decoder;
 use std::fmt::{self, Display};
 
 #[derive(Debug)]
-pub struct Df4 {
+pub struct Mds {
     pub icao: Option<u32>,
     pub altitude: Option<u32>,
 }
 
-impl Default for Df4 {
+impl Default for Mds {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Df4 {
+impl Mds {
     pub fn new() -> Self {
-        Df4 {
+        Mds {
             icao: None,
             altitude: None,
         }
@@ -23,19 +23,19 @@ impl Df4 {
 
     pub fn from_message(message: &[u32]) -> Self {
         if let Some(df) = decoder::df(message) {
-            Df4 {
+            Mds {
                 icao: decoder::icao(message, df),
                 altitude: decoder::altitude(message, df),
             }
         } else {
-            Df4::new()
+            Mds::new()
         }
     }
 }
 
-impl Display for Df4 {
+impl Display for Mds {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "DF4 ")?;
+        write!(f, "MDS")?;
         if let Some(v) = self.icao {
             write!(f, ",{:X}", v)?
         } else {

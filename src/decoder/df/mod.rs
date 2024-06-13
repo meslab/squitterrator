@@ -1,20 +1,12 @@
-mod df0;
-mod df11;
-mod df17;
-mod df20;
-mod df21;
-mod df4;
-mod df5;
 mod dfs;
+mod extended;
+mod mode_s;
+mod short;
 
-pub use df0::*;
-pub use df11::*;
-pub use df17::*;
-pub use df20::*;
-pub use df21::*;
-pub use df4::*;
-pub use df5::*;
 pub use dfs::*;
+pub use extended::*;
+pub use mode_s::*;
+pub use short::*;
 
 use crate::decoder::range_value;
 
