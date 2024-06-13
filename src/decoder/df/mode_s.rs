@@ -45,15 +45,15 @@ impl Display for Mds {
 }
 
 impl decoder::Downlink for Mds {
-    fn from_message(message: &[u32]) -> Self {
+    fn from_message(message: &[u32]) -> Result<Self, String> {
         if let Some(df) = decoder::df(message) {
-            Mds {
+            Ok(Mds {
                 df: Some(df),
                 icao: decoder::icao(message, df),
                 altitude: decoder::altitude(message, df),
-            }
+            })
         } else {
-            Mds::new()
+            Err("cannot extract df".to_string())
         }
     }
 

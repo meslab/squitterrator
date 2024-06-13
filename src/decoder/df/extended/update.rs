@@ -55,10 +55,10 @@ impl Ext {
 }
 
 impl decoder::Downlink for Ext {
-    fn from_message(message: &[u32]) -> Self {
+    fn from_message(message: &[u32]) -> Result<Self, String> {
         let mut dl = Ext::new();
         dl.update(message);
-        dl
+        Ok(dl)
     }
 
     fn update(&mut self, message: &[u32]) {

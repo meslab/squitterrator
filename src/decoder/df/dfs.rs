@@ -20,15 +20,19 @@ impl fmt::Display for DF {
 }
 
 impl Downlink for DF {
-    fn from_message(message: &[u32]) -> Self {
-        df(message)
-            .map(|df| match df {
-                0..=16 => DF::SRT(Srt::from_message(message)),
-                17 => DF::EXT(Ext::from_message(message)),
-                20 | 21 => DF::MDS(Mds::from_message(message)),
-                _ => DF::SRT(Srt::new()),
-            })
-            .unwrap()
+    fn from_message(message: &[u32]) -> Result<Self, String> {
+        match df(message) {
+            Some(value) => {
+                let dl = match value {
+                    0..=16 => DF::SRT(Srt::from_message(message)?),
+                    17 => DF::EXT(Ext::from_message(message)?),
+                    20 | 21 => DF::MDS(Mds::from_message(message)?),
+                    _ => DF::SRT(Srt::new()),
+                };
+                Ok(dl)
+            }
+            None => Err("cant get df value".to_string()),
+        }
     }
 
     fn update(&mut self, message: &[u32]) {
@@ -40,7 +44,7 @@ impl Downlink for DF {
     }
 }
 
-pub trait Downlink {
-    fn from_message(message: &[u32]) -> Self;
+pub trait Downlink: Sized {
+    fn from_message(message: &[u32]) -> Result<Self, String>;
     fn update(&mut self, message: &[u32]);
 }
