@@ -2,12 +2,6 @@ use super::Ext;
 use crate::decoder;
 
 impl Ext {
-    pub fn from_message(message: &[u32]) -> Self {
-        let mut dl = Ext::new();
-        dl.update(message);
-        dl
-    }
-
     fn update(&mut self, message: &[u32]) {
         if let Some(df) = decoder::df(message) {
             self.df = Some(df);
@@ -84,5 +78,13 @@ impl Ext {
 
     fn update_mt_31(&mut self, message: &[u32]) {
         self.adsb_version = decoder::version(message);
+    }
+}
+
+impl decoder::Downlink for Ext {
+    fn from_message(message: &[u32]) -> Self {
+        let mut dl = Ext::new();
+        dl.update(message);
+        dl
     }
 }

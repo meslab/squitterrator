@@ -27,12 +27,6 @@ impl Srt {
         }
     }
 
-    pub fn from_message(message: &[u32]) -> Self {
-        let mut dl = Srt::new();
-        dl.update(message);
-        dl
-    }
-
     fn update(&mut self, message: &[u32]) {
         if let Some(df) = decoder::df(message) {
             self.df = Some(df);
@@ -80,5 +74,13 @@ impl Display for Srt {
         } else {
             writeln!(f, ",")
         }
+    }
+}
+
+impl decoder::Downlink for Srt {
+    fn from_message(message: &[u32]) -> Self {
+        let mut dl = Srt::new();
+        dl.update(message);
+        dl
     }
 }

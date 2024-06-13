@@ -1,7 +1,5 @@
 use std::fmt::{self, Debug};
 
-use log::debug;
-
 use super::*;
 
 #[derive(Debug)]
@@ -16,10 +14,7 @@ pub fn get_downlink(message: &[u32]) -> Option<DF> {
         0..=16 => DF::SRT(Srt::from_message(message)),
         17 => DF::EXT(Ext::from_message(message)),
         20 | 21 => DF::MDS(Mds::from_message(message)),
-        _ => {
-            debug!("Cannot create DF:{}", df);
-            DF::SRT(Srt::new())
-        }
+        _ => DF::SRT(Srt::new()),
     })
 }
 
@@ -31,4 +26,8 @@ impl fmt::Display for DF {
             DF::MDS(v) => write!(f, "{}", v),
         }
     }
+}
+
+pub trait Downlink {
+    fn from_message(message: &[u32]) -> Self;
 }
