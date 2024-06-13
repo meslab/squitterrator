@@ -18,7 +18,7 @@ impl Df0 {
     }
 
     pub fn from_message(message: &[u32]) -> Self {
-        if let Some(df) = super::df(message) {
+        if let Some(df) = decoder::df(message) {
             Df0 {
                 icao: decoder::icao(message, df),
             }
