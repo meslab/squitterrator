@@ -2,33 +2,6 @@ use super::Ext;
 use crate::decoder;
 
 impl Ext {
-    fn update(&mut self, message: &[u32]) {
-        if let Some(df) = decoder::df(message) {
-            self.df = Some(df);
-            self.icao = decoder::icao(message, df);
-            self.capability = decoder::ca(message);
-            self.message_type = decoder::message_type(message);
-            match self.message_type.0 {
-                1..=4 => {
-                    self.update_mt_1_4(message);
-                }
-                5..=18 => {
-                    self.update_mt_5_18(message, df);
-                }
-                19 => {
-                    self.update_mt_19(message);
-                }
-                20..=22 => {
-                    self.update_mt_20_22(message);
-                }
-                31 => {
-                    self.update_mt_31(message);
-                }
-                _ => {}
-            }
-        };
-    }
-
     fn update_mt_1_4(&mut self, message: &[u32]) {
         self.ais = decoder::ais(message);
         self.category = Some(self.message_type);
@@ -86,5 +59,32 @@ impl decoder::Downlink for Ext {
         let mut dl = Ext::new();
         dl.update(message);
         dl
+    }
+
+    fn update(&mut self, message: &[u32]) {
+        if let Some(df) = decoder::df(message) {
+            self.df = Some(df);
+            self.icao = decoder::icao(message, df);
+            self.capability = decoder::ca(message);
+            self.message_type = decoder::message_type(message);
+            match self.message_type.0 {
+                1..=4 => {
+                    self.update_mt_1_4(message);
+                }
+                5..=18 => {
+                    self.update_mt_5_18(message, df);
+                }
+                19 => {
+                    self.update_mt_19(message);
+                }
+                20..=22 => {
+                    self.update_mt_20_22(message);
+                }
+                31 => {
+                    self.update_mt_31(message);
+                }
+                _ => {}
+            }
+        };
     }
 }

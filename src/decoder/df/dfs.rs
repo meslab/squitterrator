@@ -30,4 +30,5 @@ impl fmt::Display for DF {
 
 pub trait Downlink {
     fn from_message(message: &[u32]) -> Self;
+    fn update(&mut self, message: &[u32]);
 }

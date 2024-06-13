@@ -26,25 +26,6 @@ impl Srt {
             altitude: None,
         }
     }
-
-    fn update(&mut self, message: &[u32]) {
-        if let Some(df) = decoder::df(message) {
-            self.df = Some(df);
-            self.icao = decoder::icao(message, df);
-            match df {
-                4 => {
-                    self.altitude = decoder::altitude(message, df);
-                }
-                5 => {
-                    self.squawk = decoder::squawk(message);
-                }
-                11 => {
-                    self.capability = Some(decoder::ca(message));
-                }
-                _ => {}
-            }
-        }
-    }
 }
 
 impl Display for Srt {
@@ -82,5 +63,24 @@ impl decoder::Downlink for Srt {
         let mut dl = Srt::new();
         dl.update(message);
         dl
+    }
+
+    fn update(&mut self, message: &[u32]) {
+        if let Some(df) = decoder::df(message) {
+            self.df = Some(df);
+            self.icao = decoder::icao(message, df);
+            match df {
+                4 => {
+                    self.altitude = decoder::altitude(message, df);
+                }
+                5 => {
+                    self.squawk = decoder::squawk(message);
+                }
+                11 => {
+                    self.capability = Some(decoder::ca(message));
+                }
+                _ => {}
+            }
+        }
     }
 }

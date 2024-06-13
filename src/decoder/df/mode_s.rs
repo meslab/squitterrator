@@ -56,4 +56,11 @@ impl decoder::Downlink for Mds {
             Mds::new()
         }
     }
+
+    fn update(&mut self, message: &[u32]) {
+        if let Some(df) = decoder::df(message) {
+            self.df = Some(df);
+            self.icao = decoder::icao(message, df);
+        }
+    }
 }
