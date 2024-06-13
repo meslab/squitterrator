@@ -4,6 +4,7 @@ use std::fmt::{self, Display};
 #[derive(Debug)]
 pub struct Df11 {
     pub icao: Option<u32>,
+    pub capability: u32,
 }
 
 impl Default for Df11 {
@@ -14,13 +15,17 @@ impl Default for Df11 {
 
 impl Df11 {
     pub fn new() -> Self {
-        Df11 { icao: None }
+        Df11 {
+            icao: None,
+            capability: 0,
+        }
     }
 
     pub fn from_message(message: &[u32]) -> Self {
         if let Some(df) = super::df(message) {
             Df11 {
                 icao: decoder::icao(message, df),
+                capability: decoder::ca(message),
             }
         } else {
             Df11::new()
@@ -36,6 +41,7 @@ impl Display for Df11 {
         } else {
             write!(f, ",")?
         }
+        write!(f, ",{}", self.capability)?;
         writeln!(f, "")
     }
 }
