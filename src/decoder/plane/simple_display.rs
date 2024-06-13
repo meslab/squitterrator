@@ -69,6 +69,11 @@ impl SimpleDisplay for Plane {
             } else {
                 write!(f, "{:5} ", "")?;
             }
+            if let Some(value) = self.barometric_pressure_setting {
+                write!(f, "{:>4} ", value)?;
+            } else {
+                write!(f, "{:4} ", "")?;
+            }
         }
         if let Some(vrate) = self.vrate {
             write!(f, "{:>5}", vrate)?;

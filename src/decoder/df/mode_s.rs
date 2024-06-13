@@ -22,18 +22,6 @@ impl Mds {
             altitude: None,
         }
     }
-
-    pub fn from_message(message: &[u32]) -> Self {
-        if let Some(df) = decoder::df(message) {
-            Mds {
-                df: Some(df),
-                icao: decoder::icao(message, df),
-                altitude: decoder::altitude(message, df),
-            }
-        } else {
-            Mds::new()
-        }
-    }
 }
 
 impl Display for Mds {
@@ -52,6 +40,22 @@ impl Display for Mds {
             writeln!(f, ",{}", v)
         } else {
             writeln!(f, ",")
+        }
+    }
+}
+
+impl decoder::Downlink for Mds {
+    fn from_message(message: &[u32]) -> Result<Self, String> {
+        let mut dl = Mds::new();
+        dl.update(message);
+        Ok(dl)
+    }
+
+    fn update(&mut self, message: &[u32]) {
+        if let Some(df) = decoder::df(message) {
+            self.df = Some(df);
+            self.icao = decoder::icao(message, df);
+            self.altitude = decoder::altitude(message, df);
         }
     }
 }

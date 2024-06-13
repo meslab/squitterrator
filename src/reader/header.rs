@@ -20,7 +20,7 @@ pub(super) fn print_header(
 
     let headers_speed = [("TAS", 3), ("IAS", 3), ("MACH", 4)];
     let headers_angles = [("RLL", 3), ("TAR", 3)];
-    let headers_altitude = [("ALT G", 5), ("ALT S", 5)];
+    let headers_altitude = [("ALT G", 5), ("ALT S", 5), ("BARO", 4)];
     let headers_weather = [
         ("TEMP", 5),
         ("WND", 3),

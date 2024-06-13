@@ -7,7 +7,7 @@ use legend::print_legend;
 use planes::print_planes;
 
 use crate::Args;
-use squitterator::decoder::{self, df, icao};
+use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
 
 use log::{debug, error, warn};
@@ -65,11 +65,12 @@ pub(super) fn read_lines<R: BufRead>(
                     }
 
                     if let Some(ref dlf) = downlink_log_file {
-                        if let Some(downlink) = decoder::get_downlink(&message) {
+                        if let Ok(downlink) = decoder::DF::from_message(&message) {
                             let mut dlf = dlf.lock().unwrap();
                             write!(dlf, "{}", downlink)?;
+
+                            debug!("Writing to {:?}", &dlf);
                         }
-                        debug!("Writing to {:?}", &dlf);
                     }
 
                     if !args.display.is_empty() {
