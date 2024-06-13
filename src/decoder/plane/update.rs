@@ -156,6 +156,7 @@ impl Plane {
                         },
                         _ => ' ',
                     };
+                    self.barometric_pressure_setting = value.barometric_pressure_setting;
                     bds = (4, 0);
                     debug!(
                         "DF:{}, BDS:{}.{} S:{}",

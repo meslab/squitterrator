@@ -51,7 +51,7 @@ pub fn is_bds_4_0(message: &[u32]) -> Option<SelectedVerticalIntention> {
         let intent = SelectedVerticalIntention::from_data(
             decoder::mcp_selected_altitude(message).filter(|x| (0..=65530).contains(x)),
             decoder::fms_selected_altitude(message).filter(|x| (0..=65530).contains(x)),
-            decoder::barometric_pressure_setting(message).filter(|x| (0..=410).contains(x)),
+            decoder::barometric_pressure_setting(message).filter(|x| (800..=1210).contains(x)),
             decoder::target_altitude_source(message).filter(|x| (0..=3).contains(x)),
         );
         debug!("BDS:4.0 {:?}", intent);

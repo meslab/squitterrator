@@ -18,7 +18,7 @@ pub(crate) fn fms_selected_altitude(message: &[u32]) -> Option<u32> {
 pub(crate) fn barometric_pressure_setting(message: &[u32]) -> Option<u32> {
     if let Some((status, value)) = flag_and_range_value(message, 59, 60, 71) {
         if status == 1 {
-            Some(value / 10 - 800)
+            Some(value / 10 + 800)
         } else {
             Some(value / 10)
         }
