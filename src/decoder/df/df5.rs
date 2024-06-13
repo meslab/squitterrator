@@ -42,10 +42,9 @@ impl Display for Df5 {
             write!(f, ",")?
         }
         if let Some(v) = self.squawk {
-            write!(f, ",{}", v)?
+            writeln!(f, ",{}", v)
         } else {
-            write!(f, ",")?
+            writeln!(f, ",")
         }
-        writeln!(f, "")
     }
 }

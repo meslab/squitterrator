@@ -42,10 +42,9 @@ impl Display for Df20 {
             write!(f, ",")?
         }
         if let Some(v) = self.altitude {
-            write!(f, ",{}", v)?
+            writeln!(f, ",{}", v)
         } else {
-            write!(f, ",")?
+            writeln!(f, ",")
         }
-        writeln!(f, "")
     }
 }

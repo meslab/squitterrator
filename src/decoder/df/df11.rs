@@ -41,7 +41,6 @@ impl Display for Df11 {
         } else {
             write!(f, ",")?
         }
-        write!(f, ",{}", self.capability)?;
-        writeln!(f, "")
+        writeln!(f, ",{}", self.capability)
     }
 }
