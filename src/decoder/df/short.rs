@@ -3,10 +3,11 @@ use std::fmt::{self, Display};
 
 #[derive(Debug)]
 pub struct Srt {
+    pub df: Option<u32>,
     pub icao: Option<u32>,
     pub squawk: Option<u32>,
-    pub altitude: Option<u32>,
     pub capability: Option<u32>,
+    pub altitude: Option<u32>,
 }
 
 impl Default for Srt {
@@ -18,45 +19,47 @@ impl Default for Srt {
 impl Srt {
     pub fn new() -> Self {
         Srt {
+            df: None,
             icao: None,
             squawk: None,
-            altitude: None,
             capability: None,
+            altitude: None,
         }
     }
 
     pub fn from_message(message: &[u32]) -> Self {
+        let mut dl = Srt::new();
+        dl.update(message);
+        dl
+    }
+
+    fn update(&mut self, message: &[u32]) {
         if let Some(df) = decoder::df(message) {
+            self.df = Some(df);
+            self.icao = decoder::icao(message, df);
             match df {
-                4 => Srt {
-                    icao: decoder::icao(message, df),
-                    squawk: None,
-                    altitude: decoder::altitude(message, df),
-                    capability: None,
-                },
-                5 => Srt {
-                    icao: decoder::icao(message, df),
-                    squawk: decoder::squawk(message),
-                    altitude: None,
-                    capability: None,
-                },
-                11 => Srt {
-                    icao: decoder::icao(message, df),
-                    squawk: None,
-                    altitude: None,
-                    capability: Some(decoder::ca(message)),
-                },
-                _ => Srt::new(),
+                4 => {
+                    self.altitude = decoder::altitude(message, df);
+                }
+                5 => {
+                    self.squawk = decoder::squawk(message);
+                }
+                11 => {
+                    self.capability = Some(decoder::ca(message));
+                }
+                _ => {}
             }
-        } else {
-            Srt::new()
         }
     }
 }
 
 impl Display for Srt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "SRT")?;
+        if let Some(v) = self.df {
+            write!(f, "DF{:02}", v)?
+        } else {
+            write!(f, "")?
+        }
         if let Some(v) = self.icao {
             write!(f, ",{:X}", v)?
         } else {

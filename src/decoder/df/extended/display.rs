@@ -3,7 +3,11 @@ use std::fmt::{self, Display};
 
 impl Display for Ext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "EXT")?;
+        if let Some(v) = self.df {
+            write!(f, "DF{:02}", v)?
+        } else {
+            write!(f, "")?
+        }
         if let Some(v) = self.icao {
             write!(f, ",{:X}", v)?
         } else {

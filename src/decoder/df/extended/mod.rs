@@ -3,6 +3,7 @@ mod update;
 
 #[derive(Debug)]
 pub struct Ext {
+    pub df: Option<u32>,
     pub icao: Option<u32>,
     pub capability: u32,
     pub message_type: (u32, u32),
@@ -34,6 +35,7 @@ impl Default for Ext {
 impl Ext {
     pub fn new() -> Self {
         Ext {
+            df: None,
             icao: None,
             capability: 0,
             message_type: (0, 0),
