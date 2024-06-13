@@ -41,12 +41,42 @@ impl Display for Df17 {
         } else {
             write!(f, ",")?
         }
+        if let Some(v) = &self.heading {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.heading_source {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
         if let Some(v) = &self.altitude {
             write!(f, ",{}", v)?
         } else {
             write!(f, ",")?
         }
         if let Some(v) = &self.altitude_source {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.altitude_delta {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.altitude_gnss {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.vrate {
+            write!(f, ",{}", v)?
+        } else {
+            write!(f, ",")?
+        }
+        if let Some(v) = &self.vrate_source {
             write!(f, ",{}", v)?
         } else {
             write!(f, ",")?

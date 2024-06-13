@@ -100,8 +100,8 @@ impl Plane {
                             self.track_source = '\u{2082}';
                         }
                         3 | 4 => {
-                            self.track = decoder::heading(message);
-                            self.track_source = '\u{2083}';
+                            self.heading = decoder::heading(message);
+                            self.heading_source = '\u{2083}';
                             self.altitude_source = '"';
                         }
                         _ => {}

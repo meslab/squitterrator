@@ -8,7 +8,6 @@ impl Df17 {
             dl.icao = decoder::icao(message, df);
             dl.capability = decoder::ca(message);
             dl.message_type = decoder::message_type(message);
-            dl.adsb_version = decoder::version(message);
             match dl.message_type.0 {
                 1..=4 => {
                     dl.ais = decoder::ais(message);
@@ -29,6 +28,32 @@ impl Df17 {
                         }
                         _ => {}
                     }
+                }
+                19 => {
+                    dl.vrate = decoder::vertical_rate(message);
+                    dl.altitude_delta = decoder::altitude_delta(message);
+                    match dl.message_type.1 {
+                        1 => {
+                            (dl.track, dl.grspeed) = decoder::track_and_groundspeed(message, false);
+                            dl.track_source = Some('\u{2081}');
+                        }
+                        2 => {
+                            (dl.track, dl.grspeed) = decoder::track_and_groundspeed(message, true);
+                            dl.track_source = Some('\u{2082}');
+                        }
+                        3 | 4 => {
+                            dl.heading = decoder::heading(message);
+                            dl.heading_source = Some('\u{2083}');
+                        }
+                        _ => {}
+                    }
+                }
+                20..=22 => {
+                    dl.altitude_gnss = decoder::altitude_gnss(message);
+                    dl.surveillance_status = Some(decoder::surveillance_status(message));
+                }
+                31 => {
+                    dl.adsb_version = decoder::version(message);
                 }
                 _ => {}
             }
