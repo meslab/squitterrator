@@ -1,3 +1,4 @@
+mod from_downlink;
 mod simple_display;
 mod update;
 
