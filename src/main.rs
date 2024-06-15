@@ -17,7 +17,7 @@ use std::time::Duration;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.2.5",
+    version = "v0.2.6",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
