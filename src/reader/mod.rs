@@ -28,7 +28,7 @@ pub(super) fn read_lines<R: BufRead>(
 
     let display_flags = args.display.concat().chars().collect::<Vec<char>>();
 
-    if !args.display.is_empty() {
+    if !display_flags.contains(&'Q') {
         clear_screen();
         print_legend(
             display_flags.contains(&'w'),
@@ -73,7 +73,7 @@ pub(super) fn read_lines<R: BufRead>(
                         }
                     }
 
-                    if !args.display.is_empty() {
+                    if !display_flags.contains(&'Q') {
                         if let Some(icao) = icao(&message, df) {
                             planes
                                 .entry(icao)
