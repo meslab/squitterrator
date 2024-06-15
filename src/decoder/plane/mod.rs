@@ -1,5 +1,6 @@
 mod simple_display;
 mod update;
+mod update_from_ext;
 mod update_position;
 
 use crate::decoder::Capability;
