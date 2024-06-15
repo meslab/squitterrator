@@ -4,6 +4,19 @@ use chrono::Utc;
 use log::debug;
 
 impl Plane {
+    fn update_from_ext_1_4(&mut self, message: &[u32], message_type: u32, message_subtype: u32) {
+        self.ais = decoder::ais(message);
+        self.category = (message_type, message_subtype);
+    }
+
+    fn update_from_ext_5_8(&mut self, message: &[u32]) {
+        self.ground_movement = decoder::ground_movement(message);
+        self.altitude = None;
+        self.altitude_source = '\u{2070}';
+        self.track = decoder::ground_track(message);
+        self.track_source = ' ';
+    }
+
     pub fn update(&mut self, message: &[u32], df: u32, relaxed: bool) {
         self.timestamp = Utc::now();
         self.last_df = df;
@@ -25,16 +38,11 @@ impl Plane {
             debug!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
             match message_type {
                 1..=4 => {
-                    self.ais = decoder::ais(message);
-                    self.category = (message_type, message_subtype);
+                    self.update_from_ext_1_4(message, message_type, message_subtype);
                 }
                 5..=18 => {
                     if let 5..=8 = message_type {
-                        self.ground_movement = decoder::ground_movement(message);
-                        self.altitude = None;
-                        self.altitude_source = '\u{2070}';
-                        self.track = decoder::ground_track(message);
-                        self.track_source = ' ';
+                        self.update_from_ext_5_8(message);
                     }
                     if let 9..=18 = message_type {
                         self.altitude = decoder::altitude(message, df);
