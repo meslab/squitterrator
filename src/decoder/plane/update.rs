@@ -46,37 +46,11 @@ impl Plane {
                             0 | 1 => {
                                 self.cpr_lat[cpr_form as usize] = cpr_lat;
                                 self.cpr_lon[cpr_form as usize] = cpr_lon;
-                                self.cpr_time[cpr_form as usize] = Utc::now();
+                                self.cpr_time[cpr_form as usize] = self.timestamp;
                             }
                             _ => {}
                         }
-                        if self.cpr_lat[0] != 0
-                            && self.cpr_lat[1] != 0
-                            && self.cpr_lon[0] != 0
-                            && self.cpr_lon[1] != 0
-                            && self.cpr_time[0]
-                                .signed_duration_since(self.cpr_time[1])
-                                .num_seconds()
-                                .abs()
-                                < 10
-                        {
-                            if let Some((lat, lon)) = match message_type {
-                                5..=8 => {
-                                    decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4)
-                                }
-                                9..=18 => {
-                                    decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1)
-                                }
-                                _ => None,
-                            } {
-                                if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon)
-                                {
-                                    self.lat = lat;
-                                    self.lon = lon;
-                                    self.position_timestamp = Some(Utc::now());
-                                }
-                            }
-                        }
+                        self.update_position(message_type, cpr_form);
                     }
                 }
                 19 => {
@@ -176,7 +150,7 @@ impl Plane {
                     self.true_airspeed = result.true_airspeed;
                     self.bds_5_0_timestamp = Some(self.timestamp);
                     self.track_source = '\u{2085}';
-                    self.track_timestamp = Some(Utc::now());
+                    self.track_timestamp = Some(self.timestamp);
                     bds = (5, 0);
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
@@ -197,7 +171,7 @@ impl Plane {
                         }
                     };
                     self.heading_source = '\u{2086}';
-                    self.heading_timestamp = Some(Utc::now());
+                    self.heading_timestamp = Some(self.timestamp);
                     bds = (6, 0);
                     debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
                 }
