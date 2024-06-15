@@ -1,7 +1,36 @@
+use log::debug;
+
 use super::Plane;
 use crate::decoder;
 
 impl Plane {
+    pub(super) fn update_from_ext(&mut self, message: &[u32], df: u32) {
+        let (message_type, message_subtype) = decoder::message_type(message);
+        self.last_type_code = message_type;
+        debug!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
+        match message_type {
+            1..=4 => {
+                self.update_from_ext_1_4(message, message_type, message_subtype);
+            }
+            5..=8 => {
+                self.update_from_ext_5_8(message, message_type);
+            }
+            9..=18 => {
+                self.update_from_ext_9_18(message, message_type, df);
+            }
+            19 => {
+                self.update_from_ext_19(message, message_subtype);
+            }
+            20..=22 => {
+                self.update_from_ext_20_22(message);
+            }
+            31 => {
+                self.update_from_ext_31(message);
+            }
+            _ => {}
+        }
+    }
+
     fn update_cpr(&mut self, message: &[u32], message_type: u32) {
         if let Some((cpr_form, cpr_lat, cpr_lon)) =
             decoder::cpr(message).filter(|(cpr_form, _, _)| (0..=1).contains(cpr_form))
