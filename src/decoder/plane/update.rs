@@ -4,17 +4,37 @@ use chrono::Utc;
 use log::debug;
 
 impl Plane {
+    fn update_cpr(&mut self, message: &[u32], message_type: u32) {
+        if let Some((cpr_form, cpr_lat, cpr_lon)) =
+            decoder::cpr(message).filter(|(cpr_form, _, _)| (0..=1).contains(cpr_form))
+        {
+            self.cpr_lat[cpr_form as usize] = cpr_lat;
+            self.cpr_lon[cpr_form as usize] = cpr_lon;
+            self.cpr_time[cpr_form as usize] = self.timestamp;
+
+            self.update_position(message_type, cpr_form);
+        }
+    }
+
     fn update_from_ext_1_4(&mut self, message: &[u32], message_type: u32, message_subtype: u32) {
         self.ais = decoder::ais(message);
         self.category = (message_type, message_subtype);
     }
 
-    fn update_from_ext_5_8(&mut self, message: &[u32]) {
+    fn update_from_ext_5_8(&mut self, message: &[u32], message_type: u32) {
         self.ground_movement = decoder::ground_movement(message);
         self.altitude = None;
         self.altitude_source = '\u{2070}';
         self.track = decoder::ground_track(message);
         self.track_source = ' ';
+        self.update_cpr(message, message_type);
+    }
+
+    fn update_from_ext_9_18(&mut self, message: &[u32], message_type: u32, df: u32) {
+        self.altitude = decoder::altitude(message, df);
+        self.altitude_source = ' ';
+        self.surveillance_status = decoder::surveillance_status(message);
+        self.update_cpr(message, message_type);
     }
 
     pub fn update(&mut self, message: &[u32], df: u32, relaxed: bool) {
@@ -40,26 +60,11 @@ impl Plane {
                 1..=4 => {
                     self.update_from_ext_1_4(message, message_type, message_subtype);
                 }
-                5..=18 => {
-                    if let 5..=8 = message_type {
-                        self.update_from_ext_5_8(message);
-                    }
-                    if let 9..=18 = message_type {
-                        self.altitude = decoder::altitude(message, df);
-                        self.altitude_source = ' ';
-                        self.surveillance_status = decoder::surveillance_status(message);
-                    }
-                    if let Some((cpr_form, cpr_lat, cpr_lon)) = decoder::cpr(message) {
-                        match cpr_form {
-                            0 | 1 => {
-                                self.cpr_lat[cpr_form as usize] = cpr_lat;
-                                self.cpr_lon[cpr_form as usize] = cpr_lon;
-                                self.cpr_time[cpr_form as usize] = self.timestamp;
-                            }
-                            _ => {}
-                        }
-                        self.update_position(message_type, cpr_form);
-                    }
+                5..=8 => {
+                    self.update_from_ext_5_8(message, message_type);
+                }
+                9..=18 => {
+                    self.update_from_ext_9_18(message, message_type, df);
                 }
                 19 => {
                     self.vrate = decoder::vertical_rate(message);
