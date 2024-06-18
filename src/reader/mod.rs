@@ -9,6 +9,8 @@ use planes::print_planes;
 use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
+//use squitterator::;
+use decoder::Ammendable;
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
@@ -68,6 +70,17 @@ pub(super) fn read_lines<R: BufRead>(
                         if let Ok(downlink) = decoder::DF::from_message(&message) {
                             let mut dlf = dlf.lock().unwrap();
                             write!(dlf, "{}", downlink)?;
+                            if let Some(icao) = downlink.icao() {
+                                planes
+                                    .entry(icao)
+                                    .and_modify(|p| p.ammend(&downlink))
+                                    .or_insert(Plane::from_message(
+                                        &message,
+                                        df,
+                                        icao,
+                                        args.relaxed,
+                                    ));
+                            };
 
                             debug!("Writing to {:?}", &dlf);
                         }

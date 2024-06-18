@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
 
 pub use simple_display::format_simple_display;
+pub use update::Ammendable;
 
 pub struct Plane {
     pub icao: u32,

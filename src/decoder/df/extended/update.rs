@@ -87,4 +87,8 @@ impl decoder::Downlink for Ext {
             }
         };
     }
+
+    fn icao(&self) -> Option<u32> {
+        self.icao
+    }
 }

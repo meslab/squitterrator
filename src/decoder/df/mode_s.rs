@@ -58,4 +58,8 @@ impl decoder::Downlink for Mds {
             self.altitude = decoder::altitude(message, df);
         }
     }
+
+    fn icao(&self) -> Option<u32> {
+        self.icao
+    }
 }

@@ -42,9 +42,18 @@ impl Downlink for DF {
             DF::MDS(v) => v.update(message),
         }
     }
+
+    fn icao(&self) -> Option<u32> {
+        match self {
+            DF::SRT(v) => v.icao,
+            DF::EXT(v) => v.icao,
+            DF::MDS(v) => v.icao,
+        }
+    }
 }
 
 pub trait Downlink: Sized {
     fn from_message(message: &[u32]) -> Result<Self, &str>;
     fn update(&mut self, message: &[u32]);
+    fn icao(&self) -> Option<u32>;
 }

@@ -83,4 +83,8 @@ impl decoder::Downlink for Srt {
             }
         }
     }
+
+    fn icao(&self) -> Option<u32> {
+        self.icao
+    }
 }
