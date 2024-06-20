@@ -44,14 +44,14 @@ impl Plane {
         self.altitude_source = '\u{2070}';
         self.track = dl.track;
         self.track_source = dl.track_source.unwrap_or(' ');
-        // self.update_cpr(message, message_type);
+        self.ammend_cpr(dl);
     }
 
     fn ammend_from_ext_9_18(&mut self, dl: &Ext) {
         self.altitude = dl.altitude;
         self.altitude_source = ' ';
         self.surveillance_status = dl.surveillance_status.unwrap_or(' ');
-        // self.update_cpr(message, message_type);
+        self.ammend_cpr(dl);
     }
 
     fn ammend_from_ext_19(&mut self, dl: &Ext) {
@@ -87,5 +87,15 @@ impl Plane {
 
     fn ammend_from_ext_31(&mut self, dl: &Ext) {
         self.adsb_version = dl.adsb_version;
+    }
+
+    fn ammend_cpr(&mut self, dl: &Ext) {
+        if let Some((cpr_form, cpr_lat, cpr_lon)) = dl.cpr {
+            self.cpr_lat[cpr_form as usize] = cpr_lat;
+            self.cpr_lon[cpr_form as usize] = cpr_lon;
+            self.cpr_time[cpr_form as usize] = self.timestamp;
+
+            self.update_position(dl.message_type.0, cpr_form);
+        }
     }
 }
