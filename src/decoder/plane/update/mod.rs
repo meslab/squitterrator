@@ -1,7 +1,9 @@
-use crate::decoder::{Ext, Mds, Srt, DF};
+use crate::decoder::{Mds, DF};
 
 use super::Plane;
 use chrono::Utc;
+mod ammendable_ext;
+mod ammendable_srt;
 mod update_from_bcast;
 mod update_from_ext;
 mod update_from_mode_s;
@@ -28,22 +30,6 @@ pub trait Ammendable<T> {
     fn ammend(&mut self, dl: &T);
 }
 
-impl Ammendable<Srt> for Plane {
-    fn ammend(&mut self, dl: &Srt) {
-        if let Some(v) = dl.icao {
-            self.icao = v;
-        }
-    }
-}
-
-impl Ammendable<Ext> for Plane {
-    fn ammend(&mut self, dl: &Ext) {
-        if let Some(v) = dl.icao {
-            self.icao = v;
-        }
-    }
-}
-
 impl Ammendable<Mds> for Plane {
     fn ammend(&mut self, dl: &Mds) {
         if let Some(v) = dl.icao {
@@ -55,9 +41,9 @@ impl Ammendable<Mds> for Plane {
 impl Ammendable<DF> for Plane {
     fn ammend(&mut self, dl: &DF) {
         match dl {
-            DF::SRT(v) => self.icao = v.icao.unwrap(),
-            DF::EXT(v) => self.icao = v.icao.unwrap(),
-            DF::MDS(v) => self.icao = v.icao.unwrap(),
+            DF::SRT(v) => self.ammend(v),
+            DF::EXT(v) => self.ammend(v),
+            DF::MDS(v) => self.ammend(v),
         }
     }
 }
