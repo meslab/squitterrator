@@ -8,6 +8,8 @@ use std::fmt::{self, Display};
 pub use simple_display::format_simple_display;
 pub use update::Ammendable;
 
+use super::DF;
+
 pub struct Plane {
     pub icao: u32,
     pub capability: (u32, Capability),
@@ -114,6 +116,14 @@ impl Plane {
         plane.icao = icao;
         (_, plane.reg) = super::icao_to_country(icao);
         plane.update(message, df, relaxed);
+        plane
+    }
+
+    pub fn from_downlink(dl: &DF, icao: u32) -> Self {
+        let mut plane = Plane::new();
+        plane.icao = icao;
+        (_, plane.reg) = super::icao_to_country(icao);
+        plane.ammend(dl);
         plane
     }
 }
