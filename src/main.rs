@@ -22,8 +22,8 @@ use std::time::Duration;
     about = "ADS-B squitter decoder"
 )]
 struct Args {
-    #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 -f 4 - DF4 and DF21,\n -f 21 - only DF21, etc")]
-    filter: Option<Vec<u32>>,
+    #[clap(short, long, help = "Count squitters by type")]
+    count_df: bool,
 
     #[clap(
         short,
@@ -39,8 +39,25 @@ struct Args {
     #[clap(short = 'l', long, default_value = "sq.errors.log")]
     error_log: String,
 
+    #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 -f 4 - DF4 and DF21,\n -f 21 - only DF21, etc")]
+    filter: Option<Vec<u32>>,
+
+    #[clap(short='F', long, default_value = None)]
+    format: Option<String>,
+
     #[clap(short='M', long, default_value = None)]
     log_messages: Option<Vec<u32>>,
+
+    #[clap(
+        short,
+        long,
+        default_value = "sA",
+        help = "s - squawk, a,A - altitude,\nc,C - category, N, S, E, W - location,\nv,V - vertical rate"
+    )]
+    order_by: Vec<String>,
+
+    #[clap(short = 'R', long, help = "Relaxed Capabilities check EHS")]
+    relaxed: bool,
 
     #[clap(
         short,
@@ -59,25 +76,8 @@ struct Args {
     )]
     tcp: String,
 
-    #[clap(short='F', long, default_value = None)]
-    format: Option<String>,
-
     #[clap(short, long, default_value = "3")]
     update: i64,
-
-    #[clap(
-        short,
-        long,
-        default_value = "sA",
-        help = "s - squawk, a,A - altitude,\nc,C - category, N, S, E, W - location,\nv,V - vertical rate"
-    )]
-    order_by: Vec<String>,
-
-    #[clap(short = 'R', long, help = "Relaxed Capabilities check EHS")]
-    relaxed: bool,
-
-    #[clap(short, long, help = "Count squitters by type")]
-    count_df: bool,
 
     #[clap(short = 'U', long, help = "Use Plain::update() exclusively")]
     use_update_method: bool,

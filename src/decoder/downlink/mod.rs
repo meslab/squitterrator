@@ -4,9 +4,9 @@ mod mode_s;
 mod short;
 
 pub use dfs::*;
-pub use extended::*;
-pub use mode_s::*;
-pub use short::*;
+pub(crate) use extended::*;
+pub(crate) use mode_s::*;
+pub(crate) use short::*;
 
 use crate::decoder::range_value;
 
