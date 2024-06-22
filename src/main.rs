@@ -78,6 +78,9 @@ struct Args {
 
     #[clap(short, long, help = "Count squitters by type")]
     count_df: bool,
+
+    #[clap(short = 'U', long, help = "Use Plain::update() exclusively")]
+    use_update_method: bool,
 }
 
 fn main() -> io::Result<()> {

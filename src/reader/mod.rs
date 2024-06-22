@@ -76,7 +76,7 @@ pub(super) fn read_lines<R: BufRead>(
                             planes
                                 .entry(icao)
                                 .and_modify(|p| {
-                                    if df < 20 {
+                                    if df < 20 && !&args.use_update_method {
                                         p.ammend(&downlink)
                                     } else {
                                         p.update(&message, df, args.relaxed)
