@@ -1,4 +1,4 @@
-mod ammend;
+mod amend;
 mod simple_display;
 mod update;
 
@@ -6,7 +6,7 @@ use crate::decoder::Capability;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
 
-pub use ammend::Ammendable;
+pub use amend::Amendable;
 pub use simple_display::format_simple_display;
 mod update_position;
 
@@ -125,7 +125,7 @@ impl Plane {
         let mut plane = Plane::new();
         plane.icao = icao;
         (_, plane.reg) = super::icao_to_country(icao);
-        plane.ammend(dl);
+        plane.amend(dl);
         plane
     }
 }

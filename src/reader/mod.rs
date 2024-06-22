@@ -10,7 +10,7 @@ use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
 //use squitterator::;
-use decoder::Ammendable;
+use decoder::Amendable;
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
@@ -77,7 +77,7 @@ pub(super) fn read_lines<R: BufRead>(
                                 .entry(icao)
                                 .and_modify(|p| {
                                     if df < 20 && !&args.use_update_method {
-                                        p.ammend(&downlink)
+                                        p.amend(&downlink)
                                     } else {
                                         p.update(&message, df, args.relaxed)
                                     }

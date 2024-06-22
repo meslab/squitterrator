@@ -1,7 +1,7 @@
-use crate::decoder::{plane::ammend::Ammendable, Plane, Srt};
+use crate::decoder::{plane::amend::Amendable, Plane, Srt};
 
-impl Ammendable<Srt> for Plane {
-    fn ammend(&mut self, dl: &Srt) {
+impl Amendable<Srt> for Plane {
+    fn amend(&mut self, dl: &Srt) {
         if dl.icao.is_some() {
             if dl.df == Some(5) && dl.altitude.is_some() {
                 self.altitude = dl.altitude;
