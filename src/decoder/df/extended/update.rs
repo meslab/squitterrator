@@ -55,7 +55,7 @@ impl Ext {
 }
 
 impl decoder::Downlink for Ext {
-    fn from_message(message: &[u32]) -> Result<Self, String> {
+    fn from_message(message: &[u32]) -> Result<Self, &str> {
         let mut dl = Ext::new();
         dl.update(message);
         Ok(dl)
@@ -86,5 +86,9 @@ impl decoder::Downlink for Ext {
                 _ => {}
             }
         };
+    }
+
+    fn icao(&self) -> Option<u32> {
+        self.icao
     }
 }

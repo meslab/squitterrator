@@ -9,6 +9,8 @@ use planes::print_planes;
 use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
+//use squitterator::;
+use decoder::Ammendable;
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
@@ -21,8 +23,8 @@ pub(super) fn read_lines<R: BufRead>(
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
-    let downlink_log_file = args
-        .log_downlink
+    let downlink_error_log_file = args
+        .downlink_log
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
@@ -37,12 +39,14 @@ pub(super) fn read_lines<R: BufRead>(
             display_flags.contains(&'e'),
         );
     }
+
     let mut df_count = BTreeMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
                 debug!("Squitter: {}", squitter);
+
                 if let Some(message) = message(&squitter) {
                     let df = match df(&message) {
                         Some(df) => df,
@@ -50,38 +54,60 @@ pub(super) fn read_lines<R: BufRead>(
                             continue;
                         }
                     };
+
                     if let Some(m) = &args.log_messages {
                         if m.contains(&df) {
                             error!("DF:{}, L:{}", df, squitter);
                         }
                     }
+
                     if let Some(only) = &args.filter {
                         if only.iter().all(|&x| x != df) {
                             continue;
                         }
                     }
+
                     if args.count_df {
                         *df_count.entry(df).or_insert(1) += 1;
                     }
 
-                    if let Some(ref dlf) = downlink_log_file {
+                    if let Some(icao) = icao(&message, df) {
                         if let Ok(downlink) = decoder::DF::from_message(&message) {
-                            let mut dlf = dlf.lock().unwrap();
-                            write!(dlf, "{}", downlink)?;
-
-                            debug!("Writing to {:?}", &dlf);
-                        }
-                    }
-
-                    if !display_flags.contains(&'Q') {
-                        if let Some(icao) = icao(&message, df) {
                             planes
                                 .entry(icao)
-                                .and_modify(|p| p.update(&message, df, args.relaxed))
-                                .or_insert(Plane::from_message(&message, df, icao, args.relaxed));
+                                .and_modify(|p| {
+                                    if df < 20 {
+                                        p.ammend(&downlink)
+                                    } else {
+                                        p.update(&message, df, args.relaxed)
+                                    }
+                                })
+                                .or_insert(Plane::from_downlink(&downlink, icao));
+                        }
 
-                            let now = chrono::Utc::now();
-                            if now.signed_duration_since(timestamp).num_seconds() > args.update {
+                        if let Some(ref dlf) = downlink_error_log_file {
+                            if let Ok(downlink) = decoder::DF::from_message(&message) {
+                                let mut dlf = dlf.lock().unwrap();
+                                write!(dlf, "{}", downlink)?;
+                                debug!("Writing to {:?}", &dlf);
+                            }
+                        }
+
+                        let now = chrono::Utc::now();
+                        if now.signed_duration_since(timestamp).num_seconds() > args.update {
+                            planes.retain(|_, plane| {
+                                let elapsed =
+                                    now.signed_duration_since(plane.timestamp).num_seconds();
+                                if elapsed < 60 {
+                                    true
+                                } else {
+                                    debug!("Plane {} has been removed from view", plane.icao);
+                                    false
+                                }
+                            });
+                            planes.shrink_to_fit();
+
+                            if !display_flags.contains(&'Q') {
                                 clear_screen();
                                 print_header(
                                     display_flags.contains(&'w'),
@@ -91,17 +117,6 @@ pub(super) fn read_lines<R: BufRead>(
                                     display_flags.contains(&'e'),
                                     true,
                                 );
-                                planes.retain(|_, plane| {
-                                    let elapsed =
-                                        now.signed_duration_since(plane.timestamp).num_seconds();
-                                    if elapsed < 60 {
-                                        true
-                                    } else {
-                                        debug!("Plane {} has been removed from view", plane.icao);
-                                        false
-                                    }
-                                });
-                                planes.shrink_to_fit();
                                 print_planes(
                                     planes,
                                     args,
@@ -111,9 +126,6 @@ pub(super) fn read_lines<R: BufRead>(
                                     display_flags.contains(&'A'),
                                     display_flags.contains(&'e'),
                                 );
-                                debug!("Squirter: {}", squitter);
-                                debug!("{}", planes[&icao]);
-                                timestamp = now;
                                 print_header(
                                     display_flags.contains(&'w'),
                                     display_flags.contains(&'a'),
@@ -122,6 +134,7 @@ pub(super) fn read_lines<R: BufRead>(
                                     display_flags.contains(&'e'),
                                     false,
                                 );
+
                                 if args.count_df {
                                     let result =
                                         df_count.iter().fold(String::new(), |acc, (df, count)| {
@@ -129,6 +142,9 @@ pub(super) fn read_lines<R: BufRead>(
                                         });
                                     println!("{}", result);
                                 }
+
+                                debug!("{}", planes[&icao]);
+                                timestamp = now;
                             }
                         }
                     }

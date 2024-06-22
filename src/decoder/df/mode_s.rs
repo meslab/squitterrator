@@ -45,7 +45,7 @@ impl Display for Mds {
 }
 
 impl decoder::Downlink for Mds {
-    fn from_message(message: &[u32]) -> Result<Self, String> {
+    fn from_message(message: &[u32]) -> Result<Self, &str> {
         let mut dl = Mds::new();
         dl.update(message);
         Ok(dl)
@@ -57,5 +57,9 @@ impl decoder::Downlink for Mds {
             self.icao = decoder::icao(message, df);
             self.altitude = decoder::altitude(message, df);
         }
+    }
+
+    fn icao(&self) -> Option<u32> {
+        self.icao
     }
 }

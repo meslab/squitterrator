@@ -17,7 +17,7 @@ use std::time::Duration;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.2.6",
+    version = "v0.2.7",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
@@ -29,15 +29,15 @@ struct Args {
         short,
         long,
         default_value = "aAews",
-        help = "Display plane patameters\na - angles, A - altitude\ns - speed, e - extra info\nw - weather"
+        help = "Display plane patameters\na - angles, A - altitude, s - speed\ne - extra info, w - weather\nQ - quiet"
     )]
     display: Vec<String>,
 
     #[clap(short = 'D', long, default_value = None)]
-    log_downlink: Option<String>,
+    downlink_log: Option<String>,
 
-    #[clap(short, long, default_value = "log.log")]
-    log: String,
+    #[clap(short = 'l', long, default_value = "sq.errors.log")]
+    error_log: String,
 
     #[clap(short='M', long, default_value = None)]
     log_messages: Option<Vec<u32>>,
@@ -59,7 +59,7 @@ struct Args {
     )]
     tcp: String,
 
-    #[clap(short, long, default_value = None)]
+    #[clap(short='F', long, default_value = None)]
     format: Option<String>,
 
     #[clap(short, long, default_value = "3")]
@@ -76,23 +76,23 @@ struct Args {
     #[clap(short = 'R', long, help = "Relaxed Capabilities check EHS")]
     relaxed: bool,
 
-    #[clap(short, long)]
+    #[clap(short, long, help = "Count squitters by type")]
     count_df: bool,
 }
 
 fn main() -> io::Result<()> {
     let args = Args::parse();
 
-    let log_file = File::create(&args.log).expect("Unable to create log file");
-    let log_file = Mutex::new(log_file);
+    let error_log_file = File::create(&args.error_log).expect("Unable to create log file");
+    let error_log_file = Mutex::new(error_log_file);
 
     let mut planes: HashMap<u32, Plane> = HashMap::new();
 
     // Initialize the logger
     Builder::from_env(Env::default().default_filter_or("error"))
         .format(move |_, record| {
-            let mut log_file = log_file.lock().unwrap();
-            writeln!(log_file, "{} - {}", record.level(), record.args())
+            let mut error_log_file = error_log_file.lock().unwrap();
+            writeln!(error_log_file, "{} - {}", record.level(), record.args())
         })
         .init();
 
