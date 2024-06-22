@@ -68,20 +68,6 @@ mod tests {
     use super::temp_4_4;
 
     #[test]
-    fn test_shift() {
-        assert_eq!(2048 / 2, 2048 >> 1);
-        assert_eq!(2048 / 4, 2048 >> 2);
-        assert_eq!(2048 / 8, 2048 >> 3);
-        assert_eq!(2048 / 16, 2048 >> 4);
-        assert_eq!(2048 / 32, 2048 >> 5);
-        assert_eq!(2048 / 64, 2048 >> 6);
-        assert_eq!(2048 / 128, 2048 >> 7);
-        assert_eq!(2048 / 256, 2048 >> 8);
-        assert_eq!(2048 / 512, 2048 >> 9);
-        assert_eq!(2048 / 1024, 2048 >> 10);
-    }
-
-    #[test]
     fn test_power() {
         assert_eq!(2_i32.pow(9), 1 << 9);
         for x in 0..=539 {

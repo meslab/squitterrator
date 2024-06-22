@@ -1,5 +1,4 @@
-use super::Plane;
-use crate::decoder::{Ammendable, Ext};
+use crate::decoder::{plane::ammend::Ammendable, Ext, Plane};
 
 impl Ammendable<Ext> for Plane {
     fn ammend(&mut self, dl: &Ext) {

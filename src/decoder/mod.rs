@@ -1,14 +1,14 @@
 mod adsb;
 mod bds;
 mod country;
-mod df;
+mod downlink;
 mod ehs;
 mod meteo;
 mod plane;
 mod utils;
 
 pub use adsb::*;
-pub use df::*;
+pub use downlink::*;
 pub use plane::*;
 pub use utils::*;
 
