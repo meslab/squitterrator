@@ -23,8 +23,8 @@ pub(super) fn read_lines<R: BufRead>(
     args: &Args,
     planes: &mut HashMap<u32, Plane>,
 ) -> Result<()> {
-    let downlink_log_file = args
-        .log_downlink
+    let downlink_error_log_file = args
+        .downlink_log
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
@@ -39,14 +39,14 @@ pub(super) fn read_lines<R: BufRead>(
             display_flags.contains(&'e'),
         );
     }
-    
+
     let mut df_count = BTreeMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
                 debug!("Squitter: {}", squitter);
-                
+
                 if let Some(message) = message(&squitter) {
                     let df = match df(&message) {
                         Some(df) => df,
@@ -75,12 +75,17 @@ pub(super) fn read_lines<R: BufRead>(
                         if let Ok(downlink) = decoder::DF::from_message(&message) {
                             planes
                                 .entry(icao)
-                                .and_modify(|p| p.ammend(&downlink))
-                                .or_insert(Plane::from_downlink(&downlink, icao))
-                                .update(&message, df, args.relaxed);
+                                .and_modify(|p| {
+                                    if df < 20 {
+                                        p.ammend(&downlink)
+                                    } else {
+                                        p.update(&message, df, args.relaxed)
+                                    }
+                                })
+                                .or_insert(Plane::from_downlink(&downlink, icao));
                         }
 
-                        if let Some(ref dlf) = downlink_log_file {
+                        if let Some(ref dlf) = downlink_error_log_file {
                             if let Ok(downlink) = decoder::DF::from_message(&message) {
                                 let mut dlf = dlf.lock().unwrap();
                                 write!(dlf, "{}", downlink)?;
