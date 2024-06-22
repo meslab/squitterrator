@@ -36,7 +36,7 @@ pub fn bds(message: &[u32]) -> (u32, u32) {
 
     if let (3, 0) = (message[8] & 0xF, message[9] & 0xF) {
         if let Some(value) = range_value(message, 48, 54) {
-            if message[15] & 0b1100 != 0b1100 && value < 48 {
+            if (message[15] & 0b1100) != 0b1100 && value < 48 {
                 return (3, 0);
             }
         }
@@ -65,6 +65,14 @@ mod tests {
         let squitter = "8D40621D58C382D690C8AC2863A7";
         if let Some(message) = message(squitter) {
             assert_eq!(bds(&message), (0, 0));
+        }
+    }
+
+    #[test]
+    fn test_bds_21() {
+        let squitter = "A8000096300000000000007F5EBC";
+        if let Some(message) = message(squitter) {
+            assert_eq!(bds(&message), (3, 0));
         }
     }
 
