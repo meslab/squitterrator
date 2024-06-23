@@ -125,7 +125,7 @@ impl Plane {
         let mut plane = Plane::new();
         plane.icao = icao;
         (_, plane.reg) = super::icao_to_country(icao);
-        plane.amend(dl);
+        plane.update_from_downlink(dl);
         plane
     }
 }

@@ -1,7 +1,7 @@
 use crate::decoder::{plane::from_downlink::UpdateFromDownlink, Plane, Srt};
 
 impl UpdateFromDownlink<Srt> for Plane {
-    fn amend(&mut self, dl: &Srt) {
+    fn update_from_downlink(&mut self, dl: &Srt) {
         if dl.icao.is_some() {
             if dl.df == Some(4) && dl.altitude.is_some() {
                 self.altitude = dl.altitude;
