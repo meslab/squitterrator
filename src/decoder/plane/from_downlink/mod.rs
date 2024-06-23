@@ -5,15 +5,15 @@ mod from_srt;
 use crate::decoder::{Plane, DF};
 
 pub trait UpdateFromDownlink<T> {
-    fn amend(&mut self, dl: &T);
+    fn update_from_downlink(&mut self, dl: &T);
 }
 
 impl UpdateFromDownlink<DF> for Plane {
-    fn amend(&mut self, dl: &DF) {
+    fn update_from_downlink(&mut self, dl: &DF) {
         match dl {
-            DF::SRT(v) => self.amend(v),
-            DF::EXT(v) => self.amend(v),
-            DF::MDS(v) => self.amend(v),
+            DF::SRT(v) => self.update_from_downlink(v),
+            DF::EXT(v) => self.update_from_downlink(v),
+            DF::MDS(v) => self.update_from_downlink(v),
         }
     }
 }

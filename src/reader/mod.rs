@@ -77,7 +77,7 @@ pub(super) fn read_lines<R: BufRead>(
                                 .entry(icao)
                                 .and_modify(|p| {
                                     if df < 20 && !&args.use_update_method {
-                                        p.amend(&downlink)
+                                        p.update_from_downlink(&downlink)
                                     } else {
                                         p.update(&message, df, args.relaxed)
                                     }
