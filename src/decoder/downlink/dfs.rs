@@ -26,7 +26,7 @@ impl<T: Downlink> DownlinkFrame<T> {
     }
 }
 
-impl fmt::Display for DF {
+impl Display for DF {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DF::SRT(v) => write!(f, "{}", v),

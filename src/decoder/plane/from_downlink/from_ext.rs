@@ -1,6 +1,6 @@
-use crate::decoder::{plane::amend::Amendable, Ext, Plane};
+use crate::decoder::{plane::from_downlink::UpdateFromDownlink, Ext, Plane};
 
-impl Amendable<Ext> for Plane {
+impl UpdateFromDownlink<Ext> for Plane {
     fn amend(&mut self, dl: &Ext) {
         if dl.icao.is_some() {
             self.last_type_code = dl.message_type.0;
