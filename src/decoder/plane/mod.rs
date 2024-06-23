@@ -1,12 +1,12 @@
-mod amend;
+mod from_downlink;
+mod from_squitter;
 mod simple_display;
-mod update;
 
 use crate::decoder::Capability;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
 
-pub use amend::Amendable;
+pub use from_downlink::UpdateFromDownlink;
 pub use simple_display::format_simple_display;
 mod update_position;
 

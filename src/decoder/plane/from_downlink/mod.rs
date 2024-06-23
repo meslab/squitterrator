@@ -1,14 +1,14 @@
-mod amendable_ext;
-mod amendable_mds;
-mod amendable_srt;
+mod from_ext;
+mod from_mds;
+mod from_srt;
 
 use crate::decoder::{Plane, DF};
 
-pub trait Amendable<T> {
+pub trait UpdateFromDownlink<T> {
     fn amend(&mut self, dl: &T);
 }
 
-impl Amendable<DF> for Plane {
+impl UpdateFromDownlink<DF> for Plane {
     fn amend(&mut self, dl: &DF) {
         match dl {
             DF::SRT(v) => self.amend(v),

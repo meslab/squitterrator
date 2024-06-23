@@ -1,9 +1,9 @@
-use crate::decoder::{plane::amend::Amendable, Plane, Srt};
+use crate::decoder::{plane::from_downlink::UpdateFromDownlink, Plane, Srt};
 
-impl Amendable<Srt> for Plane {
+impl UpdateFromDownlink<Srt> for Plane {
     fn amend(&mut self, dl: &Srt) {
         if dl.icao.is_some() {
-            if dl.df == Some(5) && dl.altitude.is_some() {
+            if dl.df == Some(4) && dl.altitude.is_some() {
                 self.altitude = dl.altitude;
                 self.altitude_source = ' ';
             }

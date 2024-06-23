@@ -1,8 +1,8 @@
 use super::Plane;
 use chrono::Utc;
-mod update_from_bcast;
-mod update_from_ext;
-mod update_from_mode_s;
+mod from_bcast;
+mod from_ext;
+mod from_mode_s;
 
 impl Plane {
     pub fn update(&mut self, message: &[u32], df: u32, relaxed: bool) {

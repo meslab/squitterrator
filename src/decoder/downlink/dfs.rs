@@ -1,4 +1,4 @@
-use std::fmt::{self, Debug};
+use std::fmt::{self, Debug, Display};
 
 use super::*;
 
@@ -9,7 +9,24 @@ pub enum DF {
     MDS(Mds),
 }
 
-impl fmt::Display for DF {
+#[derive(Debug)]
+pub struct DownlinkFrame<T: Downlink> {
+    downlink: T,
+}
+
+impl<T: Downlink + Display> Display for DownlinkFrame<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.downlink)
+    }
+}
+
+impl<T: Downlink> DownlinkFrame<T> {
+    pub fn new(downlink: T) -> Self {
+        Self { downlink }
+    }
+}
+
+impl Display for DF {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DF::SRT(v) => write!(f, "{}", v),

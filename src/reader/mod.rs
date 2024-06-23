@@ -10,7 +10,7 @@ use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
 //use squitterator::;
-use decoder::Amendable;
+use decoder::UpdateFromDownlink;
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
