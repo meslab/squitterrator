@@ -1,5 +1,6 @@
 use super::Plane;
 use crate::decoder;
+use std::f64::consts::PI;
 
 /// Updates the position of the plane based on the received message type and CPR format.
 ///
@@ -37,9 +38,35 @@ impl Plane {
                 if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) {
                     self.lat = lat;
                     self.lon = lon;
+                    if let Some(observer) = decoder::observer::get_observer_coords() {
+                        self.distance_from_observer =
+                            haversine(self.lat, self.lon, observer.0, observer.1);
+                    };
                     self.position_timestamp = Some(self.timestamp);
                 }
             }
         }
     }
+}
+
+fn degrees_to_radians(degrees: f64) -> f64 {
+    degrees * PI / 180.0
+}
+
+// Haversine formula to calculate the distance between two points
+pub(super) fn haversine(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> Option<f64> {
+    let r = 6371.0; // Earth radius in kilometers
+
+    let lat1 = degrees_to_radians(lat1);
+    let lon1 = degrees_to_radians(lon1);
+    let lat2 = degrees_to_radians(lat2);
+    let lon2 = degrees_to_radians(lon2);
+
+    let dlat = lat2 - lat1;
+    let dlon = lon2 - lon1;
+
+    let a = (dlat / 2.0).sin().powi(2) + lat1.cos() * lat2.cos() * (dlon / 2.0).sin().powi(2);
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+
+    Some(r * c)
 }
