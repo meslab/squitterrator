@@ -1,8 +1,8 @@
 mod reader;
-
 use reader::read_lines;
-use squitterator::decoder::Plane;
+use squitterator::decoder::{self, Plane};
 
+use crate::decoder::Coordinates;
 use clap::Parser;
 use env_logger::{Builder, Env};
 use log::{error, info};
@@ -17,10 +17,11 @@ use std::time::Duration;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.2.9",
+    version = "v0.2.10",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
+
 struct Args {
     #[clap(short, long, help = "Count squitters by type")]
     count_df: bool,
@@ -56,6 +57,13 @@ struct Args {
     )]
     order_by: Vec<String>,
 
+    #[clap(
+        short = 'O',
+        long,
+        default_value = "52.66411442720024, -8.622299905360963"
+    )]
+    observer_coord: Option<String>,
+
     #[clap(short = 'R', long, help = "Relaxed Capabilities check EHS")]
     relaxed: bool,
 
@@ -90,6 +98,20 @@ fn main() -> io::Result<()> {
     let error_log_file = Mutex::new(error_log_file);
 
     let mut planes: HashMap<u32, Plane> = HashMap::new();
+
+    let coords = if let Some(coord_str) = &args.observer_coord {
+        match coord_str.parse::<Coordinates>() {
+            Ok(coords) => Some((coords.lat, coords.lon)),
+            Err(e) => {
+                eprintln!("Error parsing coordinates: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    decoder::set_observer_coords(coords);
 
     // Initialize the logger
     Builder::from_env(Env::default().default_filter_or("error"))

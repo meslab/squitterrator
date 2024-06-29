@@ -14,6 +14,7 @@ pub(super) fn print_header(
         ("CALLSIGN", 8),
         ("LATITUDE", 9),
         ("LONGITUDE", 11),
+        ("DIST", 5),
         ("ALT B", 5),
     ];
     let headers_2 = [("VRATE", 5), ("TRK", 3), ("HDG", 3), ("GSP", 3)];

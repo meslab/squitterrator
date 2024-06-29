@@ -4,11 +4,13 @@ mod country;
 mod downlink;
 mod ehs;
 mod meteo;
+mod observer;
 mod plane;
 mod utils;
 
 pub use adsb::*;
 pub use downlink::*;
+pub use observer::*;
 pub use plane::*;
 pub use utils::*;
 
