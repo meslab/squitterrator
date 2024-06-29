@@ -40,7 +40,7 @@ impl Plane {
                     self.lon = lon;
                     if let Some(observer) = decoder::observer::get_observer_coords() {
                         self.distance_from_observer =
-                            haversine(self.lat, self.lon, observer.0, observer.1);
+                            Some(haversine(self.lat, self.lon, observer.0, observer.1));
                     };
                     self.position_timestamp = Some(self.timestamp);
                 }
@@ -54,7 +54,7 @@ fn degrees_to_radians(degrees: f64) -> f64 {
 }
 
 // Haversine formula to calculate the distance between two points
-pub(super) fn haversine(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> Option<f64> {
+pub(super) fn haversine(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let r = 6371.0; // Earth radius in kilometers
 
     let lat1 = degrees_to_radians(lat1);
@@ -68,5 +68,5 @@ pub(super) fn haversine(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> Option<f6
     let a = (dlat / 2.0).sin().powi(2) + lat1.cos() * lat2.cos() * (dlon / 2.0).sin().powi(2);
     let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
 
-    Some(r * c)
+    r * c
 }

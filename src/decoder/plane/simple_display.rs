@@ -52,6 +52,11 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, "{:9} {:11} ", "", "")?;
         }
+        if let Some(distance_from_observer) = &self.distance_from_observer {
+            write!(f, "{:5.1} ", distance_from_observer)?;
+        } else {
+            write!(f, "{:5} ", "")?;
+        }
         if let Some(altitude) = self.altitude {
             write!(f, "{:>5}", altitude)?;
             write!(f, "{}", self.altitude_source)?;

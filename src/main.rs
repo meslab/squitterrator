@@ -60,7 +60,6 @@ struct Args {
     #[clap(
         short = 'O',
         long,
-        index = 1,
         default_value = "52.66411442720024, -8.622299905360963"
     )]
     observer_coord: Option<String>,
