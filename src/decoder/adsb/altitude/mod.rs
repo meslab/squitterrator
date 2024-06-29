@@ -6,7 +6,7 @@ pub(crate) use delta::*;
 pub(crate) use gnss::*;
 
 use graytobin::graytobin;
-use log::error;
+use log::info;
 
 use crate::decoder::{ma_code, me_code};
 
@@ -20,7 +20,7 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
         if a < 100000 {
             Some(a)
         } else {
-            error!(
+            info!(
                 "DF:{} C:{:b} M:{} ALT:{}",
                 df,
                 code.unwrap(),
